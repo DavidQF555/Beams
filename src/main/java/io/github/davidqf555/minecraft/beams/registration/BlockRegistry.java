@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.blocks.ProjectorBlock;
+import io.github.davidqf555.minecraft.beams.common.blocks.TiltedProjectorBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -16,6 +17,7 @@ public final class BlockRegistry {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Beams.ID);
 
     public static final RegistryObject<ProjectorBlock> PROJECTOR = register("projector", () -> new ProjectorBlock(AbstractBlock.Properties.of(Material.STONE)));
+    public static final RegistryObject<TiltedProjectorBlock> TILTED_PROJECTOR = register("tilted_projector", () -> new TiltedProjectorBlock(AbstractBlock.Properties.of(Material.STONE)));
 
     private BlockRegistry() {
     }

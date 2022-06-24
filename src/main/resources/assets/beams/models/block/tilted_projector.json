@@ -1,0 +1,8 @@
+{
+  "parent": "block/stairs",
+  "textures": {
+    "bottom": "beams:block/tilted_projector",
+    "top": "beams:block/tilted_projector",
+    "side": "beams:block/tilted_projector"
+  }
+}

@@ -36,9 +36,9 @@ public class ProjectorTileEntity extends TileEntity {
         this(TileEntityRegistry.BEAM_PROJECTOR.get());
     }
 
-    public void shoot(EntityType<BeamEntity> type, Vector3d start, Vector3d target, float startSize, float endSize, double range) {
+    public void shoot(EntityType<BeamEntity> type, Vector3d start, Vector3d target, float startSize, float endSize) {
         removeBeams();
-        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, startSize, startSize, endSize, endSize, range)) {
+        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, startSize, startSize, endSize, endSize)) {
             beams.add(beam.getUUID());
         }
         setChanged();

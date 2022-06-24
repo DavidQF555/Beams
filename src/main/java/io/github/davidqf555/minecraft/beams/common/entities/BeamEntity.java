@@ -7,7 +7,6 @@ import net.minecraft.network.IPacket;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
@@ -35,7 +34,7 @@ public class BeamEntity extends Entity {
         super(type, world);
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, float startWidth, float startHeight, float endWidth, float endHeight, double range) {
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, float startWidth, float startHeight, float endWidth, float endHeight) {
         List<T> all = new ArrayList<>();
         Vector3d center = end.subtract(start);
         double total = center.length();
@@ -62,7 +61,6 @@ public class BeamEntity extends Entity {
                 float endFactor = (float) (endDist / total);
                 entity.setEndWidth(startWidth + (endWidth - startWidth) * endFactor);
                 entity.setEndHeight(startHeight + (endHeight - startHeight) * endFactor);
-                entity.setMaxRange(range);
                 world.addFreshEntity(entity);
                 all.add(entity);
             }
@@ -131,25 +129,6 @@ public class BeamEntity extends Entity {
         getEntityData().set(LAYERS, layers);
     }
 
-    public double getMaxRange() {
-        return maxRange;
-    }
-
-    public void setMaxRange(double maxRange) {
-        this.maxRange = maxRange;
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        if (!level.isClientSide()) {
-            Vector3d start = new Vector3d(getStart());
-            Vector3d line = position().subtract(start);
-            Vector3d clip = level.clip(new RayTraceContext(start, start.add(line.normalize().scale(getMaxRange())), RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.ANY, null)).getLocation();
-            setPos(clip.x(), clip.y(), clip.z());
-        }
-    }
-
     @Override
     protected void defineSynchedData() {
         EntityDataManager manager = getEntityData();
@@ -187,9 +166,6 @@ public class BeamEntity extends Entity {
         if (tag.contains("Layers", Constants.NBT.TAG_INT)) {
             setLayers(tag.getInt("Layers"));
         }
-        if (tag.contains("MaxRange", Constants.NBT.TAG_DOUBLE)) {
-            setMaxRange(tag.getDouble("MaxRange"));
-        }
     }
 
     @Override
@@ -204,7 +180,6 @@ public class BeamEntity extends Entity {
         tag.putFloat("EndHeight", getEndHeight());
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
-        tag.putDouble("MaxRange", getMaxRange());
     }
 
     @Override

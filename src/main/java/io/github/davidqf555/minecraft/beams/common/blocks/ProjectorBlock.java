@@ -45,14 +45,22 @@ public class ProjectorBlock extends ContainerBlock {
                     if (triggered) {
                         ((ProjectorTileEntity) te).removeBeams();
                     } else {
-                        Vector3d dir = Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal());
-                        Vector3d start = Vector3d.atCenterOf(pos).add(dir.scale(0.5));
-                        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(RANGE)), RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.ANY, null)).getLocation();
-                        ((ProjectorTileEntity) te).shoot(EntityRegistry.BEAM.get(), start, end, 1, 1, RANGE);
+                        Vector3d dir = getBeamDirection(state);
+                        Vector3d start = Vector3d.atLowerCornerOf(pos).add(getStartOffset(state));
+                        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(RANGE)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.ANY, null)).getLocation();
+                        ((ProjectorTileEntity) te).shoot(EntityRegistry.BEAM.get(), start, end, 1, 1);
                     }
                 }
             }
         }
+    }
+
+    protected Vector3d getStartOffset(BlockState state) {
+        return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
+    }
+
+    protected Vector3d getBeamDirection(BlockState state) {
+        return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal());
     }
 
     @SuppressWarnings("deprecation")
