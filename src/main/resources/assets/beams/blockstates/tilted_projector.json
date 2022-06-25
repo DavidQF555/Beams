@@ -5,41 +5,34 @@
     },
     "facing=east,half=top": {
       "model": "beams:block/tilted_projector",
-      "x": 180,
-      "uvlock": true
+      "x": 180
     },
     "facing=north,half=bottom": {
       "model": "beams:block/tilted_projector",
-      "y": 270,
-      "uvlock": true
+      "y": 270
     },
     "facing=north,half=top": {
       "model": "beams:block/tilted_projector",
       "x": 180,
-      "y": 270,
-      "uvlock": true
+      "y": 270
     },
     "facing=south,half=bottom": {
       "model": "beams:block/tilted_projector",
-      "y": 90,
-      "uvlock": true
+      "y": 90
     },
     "facing=south,half=top": {
       "model": "beams:block/tilted_projector",
       "x": 180,
-      "y": 90,
-      "uvlock": true
+      "y": 90
     },
     "facing=west,half=bottom": {
       "model": "beams:block/tilted_projector",
-      "y": 180,
-      "uvlock": true
+      "y": 180
     },
     "facing=west,half=top": {
       "model": "beams:block/tilted_projector",
       "x": 180,
-      "y": 180,
-      "uvlock": true
+      "y": 180
     }
   }
 }

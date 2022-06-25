@@ -1,7 +1,26 @@
 {
   "variants": {
-    "": {
+    "facing=down": {
+      "model": "beams:block/projector_vertical",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "beams:block/projector",
+      "y": 90
+    },
+    "facing=north": {
       "model": "beams:block/projector"
+    },
+    "facing=south": {
+      "model": "beams:block/projector",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "beams:block/projector_vertical"
+    },
+    "facing=west": {
+      "model": "beams:block/projector",
+      "y": 270
     }
   }
 }
