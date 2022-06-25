@@ -1,0 +1,16 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "# ",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "beams:projector"
+    }
+  },
+  "result": {
+    "item": "beams:tilted_projector",
+    "count": 3
+  }
+}

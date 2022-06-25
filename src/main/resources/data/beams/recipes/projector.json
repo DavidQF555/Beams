@@ -1,0 +1,25 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "###",
+    "#LG",
+    "#R#"
+  ],
+  "key": {
+    "R": {
+      "item": "redstone"
+    },
+    "#": {
+      "tag": "stone_crafting_materials"
+    },
+    "L": {
+      "item": "redstone_lamp"
+    },
+    "G": {
+      "item": "glass_pane"
+    }
+  },
+  "result": {
+    "item": "beams:projector"
+  }
+}
