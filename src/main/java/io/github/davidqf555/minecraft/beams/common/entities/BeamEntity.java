@@ -28,7 +28,6 @@ public class BeamEntity extends Entity {
     private static final DataParameter<Float> START_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
-    private double maxRange;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
         super(type, world);

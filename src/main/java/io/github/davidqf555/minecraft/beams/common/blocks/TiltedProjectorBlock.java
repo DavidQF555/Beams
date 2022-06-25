@@ -50,6 +50,11 @@ public class TiltedProjectorBlock extends ProjectorBlock {
                 }
                 return BOT_NZ;
         }
+    }
+
+    @Override
+    protected Vector3d getStartOffset(BlockState state) {
+        return new Vector3d(0.5, 0.5, 0.5);
     }    private static final VoxelShape
             TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
             BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
@@ -69,11 +74,6 @@ public class TiltedProjectorBlock extends ProjectorBlock {
             TOP_NZ = VoxelShapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
             BOT_PZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
             BOT_NZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
-
-    @Override
-    protected Vector3d getStartOffset(BlockState state) {
-        return new Vector3d(0.5, 0.5, 0.5);
-    }
 
     @Override
     protected Vector3d getBeamDirection(BlockState state) {

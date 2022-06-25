@@ -1,6 +1,5 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -14,7 +13,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
@@ -45,10 +43,7 @@ public class ProjectorBlock extends ContainerBlock {
                     if (triggered) {
                         ((ProjectorTileEntity) te).removeBeams();
                     } else {
-                        Vector3d dir = getBeamDirection(state);
-                        Vector3d start = Vector3d.atLowerCornerOf(pos).add(getStartOffset(state));
-                        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(RANGE)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.ANY, null)).getLocation();
-                        ((ProjectorTileEntity) te).shoot(EntityRegistry.BEAM.get(), start, end, 1, 1);
+                        ((ProjectorTileEntity) te).updateBeams();
                     }
                 }
             }

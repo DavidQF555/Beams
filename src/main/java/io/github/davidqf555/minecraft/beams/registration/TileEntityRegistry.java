@@ -21,7 +21,7 @@ public final class TileEntityRegistry {
         return TYPES.register(name, type);
     }
 
-    public static final RegistryObject<TileEntityType<ProjectorTileEntity>> BEAM_PROJECTOR = register("beam_projector", () -> TileEntityType.Builder.of(ProjectorTileEntity::new, BlockRegistry.PROJECTOR.get()).build(null));
+    public static final RegistryObject<TileEntityType<ProjectorTileEntity>> BEAM_PROJECTOR = register("beam_projector", () -> TileEntityType.Builder.of(ProjectorTileEntity::new, BlockRegistry.PROJECTOR.get(), BlockRegistry.TILTED_PROJECTOR.get()).build(null));
 
 
 }
