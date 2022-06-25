@@ -5,7 +5,7 @@ license = "GPLv3"
 modId = "beams"
 version = "${file.jarVersion}"
 displayName = "Beams"
-#logoFile = "logo.png"
+logoFile = "logo.png"
 authors = "DavidQF555"
 description = 'This mod adds various beams'
 [[dependencies.beams]]
