@@ -7,6 +7,7 @@ import net.minecraft.network.IPacket;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
@@ -14,6 +15,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BeamEntity extends Entity {
@@ -28,6 +30,7 @@ public class BeamEntity extends Entity {
     private static final DataParameter<Float> START_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
+    private AxisAlignedBB bounds;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
         super(type, world);
@@ -78,6 +81,7 @@ public class BeamEntity extends Entity {
         manager.set(X, start.x());
         manager.set(Y, start.y());
         manager.set(Z, start.z());
+        refreshMaxBounds();
     }
 
     public float getStartWidth() {
@@ -86,6 +90,7 @@ public class BeamEntity extends Entity {
 
     public void setStartWidth(float width) {
         getEntityData().set(START_WIDTH, width);
+        refreshMaxBounds();
     }
 
     public float getStartHeight() {
@@ -94,6 +99,7 @@ public class BeamEntity extends Entity {
 
     public void setStartHeight(float height) {
         getEntityData().set(START_HEIGHT, height);
+        refreshMaxBounds();
     }
 
     public float getEndWidth() {
@@ -102,6 +108,7 @@ public class BeamEntity extends Entity {
 
     public void setEndWidth(float width) {
         getEntityData().set(END_WIDTH, width);
+        refreshMaxBounds();
     }
 
     public float getEndHeight() {
@@ -110,6 +117,13 @@ public class BeamEntity extends Entity {
 
     public void setEndHeight(float height) {
         getEntityData().set(END_HEIGHT, height);
+        refreshMaxBounds();
+    }
+
+    @Override
+    public void setPos(double x, double y, double z) {
+        super.setPos(x, y, z);
+        refreshMaxBounds();
     }
 
     public int getColor() {
@@ -128,6 +142,46 @@ public class BeamEntity extends Entity {
         getEntityData().set(LAYERS, layers);
     }
 
+    private Vector3d[] getVertices() {
+        Vector3d[] vertices = new Vector3d[8];
+        Vector3d start = new Vector3d(getStart());
+        Vector3d end = position();
+        Vector3d center = end.subtract(start);
+        Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
+        Vector3d perp = center.cross(perpY).normalize();
+        double startWidth = getStartWidth();
+        double startHeight = getStartHeight();
+        vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
+        vertices[1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
+        vertices[2] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
+        vertices[3] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
+        double endWidth = getEndWidth();
+        double endHeight = getEndHeight();
+        vertices[4] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
+        vertices[5] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
+        vertices[6] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
+        vertices[7] = end.subtract(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
+        return vertices;
+    }
+
+    public AxisAlignedBB getMaxBounds() {
+        if (bounds == null) {
+            Vector3d[] vertices = getVertices();
+            double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
+            double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
+            double minY = Arrays.stream(vertices).mapToDouble(Vector3d::y).min().getAsDouble();
+            double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
+            double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
+            double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
+            bounds = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+        }
+        return bounds;
+    }
+
+    protected void refreshMaxBounds() {
+        bounds = null;
+    }
+
     @Override
     protected void defineSynchedData() {
         EntityDataManager manager = getEntityData();
@@ -138,8 +192,13 @@ public class BeamEntity extends Entity {
         manager.define(START_HEIGHT, 1f);
         manager.define(END_WIDTH, 1f);
         manager.define(END_HEIGHT, 1f);
-        manager.define(COLOR, 0xFFFFFFFF);
+        manager.define(COLOR, 0x80FFFFFF);
         manager.define(LAYERS, 1);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBoxForCulling() {
+        return getMaxBounds();
     }
 
     @Override
