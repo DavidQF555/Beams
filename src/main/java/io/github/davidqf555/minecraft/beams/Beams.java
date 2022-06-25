@@ -1,12 +1,15 @@
 package io.github.davidqf555.minecraft.beams;
 
+import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.registration.BlockRegistry;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod("beams")
@@ -15,6 +18,7 @@ public class Beams {
     public static final String ID = "beams";
 
     public Beams() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfigs.SPEC);
         addRegistries(FMLJavaModLoadingContext.get().getModEventBus());
         MinecraftForge.EVENT_BUS.register(this);
     }

@@ -23,7 +23,6 @@ public class ProjectorBlock extends ContainerBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
-    private static final double RANGE = 10;
 
     public ProjectorBlock(Properties properties) {
         super(properties);

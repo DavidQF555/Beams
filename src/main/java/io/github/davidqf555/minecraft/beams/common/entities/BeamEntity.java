@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
+import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.CompoundNBT;
@@ -20,7 +21,6 @@ import java.util.List;
 
 public class BeamEntity extends Entity {
 
-    private static final double SEGMENT_LENGTH = 16;
     private static final DataParameter<Float> X = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
     private static final DataParameter<Float> Y = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
     private static final DataParameter<Float> Z = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
@@ -38,18 +38,19 @@ public class BeamEntity extends Entity {
 
     public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, float startWidth, float startHeight, float endWidth, float endHeight) {
         List<T> all = new ArrayList<>();
+        double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
         Vector3d center = end.subtract(start);
         double total = center.length();
         Vector3d unit = center.normalize();
         double remaining = total;
         while (remaining > 0) {
             double length;
-            if (remaining < SEGMENT_LENGTH) {
+            if (remaining < segment) {
                 length = remaining;
                 remaining = 0;
             } else {
-                length = SEGMENT_LENGTH;
-                remaining -= SEGMENT_LENGTH;
+                length = segment;
+                remaining -= segment;
             }
             Vector3d endPos = start.add(unit.scale(length));
             T entity = type.create(world);

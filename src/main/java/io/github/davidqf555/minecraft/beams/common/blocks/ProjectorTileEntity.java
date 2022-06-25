@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
@@ -30,8 +31,6 @@ import java.util.UUID;
 
 public class ProjectorTileEntity extends TileEntity implements ITickableTileEntity {
 
-    private static final int UPDATE_PERIOD = 20;
-    private static final double RANGE = 16;
     private final List<UUID> beams;
 
     public ProjectorTileEntity(TileEntityType<?> type) {
@@ -47,7 +46,7 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
     public void tick() {
         if (hasLevel()) {
             World world = getLevel();
-            if (world instanceof ServerWorld && world.getGameTime() % UPDATE_PERIOD == 0) {
+            if (world instanceof ServerWorld && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
                 updateBeams();
             }
         }
@@ -62,13 +61,14 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
             BlockPos pos = getBlockPos();
             Vector3d dir = ((ProjectorBlock) block).getBeamDirection(state);
             Vector3d start = Vector3d.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
-            Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(RANGE)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
+            Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(ServerConfigs.INSTANCE.projectorMaxRange.get())), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
             shoot(EntityRegistry.BEAM.get(), start, end);
         }
     }
 
     private void shoot(EntityType<BeamEntity> type, Vector3d start, Vector3d target) {
-        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, 1, 1, 1, 1)) {
+        double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
+        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, (float) size, (float) size, (float) size, (float) size)) {
             beams.add(beam.getUUID());
         }
         setChanged();
