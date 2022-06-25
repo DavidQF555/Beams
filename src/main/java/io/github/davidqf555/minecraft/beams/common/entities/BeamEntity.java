@@ -21,13 +21,13 @@ import java.util.List;
 
 public class BeamEntity extends Entity {
 
-    private static final DataParameter<Float> X = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> Y = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> Z = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> END_WIDTH = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> END_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> START_WIDTH = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> START_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DataSerializers.FLOAT);
+    private static final DataParameter<Double> X = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final DataParameter<Double> Y = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final DataParameter<Double> Z = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final DataParameter<Double> END_WIDTH = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final DataParameter<Double> END_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final DataParameter<Double> START_WIDTH = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final DataParameter<Double> START_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private AxisAlignedBB bounds;
@@ -36,7 +36,7 @@ public class BeamEntity extends Entity {
         super(type, world);
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, float startWidth, float startHeight, float endWidth, float endHeight) {
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
         List<T> all = new ArrayList<>();
         double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
         Vector3d center = end.subtract(start);
@@ -55,13 +55,13 @@ public class BeamEntity extends Entity {
             Vector3d endPos = start.add(unit.scale(length));
             T entity = type.create(world);
             if (entity != null) {
-                entity.setStart(new Vector3f(start));
+                entity.setStart(start);
                 entity.setPos(endPos.x(), endPos.y(), endPos.z());
                 double endDist = total - remaining;
-                float startFactor = (float) ((endDist - length) / total);
+                double startFactor = (endDist - length) / total;
                 entity.setStartWidth(startWidth + (endWidth - startWidth) * startFactor);
                 entity.setStartHeight(startHeight + (endHeight - startHeight) * startFactor);
-                float endFactor = (float) (endDist / total);
+                double endFactor = endDist / total;
                 entity.setEndWidth(startWidth + (endWidth - startWidth) * endFactor);
                 entity.setEndHeight(startHeight + (endHeight - startHeight) * endFactor);
                 world.addFreshEntity(entity);
@@ -72,12 +72,12 @@ public class BeamEntity extends Entity {
         return all;
     }
 
-    public Vector3f getStart() {
+    public Vector3d getStart() {
         EntityDataManager manager = getEntityData();
-        return new Vector3f(manager.get(X), manager.get(Y), manager.get(Z));
+        return new Vector3d(manager.get(X), manager.get(Y), manager.get(Z));
     }
 
-    public void setStart(Vector3f start) {
+    public void setStart(Vector3d start) {
         EntityDataManager manager = getEntityData();
         manager.set(X, start.x());
         manager.set(Y, start.y());
@@ -85,38 +85,38 @@ public class BeamEntity extends Entity {
         refreshMaxBounds();
     }
 
-    public float getStartWidth() {
+    public double getStartWidth() {
         return getEntityData().get(START_WIDTH);
     }
 
-    public void setStartWidth(float width) {
+    public void setStartWidth(double width) {
         getEntityData().set(START_WIDTH, width);
         refreshMaxBounds();
     }
 
-    public float getStartHeight() {
+    public double getStartHeight() {
         return getEntityData().get(START_HEIGHT);
     }
 
-    public void setStartHeight(float height) {
+    public void setStartHeight(double height) {
         getEntityData().set(START_HEIGHT, height);
         refreshMaxBounds();
     }
 
-    public float getEndWidth() {
+    public double getEndWidth() {
         return getEntityData().get(END_WIDTH);
     }
 
-    public void setEndWidth(float width) {
+    public void setEndWidth(double width) {
         getEntityData().set(END_WIDTH, width);
         refreshMaxBounds();
     }
 
-    public float getEndHeight() {
+    public double getEndHeight() {
         return getEntityData().get(END_HEIGHT);
     }
 
-    public void setEndHeight(float height) {
+    public void setEndHeight(double height) {
         getEntityData().set(END_HEIGHT, height);
         refreshMaxBounds();
     }
@@ -145,7 +145,7 @@ public class BeamEntity extends Entity {
 
     private Vector3d[] getVertices() {
         Vector3d[] vertices = new Vector3d[8];
-        Vector3d start = new Vector3d(getStart());
+        Vector3d start = getStart();
         Vector3d end = position();
         Vector3d center = end.subtract(start);
         Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
@@ -186,13 +186,13 @@ public class BeamEntity extends Entity {
     @Override
     protected void defineSynchedData() {
         EntityDataManager manager = getEntityData();
-        manager.define(X, 0f);
-        manager.define(Y, 0f);
-        manager.define(Z, 0f);
-        manager.define(START_WIDTH, 1f);
-        manager.define(START_HEIGHT, 1f);
-        manager.define(END_WIDTH, 1f);
-        manager.define(END_HEIGHT, 1f);
+        manager.define(X, 0.0);
+        manager.define(Y, 0.0);
+        manager.define(Z, 0.0);
+        manager.define(START_WIDTH, 1.0);
+        manager.define(START_HEIGHT, 1.0);
+        manager.define(END_WIDTH, 1.0);
+        manager.define(END_HEIGHT, 1.0);
         manager.define(COLOR, 0x80FFFFFF);
         manager.define(LAYERS, 1);
     }
@@ -204,20 +204,20 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(CompoundNBT tag) {
-        if (tag.contains("StartX", Constants.NBT.TAG_FLOAT) && tag.contains("StartY", Constants.NBT.TAG_FLOAT) && tag.contains("StartZ", Constants.NBT.TAG_FLOAT)) {
-            setStart(new Vector3f(tag.getFloat("StartX"), tag.getFloat("StartY"), tag.getFloat("StartZ")));
+        if (tag.contains("StartX", Constants.NBT.TAG_DOUBLE) && tag.contains("StartY", Constants.NBT.TAG_DOUBLE) && tag.contains("StartZ", Constants.NBT.TAG_DOUBLE)) {
+            setStart(new Vector3d(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ")));
         }
-        if (tag.contains("StartWidth", Constants.NBT.TAG_FLOAT)) {
-            setStartWidth(tag.getFloat("StartWidth"));
+        if (tag.contains("StartWidth", Constants.NBT.TAG_DOUBLE)) {
+            setStartWidth(tag.getDouble("StartWidth"));
         }
-        if (tag.contains("StartHeight", Constants.NBT.TAG_FLOAT)) {
-            setStartHeight(tag.getFloat("StartHeight"));
+        if (tag.contains("StartHeight", Constants.NBT.TAG_DOUBLE)) {
+            setStartHeight(tag.getDouble("StartHeight"));
         }
-        if (tag.contains("EndWidth", Constants.NBT.TAG_FLOAT)) {
-            setEndWidth(tag.getFloat("EndWidth"));
+        if (tag.contains("EndWidth", Constants.NBT.TAG_DOUBLE)) {
+            setEndWidth(tag.getDouble("EndWidth"));
         }
-        if (tag.contains("EndHeight", Constants.NBT.TAG_FLOAT)) {
-            setEndHeight(tag.getFloat("EndHeight"));
+        if (tag.contains("EndHeight", Constants.NBT.TAG_DOUBLE)) {
+            setEndHeight(tag.getDouble("EndHeight"));
         }
         if (tag.contains("Color", Constants.NBT.TAG_INT)) {
             setColor(tag.getInt("Color"));
@@ -229,14 +229,14 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(CompoundNBT tag) {
-        Vector3f start = getStart();
-        tag.putFloat("StartX", start.x());
-        tag.putFloat("StartY", start.y());
-        tag.putFloat("StartZ", start.z());
-        tag.putFloat("StartWidth", getStartWidth());
-        tag.putFloat("StartHeight", getStartHeight());
-        tag.putFloat("EndWidth", getEndWidth());
-        tag.putFloat("EndHeight", getEndHeight());
+        Vector3d start = getStart();
+        tag.putDouble("StartX", start.x());
+        tag.putDouble("StartY", start.y());
+        tag.putDouble("StartZ", start.z());
+        tag.putDouble("StartWidth", getStartWidth());
+        tag.putDouble("StartHeight", getStartHeight());
+        tag.putDouble("EndWidth", getEndWidth());
+        tag.putDouble("EndHeight", getEndHeight());
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
     }

@@ -68,7 +68,7 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
 
     private void shoot(EntityType<BeamEntity> type, Vector3d start, Vector3d target) {
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, (float) size, (float) size, (float) size, (float) size)) {
+        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, size, size, size, size)) {
             beams.add(beam.getUUID());
         }
         setChanged();
