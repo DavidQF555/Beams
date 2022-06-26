@@ -19,5 +19,7 @@
   "item.beams.green_module": "Green Module",
   "item.beams.red_module": "Red Module",
   "item.beams.black_module": "Black Module",
+  "item.beams.bright_module": "Bright Module",
+  "item.beams.hot_module": "Hot Module",
   "container.beams.projector": "Projector"
 }
