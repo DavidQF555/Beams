@@ -49,6 +49,17 @@ public class ProjectorBlock extends ContainerBlock {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public void onPlace(BlockState state, World world, BlockPos pos, BlockState old, boolean update) {
+        if (state.getValue(TRIGGERED)) {
+            TileEntity te = world.getBlockEntity(pos);
+            if (te instanceof ProjectorTileEntity) {
+                ((ProjectorTileEntity) te).updateBeams();
+            }
+        }
+    }
+
     protected Vector3d getStartOffset(BlockState state) {
         return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
     }
@@ -97,9 +108,8 @@ public class ProjectorBlock extends ContainerBlock {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @Nullable
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
-        return defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        return defaultBlockState().setValue(TRIGGERED, context.getLevel().hasNeighborSignal(context.getClickedPos())).setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
 }
