@@ -67,11 +67,6 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     }
 
     @Override
-    public boolean canPlaceItem(int slot, ItemStack stack) {
-        return stack.getItem() instanceof ProjectorModuleItem;
-    }
-
-    @Override
     public void tick() {
         if (hasLevel()) {
             World world = getLevel();
@@ -190,5 +185,10 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     public void setItem(int slot, ItemStack stack) {
         super.setItem(slot, stack);
         updateBeams();
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return 1;
     }
 }
