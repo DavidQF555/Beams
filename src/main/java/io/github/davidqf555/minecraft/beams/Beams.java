@@ -1,10 +1,7 @@
 package io.github.davidqf555.minecraft.beams;
 
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
-import io.github.davidqf555.minecraft.beams.registration.BlockRegistry;
-import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
-import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
-import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
+import io.github.davidqf555.minecraft.beams.registration.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -28,6 +25,8 @@ public class Beams {
         TileEntityRegistry.TYPES.register(bus);
         EntityRegistry.TYPES.register(bus);
         ItemRegistry.ITEMS.register(bus);
+        ProjectorModuleRegistry.TYPES.register(bus);
+        ContainerRegistry.TYPES.register(bus);
     }
 
 }

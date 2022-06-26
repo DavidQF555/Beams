@@ -1,4 +1,5 @@
 {
   "block.beams.projector": "Projector",
-  "block.beams.tilted_projector": "Tilted Projector"
+  "block.beams.tilted_projector": "Tilted Projector",
+  "container.beams.projector": "Projector"
 }
