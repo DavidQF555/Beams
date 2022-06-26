@@ -1,43 +1,43 @@
 package io.github.davidqf555.minecraft.beams.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.util.ColorHelper;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
 
-    public BeamRenderer(EntityRendererManager manager) {
+    public BeamRenderer(EntityRendererProvider.Context manager) {
         super(manager);
     }
 
     @Override
-    public void render(T entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
-        Vector3d dif = entityIn.getStart().subtract(entityIn.position());
+    public void render(T entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+        Vec3 dif = entityIn.getStart().subtract(entityIn.position());
         double startHeightRadius = entityIn.getStartHeight() / 2;
-        float length = MathHelper.sqrt(dif.x() * dif.x() + dif.y() * dif.y() + dif.z() * dif.z());
-        Vector3f vertex = new Vector3f(0, 0, length);
+        double length = dif.length();
+        Vector3f vertex = new Vector3f(0, 0, (float) length);
         matrixStackIn.pushPose();
-        float yaw = (float) Math.PI / 2 - (float) MathHelper.atan2(-dif.z(), dif.x());
+        float yaw = (float) Math.PI / 2 - (float) Mth.atan2(-dif.z(), dif.x());
         float pitch = (float) Math.asin(dif.y() / length);
         matrixStackIn.mulPose(Vector3f.YN.rotation(yaw));
         matrixStackIn.mulPose(Vector3f.XP.rotation(pitch));
-        IVertexBuilder builder = bufferIn.getBuffer(RenderType.lightning());
+        VertexConsumer builder = bufferIn.getBuffer(RenderType.lightning());
         Matrix4f matrix4f = matrixStackIn.last().pose();
         int color = entityIn.getColor();
-        float alpha = ColorHelper.PackedColor.alpha(color) / 255f;
-        float red = ColorHelper.PackedColor.red(color) / 255f;
-        float green = ColorHelper.PackedColor.green(color) / 255f;
-        float blue = ColorHelper.PackedColor.blue(color) / 255f;
+        float alpha = FastColor.ARGB32.alpha(color) / 255f;
+        float red = FastColor.ARGB32.red(color) / 255f;
+        float green = FastColor.ARGB32.green(color) / 255f;
+        float blue = FastColor.ARGB32.blue(color) / 255f;
         int layers = entityIn.getLayers();
         double startWidthRadius = entityIn.getStartWidth() / 2;
         double endWidthRadius = entityIn.getEndWidth() / 2;

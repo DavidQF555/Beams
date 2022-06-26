@@ -1,19 +1,19 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.IDataSerializer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataSerializer;
 
-public class DoubleSerializer implements IDataSerializer<Double> {
+public class DoubleSerializer implements EntityDataSerializer<Double> {
 
     public static final DoubleSerializer INSTANCE = new DoubleSerializer();
 
     @Override
-    public void write(PacketBuffer packet, Double value) {
+    public void write(FriendlyByteBuf packet, Double value) {
         packet.writeDouble(value);
     }
 
     @Override
-    public Double read(PacketBuffer packet) {
+    public Double read(FriendlyByteBuf packet) {
         return packet.readDouble();
     }
 

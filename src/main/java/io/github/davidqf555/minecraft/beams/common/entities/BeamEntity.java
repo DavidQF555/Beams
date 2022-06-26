@@ -1,19 +1,19 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
+import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkHooks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,27 +21,27 @@ import java.util.List;
 
 public class BeamEntity extends Entity {
 
-    private static final DataParameter<Double> X = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Double> Y = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Double> Z = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Double> END_WIDTH = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Double> END_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Double> START_WIDTH = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Double> START_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
-    private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
-    private AxisAlignedBB bounds;
+    private static final EntityDataAccessor<Double> X = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> Y = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> Z = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> END_WIDTH = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> END_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> START_WIDTH = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> START_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
+    private AABB bounds;
 
-    public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
+    public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, double startWidth, double startHeight, double endWidth, double endHeight) {
         List<T> all = new ArrayList<>();
         double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
-        Vector3d center = end.subtract(start);
+        Vec3 center = end.subtract(start);
         double total = center.length();
-        Vector3d unit = center.normalize();
+        Vec3 unit = center.normalize();
         double remaining = total;
         while (remaining > 0) {
             double length;
@@ -52,7 +52,7 @@ public class BeamEntity extends Entity {
                 length = segment;
                 remaining -= segment;
             }
-            Vector3d endPos = start.add(unit.scale(length));
+            Vec3 endPos = start.add(unit.scale(length));
             T entity = type.create(world);
             if (entity != null) {
                 entity.setStart(start);
@@ -72,13 +72,13 @@ public class BeamEntity extends Entity {
         return all;
     }
 
-    public Vector3d getStart() {
-        EntityDataManager manager = getEntityData();
-        return new Vector3d(manager.get(X), manager.get(Y), manager.get(Z));
+    public Vec3 getStart() {
+        SynchedEntityData manager = getEntityData();
+        return new Vec3(manager.get(X), manager.get(Y), manager.get(Z));
     }
 
-    public void setStart(Vector3d start) {
-        EntityDataManager manager = getEntityData();
+    public void setStart(Vec3 start) {
+        SynchedEntityData manager = getEntityData();
         manager.set(X, start.x());
         manager.set(Y, start.y());
         manager.set(Z, start.z());
@@ -143,13 +143,13 @@ public class BeamEntity extends Entity {
         getEntityData().set(LAYERS, layers);
     }
 
-    private Vector3d[] getVertices() {
-        Vector3d[] vertices = new Vector3d[8];
-        Vector3d start = getStart();
-        Vector3d end = position();
-        Vector3d center = end.subtract(start);
-        Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
-        Vector3d perp = center.cross(perpY).normalize();
+    private Vec3[] getVertices() {
+        Vec3[] vertices = new Vec3[8];
+        Vec3 start = getStart();
+        Vec3 end = position();
+        Vec3 center = end.subtract(start);
+        Vec3 perpY = center.cross(new Vec3(Vector3f.YP)).normalize();
+        Vec3 perp = center.cross(perpY).normalize();
         double startWidth = getStartWidth();
         double startHeight = getStartHeight();
         vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
@@ -165,16 +165,16 @@ public class BeamEntity extends Entity {
         return vertices;
     }
 
-    public AxisAlignedBB getMaxBounds() {
+    public AABB getMaxBounds() {
         if (bounds == null) {
-            Vector3d[] vertices = getVertices();
-            double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
-            double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
-            double minY = Arrays.stream(vertices).mapToDouble(Vector3d::y).min().getAsDouble();
-            double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
-            double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
-            double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
-            bounds = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+            Vec3[] vertices = getVertices();
+            double minX = Arrays.stream(vertices).mapToDouble(Vec3::x).min().getAsDouble();
+            double maxX = Arrays.stream(vertices).mapToDouble(Vec3::x).max().getAsDouble();
+            double minY = Arrays.stream(vertices).mapToDouble(Vec3::y).min().getAsDouble();
+            double maxY = Arrays.stream(vertices).mapToDouble(Vec3::y).max().getAsDouble();
+            double minZ = Arrays.stream(vertices).mapToDouble(Vec3::z).min().getAsDouble();
+            double maxZ = Arrays.stream(vertices).mapToDouble(Vec3::z).max().getAsDouble();
+            bounds = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
         }
         return bounds;
     }
@@ -185,7 +185,7 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void defineSynchedData() {
-        EntityDataManager manager = getEntityData();
+        SynchedEntityData manager = getEntityData();
         manager.define(X, 0.0);
         manager.define(Y, 0.0);
         manager.define(Z, 0.0);
@@ -198,38 +198,38 @@ public class BeamEntity extends Entity {
     }
 
     @Override
-    public AxisAlignedBB getBoundingBoxForCulling() {
+    public AABB getBoundingBoxForCulling() {
         return getMaxBounds();
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT tag) {
-        if (tag.contains("StartX", Constants.NBT.TAG_DOUBLE) && tag.contains("StartY", Constants.NBT.TAG_DOUBLE) && tag.contains("StartZ", Constants.NBT.TAG_DOUBLE)) {
-            setStart(new Vector3d(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ")));
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        if (tag.contains("StartX", Tag.TAG_DOUBLE) && tag.contains("StartY", Tag.TAG_DOUBLE) && tag.contains("StartZ", Tag.TAG_DOUBLE)) {
+            setStart(new Vec3(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ")));
         }
-        if (tag.contains("StartWidth", Constants.NBT.TAG_DOUBLE)) {
+        if (tag.contains("StartWidth", Tag.TAG_DOUBLE)) {
             setStartWidth(tag.getDouble("StartWidth"));
         }
-        if (tag.contains("StartHeight", Constants.NBT.TAG_DOUBLE)) {
+        if (tag.contains("StartHeight", Tag.TAG_DOUBLE)) {
             setStartHeight(tag.getDouble("StartHeight"));
         }
-        if (tag.contains("EndWidth", Constants.NBT.TAG_DOUBLE)) {
+        if (tag.contains("EndWidth", Tag.TAG_DOUBLE)) {
             setEndWidth(tag.getDouble("EndWidth"));
         }
-        if (tag.contains("EndHeight", Constants.NBT.TAG_DOUBLE)) {
+        if (tag.contains("EndHeight", Tag.TAG_DOUBLE)) {
             setEndHeight(tag.getDouble("EndHeight"));
         }
-        if (tag.contains("Color", Constants.NBT.TAG_INT)) {
+        if (tag.contains("Color", Tag.TAG_INT)) {
             setColor(tag.getInt("Color"));
         }
-        if (tag.contains("Layers", Constants.NBT.TAG_INT)) {
+        if (tag.contains("Layers", Tag.TAG_INT)) {
             setLayers(tag.getInt("Layers"));
         }
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT tag) {
-        Vector3d start = getStart();
+    protected void addAdditionalSaveData(CompoundTag tag) {
+        Vec3 start = getStart();
         tag.putDouble("StartX", start.x());
         tag.putDouble("StartY", start.y());
         tag.putDouble("StartZ", start.z());
@@ -242,7 +242,7 @@ public class BeamEntity extends Entity {
     }
 
     @Override
-    public IPacket<?> getAddEntityPacket() {
+    public Packet<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 

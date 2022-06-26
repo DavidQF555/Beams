@@ -4,49 +4,45 @@ import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ProjectorTileEntity extends TileEntity implements ITickableTileEntity {
+public class ProjectorTileEntity extends BlockEntity {
 
     private final List<UUID> beams;
 
-    public ProjectorTileEntity(TileEntityType<?> type) {
-        super(type);
+    public ProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         beams = new ArrayList<>();
     }
 
-    public ProjectorTileEntity() {
-        this(TileEntityRegistry.BEAM_PROJECTOR.get());
+    public ProjectorTileEntity(BlockPos pos, BlockState state) {
+        this(TileEntityRegistry.BEAM_PROJECTOR.get(), pos, state);
     }
 
-    @Override
     public void tick() {
         if (hasLevel()) {
-            World world = getLevel();
-            if (world instanceof ServerWorld && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
+            Level world = getLevel();
+            if (world instanceof ServerLevel && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
                 updateBeams();
             }
         }
@@ -57,16 +53,16 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
         BlockState state = getBlockState();
         Block block = state.getBlock();
         if (block instanceof ProjectorBlock && state.getValue(ProjectorBlock.TRIGGERED)) {
-            World world = getLevel();
+            Level world = getLevel();
             BlockPos pos = getBlockPos();
-            Vector3d dir = ((ProjectorBlock) block).getBeamDirection(state);
-            Vector3d start = Vector3d.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
-            Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(ServerConfigs.INSTANCE.projectorMaxRange.get())), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
+            Vec3 dir = ((ProjectorBlock) block).getBeamDirection(state);
+            Vec3 start = Vec3.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
+            Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(ServerConfigs.INSTANCE.projectorMaxRange.get())), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation();
             shoot(EntityRegistry.BEAM.get(), start, end);
         }
     }
 
-    private void shoot(EntityType<BeamEntity> type, Vector3d start, Vector3d target) {
+    private void shoot(EntityType<BeamEntity> type, Vec3 start, Vec3 target) {
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
         for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, size, size, size, size)) {
             beams.add(beam.getUUID());
@@ -75,12 +71,12 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     public void removeBeams() {
-        World world = getLevel();
-        if (world instanceof ServerWorld) {
+        Level world = getLevel();
+        if (world instanceof ServerLevel) {
             for (UUID id : beams) {
-                Entity entity = ((ServerWorld) world).getEntity(id);
+                Entity entity = ((ServerLevel) world).getEntity(id);
                 if (entity != null) {
-                    entity.remove();
+                    entity.remove(Entity.RemovalReason.DISCARDED);
                 }
             }
         }
@@ -89,40 +85,36 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
-        CompoundNBT out = super.save(tag);
-        ListNBT all = new ListNBT();
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ListTag all = new ListTag();
         for (UUID id : beams) {
-            all.add(NBTUtil.createUUID(id));
+            all.add(NbtUtils.createUUID(id));
         }
-        out.put("Beams", all);
-        return out;
+        tag.put("Beams", all);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag) {
-        super.load(state, tag);
-        if (tag.contains("Beams", Constants.NBT.TAG_LIST)) {
-            for (INBT nbt : tag.getList("Beams", Constants.NBT.TAG_INT_ARRAY)) {
-                beams.add(NBTUtil.loadUUID(nbt));
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("Beams", Tag.TAG_LIST)) {
+            for (Tag nbt : tag.getList("Beams", Tag.TAG_INT_ARRAY)) {
+                beams.add(NbtUtils.loadUUID(nbt));
             }
         }
     }
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(getBlockPos(), 0, getUpdateTag());
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public CompoundNBT getUpdateTag() {
-        return save(new CompoundNBT());
-    }
-
-    @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        deserializeNBT(pkt.getTag());
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return tag;
     }
 
 }

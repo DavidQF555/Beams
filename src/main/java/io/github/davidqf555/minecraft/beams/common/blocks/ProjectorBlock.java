@@ -1,25 +1,20 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ContainerBlock;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-public class ProjectorBlock extends ContainerBlock {
+public class ProjectorBlock extends BaseEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
@@ -31,12 +26,12 @@ public class ProjectorBlock extends ContainerBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void neighborChanged(BlockState state, World world, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean update) {
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean update) {
         super.neighborChanged(state, world, pos, neighborBlock, neighborPos, update);
         if (!world.isClientSide()) {
             boolean triggered = state.getValue(TRIGGERED);
             if (triggered != world.hasNeighborSignal(pos)) {
-                TileEntity te = world.getBlockEntity(pos);
+                BlockEntity te = world.getBlockEntity(pos);
                 if (te instanceof ProjectorTileEntity) {
                     world.setBlock(pos, state.cycle(TRIGGERED), 2);
                     if (triggered) {
@@ -49,19 +44,19 @@ public class ProjectorBlock extends ContainerBlock {
         }
     }
 
-    protected Vector3d getStartOffset(BlockState state) {
-        return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
+    protected Vec3 getStartOffset(BlockState state) {
+        return Vec3.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
     }
 
-    protected Vector3d getBeamDirection(BlockState state) {
-        return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal());
+    protected Vec3 getBeamDirection(BlockState state) {
+        return Vec3.atLowerCornerOf(state.getValue(FACING).getNormal());
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void onRemove(BlockState state1, World world, BlockPos pos, BlockState state2, boolean update) {
+    public void onRemove(BlockState state1, Level world, BlockPos pos, BlockState state2, boolean update) {
         if (!state1.is(state2.getBlock())) {
-            TileEntity te = world.getBlockEntity(pos);
+            BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ProjectorTileEntity) {
                 ((ProjectorTileEntity) te).removeBeams();
             }
@@ -70,18 +65,18 @@ public class ProjectorBlock extends ContainerBlock {
     }
 
     @Override
-    public BlockRenderType getRenderShape(BlockState state) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Nullable
     @Override
-    public TileEntity newBlockEntity(IBlockReader reader) {
-        return new ProjectorTileEntity();
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ProjectorTileEntity(pos, state);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, TRIGGERED);
     }
 
@@ -99,7 +94,7 @@ public class ProjectorBlock extends ContainerBlock {
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
 }
