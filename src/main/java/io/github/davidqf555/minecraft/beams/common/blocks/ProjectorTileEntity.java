@@ -11,7 +11,6 @@ import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
@@ -30,7 +29,6 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -79,14 +77,8 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     public void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
-        Block block = state.getBlock();
-        if (block instanceof ProjectorBlock && state.getValue(ProjectorBlock.TRIGGERED)) {
-            World world = getLevel();
-            BlockPos pos = getBlockPos();
-            Vector3d dir = ((ProjectorBlock) block).getBeamDirection(state);
-            Vector3d start = Vector3d.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
-            Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(ServerConfigs.INSTANCE.projectorMaxRange.get())), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
-            shoot(EntityRegistry.BEAM.get(), start, end);
+        if (state.getBlock() instanceof ProjectorBlock && state.getValue(ProjectorBlock.TRIGGERED)) {
+            shoot();
         }
     }
 
@@ -95,15 +87,21 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
         for (ItemStack stack : getItems()) {
             Item item = stack.getItem();
             if (item instanceof ProjectorModuleItem) {
-                types.add(((ProjectorModuleItem) item).getType());
+                types.add(((ProjectorModuleItem<?>) item).getType());
             }
         }
         return types;
     }
 
-    private void shoot(EntityType<BeamEntity> type, Vector3d start, Vector3d target) {
+    private void shoot() {
+        World world = getLevel();
+        BlockPos pos = getBlockPos();
+        BlockState state = getBlockState();
+        Block block = state.getBlock();
+        Vector3d dir = ((ProjectorBlock) block).getBeamDirection(state);
+        Vector3d start = Vector3d.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, getModuleTypes(), size, size, size, size)) {
+        for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModuleTypes(), size, size, size, size)) {
             beams.add(beam.getUUID());
         }
         setChanged();

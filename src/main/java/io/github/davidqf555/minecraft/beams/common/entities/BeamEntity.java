@@ -17,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
@@ -25,6 +26,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class BeamEntity extends Entity {
@@ -39,11 +41,19 @@ public class BeamEntity extends Entity {
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private final Set<ProjectorModuleType> modules;
+    private UUID shooter;
     private AxisAlignedBB bounds;
+    private int lifespan;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
         super(type, world);
         modules = new HashSet<>();
+    }
+
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double maxWidth, double maxHeight) {
+        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
+        double endFactor = end.subtract(start).length() / range;
+        return shoot(type, world, start, end, modules, startWidth, startHeight, maxWidth * endFactor, maxHeight * endFactor);
     }
 
     public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
@@ -87,31 +97,44 @@ public class BeamEntity extends Entity {
     public void tick() {
         super.tick();
         if (level instanceof ServerWorld) {
-            Set<ProjectorModuleType> modules = getModules();
-            AxisAlignedBB bounds = getMaxBounds();
-            for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.ceil(bounds.maxX); x++) {
-                for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.ceil(bounds.maxZ); z++) {
-                    for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.ceil(bounds.maxY); y++) {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        if (isAffected(AxisAlignedBB.unitCubeFromLowerCorner(Vector3d.atLowerCornerOf(pos)))) {
-                            for (ProjectorModuleType type : modules) {
-                                type.onBlockTick(this, pos);
+            int lifespan = getLifespan();
+            if (lifespan > 0 && tickCount >= lifespan) {
+                remove();
+            } else {
+                Set<ProjectorModuleType> modules = getModules();
+                AxisAlignedBB bounds = getMaxBounds();
+                for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.ceil(bounds.maxX); x++) {
+                    for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.ceil(bounds.maxZ); z++) {
+                        for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.ceil(bounds.maxY); y++) {
+                            BlockPos pos = new BlockPos(x, y, z);
+                            if (isAffected(pos)) {
+                                for (ProjectorModuleType type : modules) {
+                                    type.onBlockTick(this, pos);
+                                }
                             }
                         }
                     }
                 }
-            }
-            for (Entity entity : level.getEntities(this, bounds)) {
-                if (isAffected(entity.getBoundingBox())) {
-                    for (ProjectorModuleType type : modules) {
-                        type.onEntityTick(this, entity);
+                for (Entity entity : level.getEntities(this, bounds)) {
+                    if (isAffected(entity)) {
+                        for (ProjectorModuleType type : modules) {
+                            type.onEntityTick(this, entity);
+                        }
                     }
                 }
             }
         }
     }
 
-    private boolean isAffected(Vector3d pos) {
+    protected boolean isAffected(Entity entity) {
+        return !entity.getUUID().equals(getShooter()) && isAffected(entity.getBoundingBox());
+    }
+
+    protected boolean isAffected(BlockPos pos) {
+        return isAffected(AxisAlignedBB.unitCubeFromLowerCorner(Vector3d.atLowerCornerOf(pos)));
+    }
+
+    protected boolean isAffected(Vector3d pos) {
         Vector3d start = getStart();
         Vector3d center = position().subtract(start);
         Vector3d dir = pos.subtract(start);
@@ -131,7 +154,7 @@ public class BeamEntity extends Entity {
     }
 
     //not completely accurate, beam may hit bounding box with cross-section size less than the smallest beam dimension
-    private boolean isAffected(AxisAlignedBB bounds) {
+    protected boolean isAffected(AxisAlignedBB bounds) {
         double min = Math.min(Math.min(Math.min(getStartWidth(), getStartHeight()), getEndWidth()), getEndHeight());
         if (min == 0) {
             min = 0.1;
@@ -233,6 +256,23 @@ public class BeamEntity extends Entity {
         getEntityData().set(LAYERS, layers);
     }
 
+    @Nullable
+    public UUID getShooter() {
+        return shooter;
+    }
+
+    public void setShooter(@Nullable UUID shooter) {
+        this.shooter = shooter;
+    }
+
+    public int getLifespan() {
+        return lifespan;
+    }
+
+    public void setLifespan(int lifespan) {
+        this.lifespan = lifespan;
+    }
+
     private Vector3d[] getVertices() {
         Vector3d[] vertices = new Vector3d[8];
         Vector3d start = getStart();
@@ -315,6 +355,12 @@ public class BeamEntity extends Entity {
         if (tag.contains("Layers", Constants.NBT.TAG_INT)) {
             setLayers(tag.getInt("Layers"));
         }
+        if (tag.contains("Lifespan", Constants.NBT.TAG_INT)) {
+            setLifespan(tag.getInt("Lifespan"));
+        }
+        if (tag.contains("Shooter", Constants.NBT.TAG_INT_ARRAY)) {
+            setShooter(tag.getUUID("Shooter"));
+        }
         if (tag.contains("Modules", Constants.NBT.TAG_LIST)) {
             List<ProjectorModuleType> modules = new ArrayList<>();
             IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
@@ -340,6 +386,11 @@ public class BeamEntity extends Entity {
         tag.putDouble("EndHeight", getEndHeight());
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
+        tag.putInt("Lifespan", getLifespan());
+        UUID shooter = getShooter();
+        if (shooter != null) {
+            tag.putUUID("Shooter", shooter);
+        }
         ListNBT modules = new ListNBT();
         this.modules.forEach(module -> {
             modules.add(StringNBT.valueOf(module.getRegistryName().toString()));
