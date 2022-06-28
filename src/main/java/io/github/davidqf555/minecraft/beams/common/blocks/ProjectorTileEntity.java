@@ -1,37 +1,51 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
+import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
+import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
+import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public class ProjectorTileEntity extends BlockEntity {
+public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
 
     private final List<UUID> beams;
+    private NonNullList<ItemStack> items;
 
     public ProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        items = NonNullList.withSize(5, ItemStack.EMPTY);
         beams = new ArrayList<>();
     }
 
@@ -39,13 +53,20 @@ public class ProjectorTileEntity extends BlockEntity {
         this(TileEntityRegistry.BEAM_PROJECTOR.get(), pos, state);
     }
 
-    public void tick() {
-        if (hasLevel()) {
-            Level world = getLevel();
-            if (world instanceof ServerLevel && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
-                updateBeams();
-            }
+    public static void tick(Level world, BlockPos pos, BlockState state, ProjectorTileEntity entity) {
+        if (world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
+            entity.updateBeams();
         }
+    }
+
+    @Override
+    protected NonNullList<ItemStack> getItems() {
+        return items;
+    }
+
+    @Override
+    protected void setItems(NonNullList<ItemStack> items) {
+        this.items = items;
     }
 
     public void updateBeams() {
@@ -62,9 +83,20 @@ public class ProjectorTileEntity extends BlockEntity {
         }
     }
 
+    private Set<ProjectorModuleType> getModuleTypes() {
+        Set<ProjectorModuleType> types = new HashSet<>();
+        for (ItemStack stack : getItems()) {
+            Item item = stack.getItem();
+            if (item instanceof ProjectorModuleItem) {
+                types.add(((ProjectorModuleItem) item).getType());
+            }
+        }
+        return types;
+    }
+
     private void shoot(EntityType<BeamEntity> type, Vec3 start, Vec3 target) {
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, size, size, size, size)) {
+        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, getModuleTypes(), size, size, size, size)) {
             beams.add(beam.getUUID());
         }
         setChanged();
@@ -92,6 +124,19 @@ public class ProjectorTileEntity extends BlockEntity {
             all.add(NbtUtils.createUUID(id));
         }
         tag.put("Beams", all);
+        if (!trySaveLootTable(tag)) {
+            ContainerHelper.saveAllItems(tag, this.items);
+        }
+    }
+
+    @Override
+    protected Component getDefaultName() {
+        return new TranslatableComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int id, Inventory player) {
+        return new ProjectorContainer(id, player, this);
     }
 
     @Override
@@ -101,6 +146,9 @@ public class ProjectorTileEntity extends BlockEntity {
             for (Tag nbt : tag.getList("Beams", Tag.TAG_INT_ARRAY)) {
                 beams.add(NbtUtils.loadUUID(nbt));
             }
+        }
+        if (!tryLoadLootTable(tag)) {
+            ContainerHelper.loadAllItems(tag, items);
         }
     }
 
@@ -117,4 +165,19 @@ public class ProjectorTileEntity extends BlockEntity {
         return tag;
     }
 
+    @Override
+    public int getContainerSize() {
+        return items.size();
+    }
+
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        super.setItem(slot, stack);
+        updateBeams();
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
 }

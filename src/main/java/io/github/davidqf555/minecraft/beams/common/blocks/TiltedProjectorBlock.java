@@ -18,10 +18,27 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class TiltedProjectorBlock extends ProjectorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
-
     public TiltedProjectorBlock(Properties properties) {
         super(properties);
-    }
+    }    private static final VoxelShape
+            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
+            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
+            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
+            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
+            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
+            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
+            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
+            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
+            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
+            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
+            TOP_PX = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
+            TOP_NX = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
+            BOT_PX = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
+            BOT_NX = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
+            TOP_PZ = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
+            TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
+            BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
+            BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
 
     @SuppressWarnings("deprecation")
     @Override
@@ -54,25 +71,7 @@ public class TiltedProjectorBlock extends ProjectorBlock {
                 return BOT_NZ;
             }
         }
-    }    private static final VoxelShape
-            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
-            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
-            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
-            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
-            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
-            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
-            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
-            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
-            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
-            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
-            TOP_PX = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
-            TOP_NX = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
-            BOT_PX = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
-            BOT_NX = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
-            TOP_PZ = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
-            TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
-            BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
-            BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
+    }
 
     @Override
     protected Vec3 getStartOffset(BlockState state) {
@@ -96,9 +95,8 @@ public class TiltedProjectorBlock extends ProjectorBlock {
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction dir = context.getClickedFace();
         BlockPos pos = context.getClickedPos();
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection()).setValue(HALF, dir != Direction.DOWN && (dir == Direction.UP || context.getClickLocation().y - pos.getY() <= 0.5) ? Half.BOTTOM : Half.TOP);
+        return super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection()).setValue(HALF, dir != Direction.DOWN && (dir == Direction.UP || context.getClickLocation().y - pos.getY() <= 0.5) ? Half.BOTTOM : Half.TOP);
     }
-
 
 
 

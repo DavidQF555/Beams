@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "beams:item/color_module_outer",
+    "layer1": "beams:item/color_module_inner"
+  }
+}

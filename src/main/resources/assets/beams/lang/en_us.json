@@ -1,4 +1,25 @@
 {
+  "itemGroup.beams": "Beams",
   "block.beams.projector": "Projector",
-  "block.beams.tilted_projector": "Tilted Projector"
+  "block.beams.tilted_projector": "Tilted Projector",
+  "item.beams.blank_module": "Blank Module",
+  "item.beams.white_module": "White Module",
+  "item.beams.orange_module": "Orange Module",
+  "item.beams.magenta_module": "Magenta Module",
+  "item.beams.light_blue_module": "Light Blue Module",
+  "item.beams.yellow_module": "Yellow Module",
+  "item.beams.lime_module": "Lime Module",
+  "item.beams.pink_module": "Pink Module",
+  "item.beams.gray_module": "Gray Module",
+  "item.beams.light_gray_module": "Light Gray Module",
+  "item.beams.cyan_module": "Cyan Module",
+  "item.beams.purple_module": "Purple Module",
+  "item.beams.blue_module": "Blue Module",
+  "item.beams.brown_module": "Brown Module",
+  "item.beams.green_module": "Green Module",
+  "item.beams.red_module": "Red Module",
+  "item.beams.black_module": "Black Module",
+  "item.beams.bright_module": "Bright Module",
+  "item.beams.hot_module": "Hot Module",
+  "container.beams.projector": "Projector"
 }
