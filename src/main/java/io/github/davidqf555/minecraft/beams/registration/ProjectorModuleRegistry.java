@@ -40,7 +40,7 @@ public final class ProjectorModuleRegistry {
 
     @SubscribeEvent
     public static void onNewRegistry(NewRegistryEvent event) {
-        registry = event.create(new RegistryBuilder<ProjectorModuleType>().setType(ProjectorModuleType.class).setName(new ResourceLocation(Beams.ID, "module_type")));
+        registry = event.create(new RegistryBuilder<ProjectorModuleType>().setName(new ResourceLocation(Beams.ID, "module_type")));
     }
 
 }

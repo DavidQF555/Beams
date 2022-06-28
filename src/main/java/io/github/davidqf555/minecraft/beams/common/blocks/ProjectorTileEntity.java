@@ -16,7 +16,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -131,7 +130,7 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
 
     @Override
     protected Component getDefaultName() {
-        return new TranslatableComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
+        return Component.translatable(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
     }
 
     @Override

@@ -16,10 +16,10 @@ public final class DataGenRegistry {
     public static void onGatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         if (event.includeClient()) {
-            gen.addProvider(new CustomItemModelProvider(gen, event.getExistingFileHelper()));
+            gen.addProvider(true, new CustomItemModelProvider(gen, event.getExistingFileHelper()));
         }
         if (event.includeServer()) {
-            gen.addProvider(new CustomRecipeProvider(gen));
+            gen.addProvider(true, new CustomRecipeProvider(gen));
         }
     }
 }

@@ -340,8 +340,9 @@ public class BeamEntity extends Entity {
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
         ListTag modules = new ListTag();
+        IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
         this.modules.forEach(module -> {
-            modules.add(StringTag.valueOf(module.getRegistryName().toString()));
+            modules.add(StringTag.valueOf(registry.getKey(module).toString()));
         });
         tag.put("Modules", modules);
     }
