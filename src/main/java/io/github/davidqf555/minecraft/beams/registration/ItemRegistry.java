@@ -24,7 +24,7 @@ public final class ItemRegistry {
 
     public static final RegistryObject<BlockItem> PROJECTOR = register("projector", () -> new BlockItem(BlockRegistry.PROJECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> TILTED_PROJECTOR = register("tilted_projector", () -> new BlockItem(BlockRegistry.TILTED_PROJECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
-    public static final RegistryObject<PortableProjectorItem> PORTABLE_PROJECTOR = register("portable_projector", () -> new PortableProjectorItem(new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<PortableProjectorItem> PORTABLE_PROJECTOR = register("portable_projector", () -> new PortableProjectorItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
 
     public static final RegistryObject<Item> BLANK_MODULE = register("blank_module", () -> new Item(new Item.Properties().tab(Beams.GROUP)));
     public static final Map<DyeColor, RegistryObject<ProjectorModuleItem<ColorModuleType>>> COLOR_MODULES = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName() + "_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.COLORS.get(color), new Item.Properties().tab(Beams.GROUP)))));
