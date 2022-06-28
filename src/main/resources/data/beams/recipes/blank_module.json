@@ -1,0 +1,22 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "RIR",
+    "IGI",
+    "RIR"
+  ],
+  "key": {
+    "G": {
+      "item": "gold_ingot"
+    },
+    "I": {
+      "item": "iron_ingot"
+    },
+    "R": {
+      "item": "redstone"
+    }
+  },
+  "result": {
+    "item": "beams:blank_module"
+  }
+}

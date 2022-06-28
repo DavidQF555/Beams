@@ -2,22 +2,29 @@ package io.github.davidqf555.minecraft.beams.common.entities;
 
 import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
+import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
+import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.registries.IForgeRegistry;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class BeamEntity extends Entity {
 
@@ -30,13 +37,15 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Double> START_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
+    private final Set<ProjectorModuleType> modules;
     private AABB bounds;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
+        modules = new HashSet<>();
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, double startWidth, double startHeight, double endWidth, double endHeight) {
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
         List<T> all = new ArrayList<>();
         double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
         Vec3 center = end.subtract(start);
@@ -64,12 +73,92 @@ public class BeamEntity extends Entity {
                 double endFactor = endDist / total;
                 entity.setEndWidth(startWidth + (endWidth - startWidth) * endFactor);
                 entity.setEndHeight(startHeight + (endHeight - startHeight) * endFactor);
+                entity.setModules(modules);
                 world.addFreshEntity(entity);
                 all.add(entity);
             }
             start = endPos;
         }
         return all;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level instanceof ServerLevel) {
+            Set<ProjectorModuleType> modules = getModules();
+            AABB bounds = getMaxBounds();
+            for (int x = Mth.floor(bounds.minX); x <= Mth.ceil(bounds.maxX); x++) {
+                for (int z = Mth.floor(bounds.minZ); z <= Mth.ceil(bounds.maxZ); z++) {
+                    for (int y = Mth.floor(bounds.minY); y <= Mth.ceil(bounds.maxY); y++) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (isAffected(AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(pos)))) {
+                            for (ProjectorModuleType type : modules) {
+                                type.onBlockTick(this, pos);
+                            }
+                        }
+                    }
+                }
+            }
+            for (Entity entity : level.getEntities(this, bounds)) {
+                if (isAffected(entity.getBoundingBox())) {
+                    for (ProjectorModuleType type : modules) {
+                        type.onEntityTick(this, entity);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isAffected(Vec3 pos) {
+        Vec3 start = getStart();
+        Vec3 center = position().subtract(start);
+        Vec3 dir = pos.subtract(start);
+        double factor = center.dot(dir) / center.lengthSqr();
+        if (factor < 0 || factor > 1) {
+            return false;
+        }
+        Vec3 proj = center.scale(factor);
+        Vec3 dist = dir.subtract(proj);
+        Vec3 horizontal = dist.cross(new Vec3(Vector3f.YP));
+        Vec3 vertical = dist.subtract(horizontal);
+        double startWidth = getStartWidth();
+        double maxWidth = startWidth + factor * (getEndWidth() - startWidth);
+        double startHeight = getStartHeight();
+        double maxHeight = startHeight + factor * (getEndHeight() - startHeight);
+        return horizontal.lengthSqr() <= maxWidth * maxWidth && vertical.lengthSqr() <= maxHeight * maxHeight;
+    }
+
+    //not completely accurate, beam may hit bounding box with cross-section size less than the smallest beam dimension
+    private boolean isAffected(AABB bounds) {
+        double min = Math.min(Math.min(Math.min(getStartWidth(), getStartHeight()), getEndWidth()), getEndHeight());
+        if (min == 0) {
+            min = 0.1;
+        }
+        int xCount = Mth.ceil((bounds.maxX - bounds.minX) / min);
+        int yCount = Mth.ceil((bounds.maxY - bounds.minY) / min);
+        int zCount = Mth.ceil((bounds.maxZ - bounds.minZ) / min);
+        for (int x = 0; x <= xCount; x++) {
+            for (int z = 0; z <= zCount; z++) {
+                for (int y = 0; y <= yCount; y++) {
+                    Vec3 pos = new Vec3(bounds.minX + (bounds.maxX - bounds.minX) * x / xCount, bounds.minY + (bounds.maxY - bounds.minY) * y / yCount, bounds.minZ + (bounds.maxZ - bounds.minZ) * z / zCount);
+                    if (isAffected(pos)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public Set<ProjectorModuleType> getModules() {
+        return modules;
+    }
+
+    public void setModules(Collection<ProjectorModuleType> modules) {
+        this.modules.clear();
+        this.modules.addAll(modules);
+        this.modules.forEach(module -> module.onStart(this));
     }
 
     public Vec3 getStart() {
@@ -225,6 +314,17 @@ public class BeamEntity extends Entity {
         if (tag.contains("Layers", Tag.TAG_INT)) {
             setLayers(tag.getInt("Layers"));
         }
+        if (tag.contains("Modules", Tag.TAG_LIST)) {
+            List<ProjectorModuleType> modules = new ArrayList<>();
+            IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
+            for (Tag nbt : tag.getList("Modules", Tag.TAG_STRING)) {
+                ProjectorModuleType type = registry.getValue(new ResourceLocation(nbt.getAsString()));
+                if (type != null) {
+                    modules.add(type);
+                }
+            }
+            setModules(modules);
+        }
     }
 
     @Override
@@ -239,6 +339,11 @@ public class BeamEntity extends Entity {
         tag.putDouble("EndHeight", getEndHeight());
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
+        ListTag modules = new ListTag();
+        this.modules.forEach(module -> {
+            modules.add(StringTag.valueOf(module.getRegistryName().toString()));
+        });
+        tag.put("Modules", modules);
     }
 
     @Override
