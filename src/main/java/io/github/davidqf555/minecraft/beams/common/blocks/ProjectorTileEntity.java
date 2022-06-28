@@ -4,8 +4,7 @@ import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
-import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
-import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
+import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.block.Block;
@@ -14,7 +13,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -37,7 +35,9 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class ProjectorTileEntity extends LockableLootTileEntity implements ITickableTileEntity {
 
@@ -82,17 +82,6 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
         }
     }
 
-    private Set<ProjectorModuleType> getModuleTypes() {
-        Set<ProjectorModuleType> types = new HashSet<>();
-        for (ItemStack stack : getItems()) {
-            Item item = stack.getItem();
-            if (item instanceof ProjectorModuleItem) {
-                types.add(((ProjectorModuleItem<?>) item).getType());
-            }
-        }
-        return types;
-    }
-
     private void shoot() {
         World world = getLevel();
         BlockPos pos = getBlockPos();
@@ -101,7 +90,7 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
         Vector3d dir = ((ProjectorBlock) block).getBeamDirection(state);
         Vector3d start = Vector3d.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModuleTypes(), size, size, size, size)) {
+        for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), ProjectorInventory.getModuleTypes(this), size, size, size, size)) {
             beams.add(beam.getUUID());
         }
         setChanged();

@@ -8,11 +8,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShootableItem;
 import net.minecraft.item.UseAction;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
 public class PortableProjectorItem extends ShootableItem {
@@ -26,7 +28,7 @@ public class PortableProjectorItem extends ShootableItem {
         int time = getUseDuration(stack) - duration;
         double range = getRange(time);
         if (range > 0) {
-            for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, entity.getEyePosition(1), entity.getLookAngle(), range, new ArrayList<>(), 1, 1, 1, 1)) {
+            for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, entity.getEyePosition(1), entity.getLookAngle(), range, ProjectorInventory.getModuleTypes(ProjectorInventory.get(stack)), 0.5, 0.5, 0.5, 0.5)) {
                 beam.setLifespan(20);
                 beam.setShooter(entity.getUUID());
             }
@@ -34,7 +36,7 @@ public class PortableProjectorItem extends ShootableItem {
     }
 
     protected double getRange(int time) {
-        return time < 40 ? 0 : getDefaultProjectileRange() * Math.min(1, time / 200);
+        return time < 20 ? 0 : getDefaultProjectileRange() * Math.min(1, time / 200.0);
     }
 
     @Override
@@ -49,9 +51,16 @@ public class PortableProjectorItem extends ShootableItem {
 
     @Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        ItemStack itemstack = player.getItemInHand(hand);
-        player.startUsingItem(hand);
-        return ActionResult.consume(itemstack);
+        ItemStack stack = player.getItemInHand(hand);
+        if (player.isCrouching()) {
+            if (world.isClientSide()) {
+                return ActionResult.success(stack);
+            }
+            player.openMenu(ProjectorInventory.get(stack));
+        } else {
+            player.startUsingItem(hand);
+        }
+        return ActionResult.consume(stack);
     }
 
     @Override
@@ -64,4 +73,9 @@ public class PortableProjectorItem extends ShootableItem {
         return ServerConfigs.INSTANCE.portableProjectorMaxRange.get();
     }
 
+    @Nullable
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
+        return new ProjectorInventory.Provider();
+    }
 }
