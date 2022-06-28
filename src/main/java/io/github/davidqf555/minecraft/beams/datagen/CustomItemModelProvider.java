@@ -5,10 +5,10 @@ import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
 import io.github.davidqf555.minecraft.beams.common.modules.ColorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 
 public class CustomItemModelProvider extends ItemModelProvider {
 

@@ -1,8 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 public class ProjectorModuleType extends ForgeRegistryEntry<ProjectorModuleType> {

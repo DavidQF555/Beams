@@ -1,7 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class FireModuleType extends ProjectorModuleType {
 

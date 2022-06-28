@@ -1,11 +1,11 @@
 package io.github.davidqf555.minecraft.beams.client;
 
-import net.minecraft.client.renderer.color.IItemColor;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.function.BiFunction;
 
-public class SimpleItemColor implements IItemColor {
+public class SimpleItemColor implements ItemColor {
 
     private final BiFunction<ItemStack, Integer, Integer> function;
 

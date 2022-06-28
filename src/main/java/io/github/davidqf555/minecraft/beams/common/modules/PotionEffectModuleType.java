@@ -1,17 +1,17 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public class PotionEffectModuleType extends ProjectorModuleType {
 
-    private final Effect effect;
+    private final MobEffect effect;
     private final int amp, duration;
 
-    public PotionEffectModuleType(Effect effect, int duration, int amp) {
+    public PotionEffectModuleType(MobEffect effect, int duration, int amp) {
         this.effect = effect;
         this.amp = amp;
         this.duration = duration;
@@ -20,7 +20,7 @@ public class PotionEffectModuleType extends ProjectorModuleType {
     @Override
     public void onEntityTick(BeamEntity beam, Entity target) {
         if (target instanceof LivingEntity) {
-            ((LivingEntity) target).addEffect(new EffectInstance(effect, duration, amp));
+            ((LivingEntity) target).addEffect(new MobEffectInstance(effect, duration, amp));
         }
     }
 

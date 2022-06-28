@@ -1,7 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 import java.util.function.Supplier;
 

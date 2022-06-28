@@ -1,7 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.util.ColorHelper;
+import net.minecraft.util.FastColor;
 
 public class ColorModuleType extends ProjectorModuleType {
 
@@ -17,12 +17,12 @@ public class ColorModuleType extends ProjectorModuleType {
 
     @Override
     public void onStart(BeamEntity beam) {
-        int alpha = ColorHelper.PackedColor.alpha(beam.getColor());
+        int alpha = FastColor.ARGB32.alpha(beam.getColor());
         int color = getColor();
-        int red = ColorHelper.PackedColor.red(color);
-        int green = ColorHelper.PackedColor.green(color);
-        int blue = ColorHelper.PackedColor.blue(color);
-        beam.setColor(ColorHelper.PackedColor.color(alpha, red, green, blue));
+        int red = FastColor.ARGB32.red(color);
+        int green = FastColor.ARGB32.green(color);
+        int blue = FastColor.ARGB32.blue(color);
+        beam.setColor(FastColor.ARGB32.color(alpha, red, green, blue));
     }
 
 }

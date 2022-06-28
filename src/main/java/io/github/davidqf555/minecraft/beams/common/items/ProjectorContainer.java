@@ -1,29 +1,29 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.registration.ContainerRegistry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-public class ProjectorContainer extends Container {
+public class ProjectorContainer extends AbstractContainerMenu {
 
-    private final IInventory projector;
+    private final Container projector;
 
-    public ProjectorContainer(int id, PlayerInventory player) {
-        this(id, player, new Inventory(5));
+    public ProjectorContainer(int id, Inventory player) {
+        this(id, player, new SimpleContainer(5));
     }
 
-    public ProjectorContainer(int id, PlayerInventory player, IInventory projector) {
+    public ProjectorContainer(int id, Inventory player, Container projector) {
         super(ContainerRegistry.PROJECTOR.get(), id);
         checkContainerSize(projector, 5);
         this.projector = projector;
         projector.startOpen(player.player);
         for (int x = 0; x < 5; x++) {
-            addSlot(new ModuleSlot(projector, x, 44 + x * 18, 20));
+            addSlot(new ModuleSlot(x, 44 + x * 18, 20));
         }
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 9; x++) {
@@ -36,15 +36,15 @@ public class ProjectorContainer extends Container {
     }
 
     @Override
-    public boolean stillValid(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return projector.stillValid(player);
     }
 
     @Override
-    public ItemStack quickMoveStack(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack copy = ItemStack.EMPTY;
         Slot slot = slots.get(index);
-        if (slot != null && slot.hasItem()) {
+        if (slot.hasItem()) {
             ItemStack stack = slot.getItem();
             copy = stack.copy();
             if (index < projector.getContainerSize()) {
@@ -64,15 +64,15 @@ public class ProjectorContainer extends Container {
     }
 
     @Override
-    public void removed(PlayerEntity player) {
+    public void removed(Player player) {
         super.removed(player);
         projector.stopOpen(player);
     }
 
     private class ModuleSlot extends Slot {
 
-        private ModuleSlot(IInventory inventory, int slot, int x, int y) {
-            super(inventory, slot, x, y);
+        private ModuleSlot(int slot, int x, int y) {
+            super(projector, slot, x, y);
         }
 
         @Override
