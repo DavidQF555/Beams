@@ -349,12 +349,6 @@ public class BeamEntity extends Entity {
         if (tag.contains("EndHeight", Constants.NBT.TAG_DOUBLE)) {
             setEndHeight(tag.getDouble("EndHeight"));
         }
-        if (tag.contains("Color", Constants.NBT.TAG_INT)) {
-            setColor(tag.getInt("Color"));
-        }
-        if (tag.contains("Layers", Constants.NBT.TAG_INT)) {
-            setLayers(tag.getInt("Layers"));
-        }
         if (tag.contains("Lifespan", Constants.NBT.TAG_INT)) {
             setLifespan(tag.getInt("Lifespan"));
         }
@@ -384,8 +378,6 @@ public class BeamEntity extends Entity {
         tag.putDouble("StartHeight", getStartHeight());
         tag.putDouble("EndWidth", getEndWidth());
         tag.putDouble("EndHeight", getEndHeight());
-        tag.putInt("Color", getColor());
-        tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
         UUID shooter = getShooter();
         if (shooter != null) {
