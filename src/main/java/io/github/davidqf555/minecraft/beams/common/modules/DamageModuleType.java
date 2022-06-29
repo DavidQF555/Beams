@@ -1,10 +1,10 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.UUID;
 
@@ -24,7 +24,7 @@ public class DamageModuleType extends ProjectorModuleType {
             LivingEntity shooter = null;
             UUID id = beam.getShooter();
             if (id != null) {
-                Entity entity = ((ServerWorld) beam.level).getEntity(id);
+                Entity entity = ((ServerLevel) beam.level).getEntity(id);
                 if (entity instanceof LivingEntity) {
                     shooter = (LivingEntity) entity;
                 }

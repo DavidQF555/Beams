@@ -1,8 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public class ForceModuleType extends ProjectorModuleType {
 
@@ -17,7 +17,7 @@ public class ForceModuleType extends ProjectorModuleType {
     @Override
     public void onEntityTick(BeamEntity beam, Entity target) {
         if (target.level.getGameTime() % period == 0 && target.isPushable()) {
-            Vector3d force = beam.position().subtract(beam.getStart()).normalize().scale(magnitude);
+            Vec3 force = beam.position().subtract(beam.getStart()).normalize().scale(magnitude);
             target.push(force.x(), force.y(), force.z());
         }
     }

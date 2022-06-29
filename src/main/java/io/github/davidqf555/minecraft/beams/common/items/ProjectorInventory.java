@@ -2,43 +2,42 @@ package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.Util;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
-public class ProjectorInventory extends Inventory implements INamedContainerProvider {
+public class ProjectorInventory extends SimpleContainer implements MenuProvider {
 
     public ProjectorInventory() {
         super(5);
     }
 
     public static ProjectorInventory get(ItemStack stack) {
-        return stack.getCapability(Provider.capability).orElseGet(ProjectorInventory::new);
+        return stack.getCapability(Provider.CAPABILITY).orElseGet(ProjectorInventory::new);
     }
 
-    public static Set<ProjectorModuleType> getModuleTypes(IInventory inventory) {
+    public static Set<ProjectorModuleType> getModuleTypes(Container inventory) {
         Set<ProjectorModuleType> types = new HashSet<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             Item item = inventory.getItem(i).getItem();
@@ -50,50 +49,37 @@ public class ProjectorInventory extends Inventory implements INamedContainerProv
     }
 
     @Override
-    public ITextComponent getDisplayName() {
-        return new TranslationTextComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
+    public Component getDisplayName() {
+        return new TranslatableComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
     }
 
     @Nullable
     @Override
-    public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ProjectorContainer(id, inventory, this);
     }
 
-    public static class Provider implements ICapabilitySerializable<INBT> {
+    public static class Provider implements ICapabilitySerializable<ListTag> {
 
-        @CapabilityInject(ProjectorInventory.class)
-        private static Capability<ProjectorInventory> capability = null;
-        private final LazyOptional<ProjectorInventory> instance = LazyOptional.of(() -> Objects.requireNonNull(capability.getDefaultInstance()));
+        public static final Capability<ProjectorInventory> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+        });
+        private final LazyOptional<ProjectorInventory> instance = LazyOptional.of(ProjectorInventory::new);
 
         @Nonnull
         @Override
         public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-            return cap == capability ? instance.cast() : LazyOptional.empty();
+            return cap == CAPABILITY ? instance.cast() : LazyOptional.empty();
         }
 
         @Override
-        public INBT serializeNBT() {
-            return capability.getStorage().writeNBT(capability, instance.orElseThrow(NullPointerException::new), null);
+        public ListTag serializeNBT() {
+            return instance.orElseThrow(NullPointerException::new).createTag();
         }
 
         @Override
-        public void deserializeNBT(INBT nbt) {
-            capability.getStorage().readNBT(capability, instance.orElseThrow(NullPointerException::new), null, nbt);
+        public void deserializeNBT(ListTag nbt) {
+            instance.orElseThrow(NullPointerException::new).fromTag(nbt);
         }
     }
 
-    public static class Storage implements Capability.IStorage<ProjectorInventory> {
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<ProjectorInventory> capability, ProjectorInventory instance, Direction side) {
-            return instance.createTag();
-        }
-
-        @Override
-        public void readNBT(Capability<ProjectorInventory> capability, ProjectorInventory instance, Direction side, INBT nbt) {
-            instance.fromTag((ListNBT) nbt);
-        }
-    }
 }
