@@ -1,0 +1,25 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "III",
+    "IP ",
+    "IRB"
+  ],
+  "key": {
+    "P": {
+      "item": "beams:projector"
+    },
+    "B": {
+      "tag": "buttons"
+    },
+    "R": {
+      "item": "redstone"
+    },
+    "I": {
+      "item": "iron_ingot"
+    }
+  },
+  "result": {
+    "item": "beams:portable_projector"
+  }
+}

@@ -16,8 +16,8 @@ public final class BlockRegistry {
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Beams.ID);
 
-    public static final RegistryObject<ProjectorBlock> PROJECTOR = register("projector", () -> new ProjectorBlock(BlockBehaviour.Properties.of(Material.STONE)));
-    public static final RegistryObject<TiltedProjectorBlock> TILTED_PROJECTOR = register("tilted_projector", () -> new TiltedProjectorBlock(BlockBehaviour.Properties.of(Material.STONE)));
+    public static final RegistryObject<ProjectorBlock> PROJECTOR = register("projector", () -> new ProjectorBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.5f)));
+    public static final RegistryObject<TiltedProjectorBlock> TILTED_PROJECTOR = register("tilted_projector", () -> new TiltedProjectorBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.5f)));
 
     private BlockRegistry() {
     }

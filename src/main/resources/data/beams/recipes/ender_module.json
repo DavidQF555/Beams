@@ -1,0 +1,35 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "beams:blank_module"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    },
+    {
+      "item": "ender_pearl"
+    }
+  ],
+  "result": {
+    "item": "beams:ender_module"
+  }
+}

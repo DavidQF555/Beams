@@ -2,6 +2,7 @@
   "itemGroup.beams": "Beams",
   "block.beams.projector": "Projector",
   "block.beams.tilted_projector": "Tilted Projector",
+  "item.beams.portable_projector": "Portable Projector",
   "item.beams.blank_module": "Blank Module",
   "item.beams.white_module": "White Module",
   "item.beams.orange_module": "Orange Module",
@@ -21,5 +22,9 @@
   "item.beams.black_module": "Black Module",
   "item.beams.bright_module": "Bright Module",
   "item.beams.hot_module": "Hot Module",
+  "item.beams.damage_module": "Damage Module",
+  "item.beams.ender_module": "Ender Module",
+  "item.beams.force_module": "Force Module",
+  "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector"
 }

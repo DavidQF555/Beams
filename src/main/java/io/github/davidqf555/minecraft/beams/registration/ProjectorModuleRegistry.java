@@ -1,10 +1,7 @@
 package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.modules.ColorModuleType;
-import io.github.davidqf555.minecraft.beams.common.modules.FireModuleType;
-import io.github.davidqf555.minecraft.beams.common.modules.PotionEffectModuleType;
-import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
+import io.github.davidqf555.minecraft.beams.common.modules.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
@@ -25,6 +22,10 @@ public final class ProjectorModuleRegistry {
     public static final Map<DyeColor, RegistryObject<ColorModuleType>> COLORS = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName(), () -> new ColorModuleType(color.getFireworkColor()))));
     public static final RegistryObject<PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(MobEffects.BLINDNESS, 60, 0));
     public static final RegistryObject<FireModuleType> HOT = register("hot", () -> new FireModuleType(3));
+
+    public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, 1));
+    public static final RegistryObject<EnderModuleType> ENDER = register("ender", () -> new EnderModuleType(16));
+    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, 3));
     private static Supplier<IForgeRegistry<ProjectorModuleType>> registry = null;
 
     private ProjectorModuleRegistry() {

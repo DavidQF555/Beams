@@ -18,12 +18,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class BeamEntity extends Entity {
@@ -38,11 +40,19 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private final Set<ProjectorModuleType> modules;
+    private UUID shooter;
     private AABB bounds;
+    private int lifespan;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
         modules = new HashSet<>();
+    }
+
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double maxWidth, double maxHeight) {
+        Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation();
+        double endFactor = end.subtract(start).length() / range;
+        return shoot(type, world, start, end, modules, startWidth, startHeight, maxWidth * endFactor, maxHeight * endFactor);
     }
 
     public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
@@ -86,31 +96,44 @@ public class BeamEntity extends Entity {
     public void tick() {
         super.tick();
         if (level instanceof ServerLevel) {
-            Set<ProjectorModuleType> modules = getModules();
-            AABB bounds = getMaxBounds();
-            for (int x = Mth.floor(bounds.minX); x <= Mth.ceil(bounds.maxX); x++) {
-                for (int z = Mth.floor(bounds.minZ); z <= Mth.ceil(bounds.maxZ); z++) {
-                    for (int y = Mth.floor(bounds.minY); y <= Mth.ceil(bounds.maxY); y++) {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        if (isAffected(AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(pos)))) {
-                            for (ProjectorModuleType type : modules) {
-                                type.onBlockTick(this, pos);
+            int lifespan = getLifespan();
+            if (lifespan > 0 && tickCount >= lifespan) {
+                remove(RemovalReason.DISCARDED);
+            } else {
+                Set<ProjectorModuleType> modules = getModules();
+                AABB bounds = getMaxBounds();
+                for (int x = Mth.floor(bounds.minX); x <= Mth.ceil(bounds.maxX); x++) {
+                    for (int z = Mth.floor(bounds.minZ); z <= Mth.ceil(bounds.maxZ); z++) {
+                        for (int y = Mth.floor(bounds.minY); y <= Mth.ceil(bounds.maxY); y++) {
+                            BlockPos pos = new BlockPos(x, y, z);
+                            if (isAffected(pos)) {
+                                for (ProjectorModuleType type : modules) {
+                                    type.onBlockTick(this, pos);
+                                }
                             }
                         }
                     }
                 }
-            }
-            for (Entity entity : level.getEntities(this, bounds)) {
-                if (isAffected(entity.getBoundingBox())) {
-                    for (ProjectorModuleType type : modules) {
-                        type.onEntityTick(this, entity);
+                for (Entity entity : level.getEntities(this, bounds)) {
+                    if (isAffected(entity)) {
+                        for (ProjectorModuleType type : modules) {
+                            type.onEntityTick(this, entity);
+                        }
                     }
                 }
             }
         }
     }
 
-    private boolean isAffected(Vec3 pos) {
+    protected boolean isAffected(Entity entity) {
+        return !entity.getUUID().equals(getShooter()) && isAffected(entity.getBoundingBox());
+    }
+
+    protected boolean isAffected(BlockPos pos) {
+        return isAffected(AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(pos)));
+    }
+
+    protected boolean isAffected(Vec3 pos) {
         Vec3 start = getStart();
         Vec3 center = position().subtract(start);
         Vec3 dir = pos.subtract(start);
@@ -232,6 +255,23 @@ public class BeamEntity extends Entity {
         getEntityData().set(LAYERS, layers);
     }
 
+    @Nullable
+    public UUID getShooter() {
+        return shooter;
+    }
+
+    public void setShooter(@Nullable UUID shooter) {
+        this.shooter = shooter;
+    }
+
+    public int getLifespan() {
+        return lifespan;
+    }
+
+    public void setLifespan(int lifespan) {
+        this.lifespan = lifespan;
+    }
+
     private Vec3[] getVertices() {
         Vec3[] vertices = new Vec3[8];
         Vec3 start = getStart();
@@ -308,11 +348,11 @@ public class BeamEntity extends Entity {
         if (tag.contains("EndHeight", Tag.TAG_DOUBLE)) {
             setEndHeight(tag.getDouble("EndHeight"));
         }
-        if (tag.contains("Color", Tag.TAG_INT)) {
-            setColor(tag.getInt("Color"));
+        if (tag.contains("Lifespan", Tag.TAG_INT)) {
+            setLifespan(tag.getInt("Lifespan"));
         }
-        if (tag.contains("Layers", Tag.TAG_INT)) {
-            setLayers(tag.getInt("Layers"));
+        if (tag.contains("Shooter", Tag.TAG_INT_ARRAY)) {
+            setShooter(tag.getUUID("Shooter"));
         }
         if (tag.contains("Modules", Tag.TAG_LIST)) {
             List<ProjectorModuleType> modules = new ArrayList<>();
@@ -337,8 +377,11 @@ public class BeamEntity extends Entity {
         tag.putDouble("StartHeight", getStartHeight());
         tag.putDouble("EndWidth", getEndWidth());
         tag.putDouble("EndHeight", getEndHeight());
-        tag.putInt("Color", getColor());
-        tag.putInt("Layers", getLayers());
+        tag.putInt("Lifespan", getLifespan());
+        UUID shooter = getShooter();
+        if (shooter != null) {
+            tag.putUUID("Shooter", shooter);
+        }
         ListTag modules = new ListTag();
         IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
         this.modules.forEach(module -> {

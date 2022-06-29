@@ -4,8 +4,7 @@ import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
-import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
-import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
+import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.Util;
@@ -21,12 +20,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -35,7 +31,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
 
@@ -71,31 +69,20 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
     public void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
+        if (state.getBlock() instanceof ProjectorBlock && state.getValue(ProjectorBlock.TRIGGERED)) {
+            shoot();
+        }
+    }
+
+    private void shoot() {
+        Level world = getLevel();
+        BlockPos pos = getBlockPos();
+        BlockState state = getBlockState();
         Block block = state.getBlock();
-        if (block instanceof ProjectorBlock && state.getValue(ProjectorBlock.TRIGGERED)) {
-            Level world = getLevel();
-            BlockPos pos = getBlockPos();
-            Vec3 dir = ((ProjectorBlock) block).getBeamDirection(state);
-            Vec3 start = Vec3.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
-            Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(ServerConfigs.INSTANCE.projectorMaxRange.get())), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation();
-            shoot(EntityRegistry.BEAM.get(), start, end);
-        }
-    }
-
-    private Set<ProjectorModuleType> getModuleTypes() {
-        Set<ProjectorModuleType> types = new HashSet<>();
-        for (ItemStack stack : getItems()) {
-            Item item = stack.getItem();
-            if (item instanceof ProjectorModuleItem) {
-                types.add(((ProjectorModuleItem) item).getType());
-            }
-        }
-        return types;
-    }
-
-    private void shoot(EntityType<BeamEntity> type, Vec3 start, Vec3 target) {
+        Vec3 dir = ((ProjectorBlock) block).getBeamDirection(state);
+        Vec3 start = Vec3.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        for (BeamEntity beam : BeamEntity.shoot(type, getLevel(), start, target, getModuleTypes(), size, size, size, size)) {
+        for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), ProjectorInventory.getModuleTypes(this), size, size, size, size)) {
             beams.add(beam.getUUID());
         }
         setChanged();
