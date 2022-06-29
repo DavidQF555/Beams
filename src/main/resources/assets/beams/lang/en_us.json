@@ -22,5 +22,9 @@
   "item.beams.black_module": "Black Module",
   "item.beams.bright_module": "Bright Module",
   "item.beams.hot_module": "Hot Module",
+  "item.beams.damage_module": "Damage Module",
+  "item.beams.ender_module": "Ender Module",
+  "item.beams.force_module": "Force Module",
+  "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector"
 }
