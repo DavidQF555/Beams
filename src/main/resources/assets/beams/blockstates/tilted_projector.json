@@ -33,6 +33,12 @@
       "model": "beams:block/tilted_projector",
       "x": 180,
       "y": 180
+    },
+    "facing=down": {
+      "model": "beams:block/tilted_projector"
+    },
+    "facing=up": {
+      "model": "beams:block/tilted_projector"
     }
   }
 }
