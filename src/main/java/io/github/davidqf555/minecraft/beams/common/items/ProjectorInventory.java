@@ -6,7 +6,6 @@ import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
@@ -50,7 +49,7 @@ public class ProjectorInventory extends SimpleContainer implements MenuProvider 
 
     @Override
     public Component getDisplayName() {
-        return new TranslatableComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
+        return Component.translatable(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
     }
 
     @Nullable

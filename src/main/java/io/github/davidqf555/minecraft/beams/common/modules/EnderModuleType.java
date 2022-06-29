@@ -4,10 +4,9 @@ import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-
-import java.util.Random;
 
 public class EnderModuleType extends ProjectorModuleType {
 
@@ -23,7 +22,7 @@ public class EnderModuleType extends ProjectorModuleType {
             double startX = target.getX();
             double startY = target.getY();
             double startZ = target.getZ();
-            Random rand = ((LivingEntity) target).getRandom();
+            RandomSource rand = ((LivingEntity) target).getRandom();
             for (int i = 0; i < 16; i++) {
                 double endX = target.getX() + (rand.nextDouble() * 2 - 1) * range;
                 double endY = Mth.clamp(target.getY() + (rand.nextDouble() * 2 - 1) * range, 0, target.level.getHeight() - 1);
