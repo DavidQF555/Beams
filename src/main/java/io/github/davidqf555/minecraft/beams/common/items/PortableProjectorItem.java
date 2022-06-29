@@ -46,7 +46,7 @@ public class PortableProjectorItem extends ShootableItem {
 
     @Override
     public UseAction getUseAnimation(ItemStack stack) {
-        return UseAction.CROSSBOW;
+        return UseAction.BOW;
     }
 
     @Override
