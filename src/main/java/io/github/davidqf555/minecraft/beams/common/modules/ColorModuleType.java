@@ -16,7 +16,7 @@ public class ColorModuleType extends ProjectorModuleType {
     }
 
     @Override
-    public void onStart(BeamEntity beam) {
+    public void onStart(BeamEntity beam, int amt) {
         int alpha = FastColor.ARGB32.alpha(beam.getColor());
         int color = getColor();
         int red = FastColor.ARGB32.red(color);

@@ -7,19 +7,20 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 public class DamageModuleType extends ProjectorModuleType {
 
-    private final float damage;
+    private final Function<Integer, Float> damage;
     private final int period;
 
-    public DamageModuleType(int period, float damage) {
+    public DamageModuleType(int period, Function<Integer, Float> damage) {
         this.period = period;
         this.damage = damage;
     }
 
     @Override
-    public void onEntityTick(BeamEntity beam, Entity target) {
+    public void onEntityTick(BeamEntity beam, Entity target, int amt) {
         if (target instanceof LivingEntity && target.level.getGameTime() % period == 0) {
             LivingEntity shooter = null;
             UUID id = beam.getShooter();
@@ -29,7 +30,7 @@ public class DamageModuleType extends ProjectorModuleType {
                     shooter = (LivingEntity) entity;
                 }
             }
-            target.hurt(DamageSource.indirectMobAttack(beam, shooter), damage);
+            target.hurt(DamageSource.indirectMobAttack(beam, shooter), damage.apply(amt));
         }
     }
 }

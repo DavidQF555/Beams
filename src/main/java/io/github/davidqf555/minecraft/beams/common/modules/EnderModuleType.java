@@ -18,7 +18,7 @@ public class EnderModuleType extends ProjectorModuleType {
     }
 
     @Override
-    public void onEntityTick(BeamEntity beam, Entity target) {
+    public void onEntityTick(BeamEntity beam, Entity target, int amt) {
         if (target instanceof LivingEntity) {
             double startX = target.getX();
             double startY = target.getY();

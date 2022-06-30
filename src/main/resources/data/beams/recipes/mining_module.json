@@ -1,0 +1,14 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "beams:blank_module"
+    },
+    {
+      "item": "iron_pickaxe"
+    }
+  ],
+  "result": {
+    "item": "beams:mining_module"
+  }
+}

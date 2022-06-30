@@ -20,12 +20,14 @@ public final class ProjectorModuleRegistry {
 
     public static final DeferredRegister<ProjectorModuleType> TYPES = DeferredRegister.create(ResourceKey.createRegistryKey(new ResourceLocation(Beams.ID, "module_type")), Beams.ID);
     public static final Map<DyeColor, RegistryObject<ColorModuleType>> COLORS = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName(), () -> new ColorModuleType(color.getFireworkColor()))));
-    public static final RegistryObject<PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(MobEffects.BLINDNESS, 60, 0));
-    public static final RegistryObject<FireModuleType> HOT = register("hot", () -> new FireModuleType(3));
-
-    public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, 1));
+    public static final RegistryObject<PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(MobEffects.BLINDNESS, amt -> amt * 30, amt -> 0));
+    public static final RegistryObject<FireModuleType> HOT = register("hot", () -> new FireModuleType(amt -> amt * 2));
+    public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, amt -> (float) amt));
     public static final RegistryObject<EnderModuleType> ENDER = register("ender", () -> new EnderModuleType(16));
-    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, 3));
+    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, amt -> amt * 2.0));
+    public static final RegistryObject<MiningModuleType> MINING = register("mining", () -> new MiningModuleType(20, amt -> amt * 2f));
+    public static final RegistryObject<LayersModuleType> LAYERS = register("layers", () -> new LayersModuleType(amt -> amt));
+
     private static Supplier<IForgeRegistry<ProjectorModuleType>> registry = null;
 
     private ProjectorModuleRegistry() {

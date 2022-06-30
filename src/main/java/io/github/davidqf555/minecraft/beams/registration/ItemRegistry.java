@@ -31,6 +31,8 @@ public final class ItemRegistry {
     public static final RegistryObject<ProjectorModuleItem<DamageModuleType>> DAMAGE_MODULE = register("damage_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.DAMAGE, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<EnderModuleType>> ENDER_MODULE = register("ender_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.ENDER, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<ForceModuleType>> FORCE_MODULE = register("force_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.FORCE, new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<ProjectorModuleItem<MiningModuleType>> MINING_MODULE = register("mining_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.MINING, new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<ProjectorModuleItem<LayersModuleType>> LAYERS_MODULE = register("layers_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.LAYERS, new Item.Properties().tab(Beams.GROUP)));
 
     private ItemRegistry() {
     }

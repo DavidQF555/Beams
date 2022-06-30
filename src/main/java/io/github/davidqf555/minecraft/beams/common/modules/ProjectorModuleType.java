@@ -7,15 +7,19 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 
 public class ProjectorModuleType extends ForgeRegistryEntry<ProjectorModuleType> {
 
-    public void onStart(BeamEntity beam) {
+    public void onStart(BeamEntity beam, int amt) {
 
     }
 
-    public void onEntityTick(BeamEntity beam, Entity target) {
+    public void onEntityTick(BeamEntity beam, Entity target, int amt) {
 
     }
 
-    public void onBlockTick(BeamEntity beam, BlockPos pos) {
+    public void onBlockTick(BeamEntity beam, BlockPos pos, int amt) {
+
+    }
+
+    public void onCollisionTick(BeamEntity beam, BlockPos pos, int amt) {
 
     }
 

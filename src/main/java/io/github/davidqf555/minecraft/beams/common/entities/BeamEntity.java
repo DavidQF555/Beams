@@ -6,8 +6,6 @@ import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -39,23 +37,23 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Double> START_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
-    private final Set<ProjectorModuleType> modules;
+    private final Map<ProjectorModuleType, Integer> modules;
     private UUID shooter;
     private AABB bounds;
     private int lifespan;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
-        modules = new HashSet<>();
+        modules = new HashMap<>();
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double maxWidth, double maxHeight) {
-        Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation();
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double startWidth, double startHeight, double maxWidth, double maxHeight) {
+        Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation().add(dir.scale(poke));
         double endFactor = end.subtract(start).length() / range;
-        return shoot(type, world, start, end, modules, startWidth, startHeight, maxWidth * endFactor, maxHeight * endFactor);
+        return shoot(type, world, start, end, modules, startWidth, startHeight, startWidth + (maxWidth - startWidth) * endFactor, startHeight + (maxHeight - startHeight) * endFactor);
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
         List<T> all = new ArrayList<>();
         double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
         Vec3 center = end.subtract(start);
@@ -100,15 +98,24 @@ public class BeamEntity extends Entity {
             if (lifespan > 0 && tickCount >= lifespan) {
                 remove(RemovalReason.DISCARDED);
             } else {
-                Set<ProjectorModuleType> modules = getModules();
+                Map<ProjectorModuleType, Integer> modules = getModules();
                 AABB bounds = getMaxBounds();
-                for (int x = Mth.floor(bounds.minX); x <= Mth.ceil(bounds.maxX); x++) {
-                    for (int z = Mth.floor(bounds.minZ); z <= Mth.ceil(bounds.maxZ); z++) {
-                        for (int y = Mth.floor(bounds.minY); y <= Mth.ceil(bounds.maxY); y++) {
+                for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
+                    for (int z = Mth.floor(bounds.minZ); z <= Mth.floor(bounds.maxZ); z++) {
+                        for (int y = Mth.floor(bounds.minY); y <= Mth.floor(bounds.maxY); y++) {
                             BlockPos pos = new BlockPos(x, y, z);
                             if (isAffected(pos)) {
-                                for (ProjectorModuleType type : modules) {
-                                    type.onBlockTick(this, pos);
+                                modules.forEach((type, amt) -> {
+                                    if (amt > 0) {
+                                        type.onBlockTick(this, pos, amt);
+                                    }
+                                });
+                                if (isColliding(pos)) {
+                                    modules.forEach((type, amt) -> {
+                                        if (amt > 0) {
+                                            type.onCollisionTick(this, pos, amt);
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -116,13 +123,24 @@ public class BeamEntity extends Entity {
                 }
                 for (Entity entity : level.getEntities(this, bounds)) {
                     if (isAffected(entity)) {
-                        for (ProjectorModuleType type : modules) {
-                            type.onEntityTick(this, entity);
-                        }
+                        modules.forEach((type, amt) -> {
+                            if (amt > 0) {
+                                type.onEntityTick(this, entity, amt);
+                            }
+                        });
                     }
                 }
             }
         }
+    }
+
+    protected boolean isColliding(BlockPos pos) {
+        for (AABB bounds : level.getBlockState(pos).getCollisionShape(level, pos).toAabbs()) {
+            if (isAffected(bounds.move(pos))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean isAffected(Entity entity) {
@@ -138,18 +156,23 @@ public class BeamEntity extends Entity {
         Vec3 center = position().subtract(start);
         Vec3 dir = pos.subtract(start);
         double factor = center.dot(dir) / center.lengthSqr();
-        if (factor < 0 || factor > 1) {
+        if (factor <= 0 || factor > 1) {
             return false;
         }
         Vec3 proj = center.scale(factor);
         Vec3 dist = dir.subtract(proj);
-        Vec3 horizontal = dist.cross(new Vec3(Vector3f.YP));
-        Vec3 vertical = dist.subtract(horizontal);
         double startWidth = getStartWidth();
-        double maxWidth = startWidth + factor * (getEndWidth() - startWidth);
+        double maxWidth = (startWidth + factor * (getEndWidth() - startWidth)) / 2;
         double startHeight = getStartHeight();
-        double maxHeight = startHeight + factor * (getEndHeight() - startHeight);
-        return horizontal.lengthSqr() <= maxWidth * maxWidth && vertical.lengthSqr() <= maxHeight * maxHeight;
+        double maxHeight = (startHeight + factor * (getEndHeight() - startHeight)) / 2;
+        Vec3 cross = center.cross(new Vec3(Vector3f.YP));
+        if (cross.lengthSqr() == 0) {
+            return Math.abs(dist.z()) <= maxWidth && Math.abs(dist.x()) <= maxHeight;
+        } else {
+            Vec3 horizontal = cross.scale(cross.dot(dist) / cross.lengthSqr());
+            Vec3 vertical = dist.subtract(horizontal);
+            return horizontal.lengthSqr() <= maxWidth * maxWidth && vertical.lengthSqr() <= maxHeight * maxHeight;
+        }
     }
 
     //not completely accurate, beam may hit bounding box with cross-section size less than the smallest beam dimension
@@ -174,14 +197,18 @@ public class BeamEntity extends Entity {
         return false;
     }
 
-    public Set<ProjectorModuleType> getModules() {
+    public Map<ProjectorModuleType, Integer> getModules() {
         return modules;
     }
 
-    public void setModules(Collection<ProjectorModuleType> modules) {
+    public void setModules(Map<ProjectorModuleType, Integer> modules) {
         this.modules.clear();
-        this.modules.addAll(modules);
-        this.modules.forEach(module -> module.onStart(this));
+        this.modules.putAll(modules);
+        this.modules.forEach((type, amt) -> {
+            if (amt > 0) {
+                type.onStart(this, amt);
+            }
+        });
     }
 
     public Vec3 getStart() {
@@ -278,6 +305,9 @@ public class BeamEntity extends Entity {
         Vec3 end = position();
         Vec3 center = end.subtract(start);
         Vec3 perpY = center.cross(new Vec3(Vector3f.YP)).normalize();
+        if (perpY.lengthSqr() == 0) {
+            perpY = new Vec3(Vector3f.ZP);
+        }
         Vec3 perp = center.cross(perpY).normalize();
         double startWidth = getStartWidth();
         double startHeight = getStartHeight();
@@ -322,7 +352,7 @@ public class BeamEntity extends Entity {
         manager.define(START_HEIGHT, 1.0);
         manager.define(END_WIDTH, 1.0);
         manager.define(END_HEIGHT, 1.0);
-        manager.define(COLOR, 0x80FFFFFF);
+        manager.define(COLOR, 0x40FFFFFF);
         manager.define(LAYERS, 1);
     }
 
@@ -354,13 +384,14 @@ public class BeamEntity extends Entity {
         if (tag.contains("Shooter", Tag.TAG_INT_ARRAY)) {
             setShooter(tag.getUUID("Shooter"));
         }
-        if (tag.contains("Modules", Tag.TAG_LIST)) {
-            List<ProjectorModuleType> modules = new ArrayList<>();
+        if (tag.contains("Modules", Tag.TAG_COMPOUND)) {
+            Map<ProjectorModuleType, Integer> modules = new HashMap<>();
             IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
-            for (Tag nbt : tag.getList("Modules", Tag.TAG_STRING)) {
-                ProjectorModuleType type = registry.getValue(new ResourceLocation(nbt.getAsString()));
-                if (type != null) {
-                    modules.add(type);
+            CompoundTag map = tag.getCompound("Modules");
+            for (String key : map.getAllKeys()) {
+                ProjectorModuleType type = registry.getValue(new ResourceLocation(key));
+                if (type != null && map.contains(key, Tag.TAG_INT)) {
+                    modules.put(type, map.getInt(key));
                 }
             }
             setModules(modules);
@@ -382,9 +413,9 @@ public class BeamEntity extends Entity {
         if (shooter != null) {
             tag.putUUID("Shooter", shooter);
         }
-        ListTag modules = new ListTag();
-        this.modules.forEach(module -> {
-            modules.add(StringTag.valueOf(module.getRegistryName().toString()));
+        CompoundTag modules = new CompoundTag();
+        this.modules.forEach((type, amt) -> {
+            modules.putInt(type.getRegistryName().toString(), amt);
         });
         tag.put("Modules", modules);
     }
