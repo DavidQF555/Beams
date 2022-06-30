@@ -53,7 +53,7 @@ public class BeamEntity extends Entity {
     public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double maxWidth, double maxHeight) {
         Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
         double endFactor = end.subtract(start).length() / range;
-        return shoot(type, world, start, end, modules, startWidth, startHeight, maxWidth * endFactor, maxHeight * endFactor);
+        return shoot(type, world, start, end, modules, startWidth, startHeight, startWidth + (maxWidth - startWidth) * endFactor, startHeight + (maxHeight - startHeight) * endFactor);
     }
 
     public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, Collection<ProjectorModuleType> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
