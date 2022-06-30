@@ -352,7 +352,7 @@ public class BeamEntity extends Entity {
         manager.define(START_HEIGHT, 1.0);
         manager.define(END_WIDTH, 1.0);
         manager.define(END_HEIGHT, 1.0);
-        manager.define(COLOR, 0x80FFFFFF);
+        manager.define(COLOR, 0x40FFFFFF);
         manager.define(LAYERS, 1);
     }
 
