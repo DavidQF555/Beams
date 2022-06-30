@@ -47,8 +47,8 @@ public class BeamEntity extends Entity {
         modules = new HashMap<>();
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double maxWidth, double maxHeight) {
-        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation();
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double startWidth, double startHeight, double maxWidth, double maxHeight) {
+        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(poke));
         double endFactor = end.subtract(start).length() / range;
         return shoot(type, world, start, end, modules, startWidth, startHeight, startWidth + (maxWidth - startWidth) * endFactor, startHeight + (maxHeight - startHeight) * endFactor);
     }
@@ -110,6 +110,13 @@ public class BeamEntity extends Entity {
                                         type.onBlockTick(this, pos, amt);
                                     }
                                 });
+                                if (isColliding(pos)) {
+                                    modules.forEach((type, amt) -> {
+                                        if (amt > 0) {
+                                            type.onCollisionTick(this, pos, amt);
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
@@ -125,6 +132,15 @@ public class BeamEntity extends Entity {
                 }
             }
         }
+    }
+
+    protected boolean isColliding(BlockPos pos) {
+        for (AxisAlignedBB bounds : level.getBlockState(pos).getCollisionShape(level, pos).toAabbs()) {
+            if (isAffected(bounds.move(pos))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean isAffected(Entity entity) {

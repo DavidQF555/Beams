@@ -28,6 +28,8 @@ public final class ProjectorModuleRegistry {
     public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, amt -> (float) amt));
     public static final RegistryObject<EnderModuleType> ENDER = register("ender", () -> new EnderModuleType(16));
     public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, amt -> amt * 2.0));
+    public static final RegistryObject<MiningModuleType> MINING = register("mining", () -> new MiningModuleType(20, amt -> amt * 2f));
+
     private static IForgeRegistry<ProjectorModuleType> registry = null;
 
     private ProjectorModuleRegistry() {

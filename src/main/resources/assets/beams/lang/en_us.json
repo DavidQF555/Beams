@@ -25,6 +25,7 @@
   "item.beams.damage_module": "Damage Module",
   "item.beams.ender_module": "Ender Module",
   "item.beams.force_module": "Force Module",
+  "item.beams.mining_module": "Mining Module",
   "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector"
 }

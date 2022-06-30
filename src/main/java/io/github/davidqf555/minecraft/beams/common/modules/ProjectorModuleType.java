@@ -19,4 +19,8 @@ public class ProjectorModuleType extends ForgeRegistryEntry<ProjectorModuleType>
 
     }
 
+    public void onCollisionTick(BeamEntity beam, BlockPos pos, int amt) {
+
+    }
+
 }
