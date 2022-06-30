@@ -100,9 +100,9 @@ public class BeamEntity extends Entity {
             } else {
                 Map<ProjectorModuleType, Integer> modules = getModules();
                 AxisAlignedBB bounds = getMaxBounds();
-                for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.ceil(bounds.maxX); x++) {
-                    for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.ceil(bounds.maxZ); z++) {
-                        for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.ceil(bounds.maxY); y++) {
+                for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
+                    for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.floor(bounds.maxZ); z++) {
+                        for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.floor(bounds.maxY); y++) {
                             BlockPos pos = new BlockPos(x, y, z);
                             if (isAffected(pos)) {
                                 modules.forEach((type, amt) -> {
@@ -140,18 +140,23 @@ public class BeamEntity extends Entity {
         Vector3d center = position().subtract(start);
         Vector3d dir = pos.subtract(start);
         double factor = center.dot(dir) / center.lengthSqr();
-        if (factor < 0 || factor > 1) {
+        if (factor <= 0 || factor > 1) {
             return false;
         }
         Vector3d proj = center.scale(factor);
         Vector3d dist = dir.subtract(proj);
-        Vector3d horizontal = dist.cross(new Vector3d(Vector3f.YP));
-        Vector3d vertical = dist.subtract(horizontal);
         double startWidth = getStartWidth();
-        double maxWidth = startWidth + factor * (getEndWidth() - startWidth);
+        double maxWidth = (startWidth + factor * (getEndWidth() - startWidth)) / 2;
         double startHeight = getStartHeight();
-        double maxHeight = startHeight + factor * (getEndHeight() - startHeight);
-        return horizontal.lengthSqr() <= maxWidth * maxWidth && vertical.lengthSqr() <= maxHeight * maxHeight;
+        double maxHeight = (startHeight + factor * (getEndHeight() - startHeight)) / 2;
+        Vector3d cross = center.cross(new Vector3d(Vector3f.YP));
+        if (cross.lengthSqr() == 0) {
+            return Math.abs(dist.z()) <= maxWidth && Math.abs(dist.x()) <= maxHeight;
+        } else {
+            Vector3d horizontal = cross.scale(cross.dot(dist) / cross.lengthSqr());
+            Vector3d vertical = dist.subtract(horizontal);
+            return horizontal.lengthSqr() <= maxWidth * maxWidth && vertical.lengthSqr() <= maxHeight * maxHeight;
+        }
     }
 
     //not completely accurate, beam may hit bounding box with cross-section size less than the smallest beam dimension
@@ -284,6 +289,9 @@ public class BeamEntity extends Entity {
         Vector3d end = position();
         Vector3d center = end.subtract(start);
         Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
+        if (perpY.lengthSqr() == 0) {
+            perpY = new Vector3d(Vector3f.ZP);
+        }
         Vector3d perp = center.cross(perpY).normalize();
         double startWidth = getStartWidth();
         double startHeight = getStartHeight();
