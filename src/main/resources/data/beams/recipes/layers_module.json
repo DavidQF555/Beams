@@ -1,0 +1,35 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "beams:blank_module"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    },
+    {
+      "item": "paper"
+    }
+  ],
+  "result": {
+    "item": "beams:layers_module"
+  }
+}

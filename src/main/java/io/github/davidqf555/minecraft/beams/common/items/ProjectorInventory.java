@@ -23,8 +23,8 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProjectorInventory extends SimpleContainer implements MenuProvider {
 
@@ -36,12 +36,13 @@ public class ProjectorInventory extends SimpleContainer implements MenuProvider 
         return stack.getCapability(Provider.CAPABILITY).orElseGet(ProjectorInventory::new);
     }
 
-    public static Set<ProjectorModuleType> getModuleTypes(Container inventory) {
-        Set<ProjectorModuleType> types = new HashSet<>();
+    public static Map<ProjectorModuleType, Integer> getModuleTypes(Container inventory) {
+        Map<ProjectorModuleType, Integer> types = new HashMap<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             Item item = inventory.getItem(i).getItem();
             if (item instanceof ProjectorModuleItem) {
-                types.add(((ProjectorModuleItem<?>) item).getType());
+                ProjectorModuleType type = ((ProjectorModuleItem<?>) item).getType();
+                types.put(type, types.getOrDefault(type, 0) + 1);
             }
         }
         return types;
