@@ -23,11 +23,11 @@ public final class ProjectorModuleRegistry {
 
     public static final DeferredRegister<ProjectorModuleType> TYPES = DeferredRegister.create(ProjectorModuleType.class, Beams.ID);
     public static final Map<DyeColor, RegistryObject<ColorModuleType>> COLORS = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName(), () -> new ColorModuleType(color.getFireworkColor()))));
-    public static final RegistryObject<PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(Effects.BLINDNESS, 60, 0));
-    public static final RegistryObject<FireModuleType> HOT = register("hot", () -> new FireModuleType(3));
-    public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, 1));
+    public static final RegistryObject<PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(Effects.BLINDNESS, amt -> amt * 30, amt -> 0));
+    public static final RegistryObject<FireModuleType> HOT = register("hot", () -> new FireModuleType(amt -> amt * 2));
+    public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, amt -> (float) amt));
     public static final RegistryObject<EnderModuleType> ENDER = register("ender", () -> new EnderModuleType(16));
-    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, 3));
+    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, amt -> amt * 2.0));
     private static IForgeRegistry<ProjectorModuleType> registry = null;
 
     private ProjectorModuleRegistry() {

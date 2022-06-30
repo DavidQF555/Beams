@@ -16,7 +16,7 @@ public class ColorModuleType extends ProjectorModuleType {
     }
 
     @Override
-    public void onStart(BeamEntity beam) {
+    public void onStart(BeamEntity beam, int amt) {
         int alpha = ColorHelper.PackedColor.alpha(beam.getColor());
         int color = getColor();
         int red = ColorHelper.PackedColor.red(color);

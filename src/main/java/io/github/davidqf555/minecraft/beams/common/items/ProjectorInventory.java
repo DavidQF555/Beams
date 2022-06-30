@@ -24,9 +24,9 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class ProjectorInventory extends Inventory implements INamedContainerProvider {
 
@@ -38,12 +38,13 @@ public class ProjectorInventory extends Inventory implements INamedContainerProv
         return stack.getCapability(Provider.capability).orElseGet(ProjectorInventory::new);
     }
 
-    public static Set<ProjectorModuleType> getModuleTypes(IInventory inventory) {
-        Set<ProjectorModuleType> types = new HashSet<>();
+    public static Map<ProjectorModuleType, Integer> getModuleTypes(IInventory inventory) {
+        Map<ProjectorModuleType, Integer> types = new HashMap<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             Item item = inventory.getItem(i).getItem();
             if (item instanceof ProjectorModuleItem) {
-                types.add(((ProjectorModuleItem<?>) item).getType());
+                ProjectorModuleType type = ((ProjectorModuleItem<?>) item).getType();
+                types.put(type, types.getOrDefault(type, 0) + 1);
             }
         }
         return types;
