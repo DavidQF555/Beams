@@ -77,7 +77,7 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     public void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
-        if (state.getBlock() instanceof ProjectorBlock && state.getValue(ProjectorBlock.TRIGGERED)) {
+        if (state.getBlock() instanceof AbstractProjectorBlock && state.getValue(AbstractProjectorBlock.TRIGGERED)) {
             shoot();
         }
     }
@@ -87,8 +87,8 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
         BlockPos pos = getBlockPos();
         BlockState state = getBlockState();
         Block block = state.getBlock();
-        Vector3d dir = ((ProjectorBlock) block).getBeamDirection(state);
-        Vector3d start = Vector3d.atLowerCornerOf(pos).add(((ProjectorBlock) block).getStartOffset(state));
+        Vector3d dir = ((AbstractProjectorBlock) block).getBeamDirection(state);
+        Vector3d start = Vector3d.atLowerCornerOf(pos).add(((AbstractProjectorBlock) block).getStartOffset(state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
         for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), ProjectorInventory.getModuleTypes(this), 0.1, size, size, size, size)) {
             beams.add(beam.getUUID());
