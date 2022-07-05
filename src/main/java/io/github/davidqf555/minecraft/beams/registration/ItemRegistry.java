@@ -33,8 +33,8 @@ public final class ItemRegistry {
     public static final RegistryObject<ProjectorModuleItem<ForceModuleType>> FORCE_MODULE = register("force_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.FORCE, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<MiningModuleType>> MINING_MODULE = register("mining_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.MINING, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<LayersModuleType>> LAYERS_MODULE = register("layers_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.LAYERS, new Item.Properties().tab(Beams.GROUP)));
-    public static final RegistryObject<ProjectorModuleItem<EndSizeModuleType>> GROWTH_MODULE = register("growth_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.GROWTH, new Item.Properties().tab(Beams.GROUP)));
-    public static final RegistryObject<ProjectorModuleItem<TotalSizeModuleType>> SHRINK_MODULE = register("shrink_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.SHRINK, new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> GROWTH_MODULE = register("growth_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.GROWTH, new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> SHRINK_MODULE = register("shrink_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.SHRINK, new Item.Properties().tab(Beams.GROUP)));
 
     private ItemRegistry() {
     }
