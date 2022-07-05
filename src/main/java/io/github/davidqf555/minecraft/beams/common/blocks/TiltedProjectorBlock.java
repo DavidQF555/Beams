@@ -5,19 +5,25 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class TiltedProjectorBlock extends ProjectorBlock {
+public class TiltedProjectorBlock extends AbstractProjectorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     private static final VoxelShape
             TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
             BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
@@ -40,6 +46,7 @@ public class TiltedProjectorBlock extends ProjectorBlock {
 
     public TiltedProjectorBlock(Properties properties) {
         super(properties);
+        registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false));
     }
 
     @SuppressWarnings("deprecation")
@@ -90,15 +97,36 @@ public class TiltedProjectorBlock extends ProjectorBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(HALF);
+        builder.add(HALF, FACING);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockState prev = super.getStateForPlacement(context);
+        if (prev == null) {
+            return null;
+        }
         Direction dir = context.getClickedFace();
         BlockPos pos = context.getClickedPos();
-        return super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection()).setValue(HALF, dir != Direction.DOWN && (dir == Direction.UP || context.getClickLocation().y - pos.getY() <= 0.5) ? Half.BOTTOM : Half.TOP);
+        return prev.setValue(FACING, context.getHorizontalDirection()).setValue(HALF, dir != Direction.DOWN && (dir == Direction.UP || context.getClickLocation().y - pos.getY() <= 0.5) ? Half.BOTTOM : Half.TOP);
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType path) {
+        return false;
+    }
 
 }
