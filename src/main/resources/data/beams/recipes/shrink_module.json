@@ -1,0 +1,19 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "RRR",
+    "RBR",
+    "RRR"
+  ],
+  "key": {
+    "B": {
+      "item": "beams:blank_module"
+    },
+    "R": {
+      "item": "redstone"
+    }
+  },
+  "result": {
+    "item": "beams:shrink_module"
+  }
+}

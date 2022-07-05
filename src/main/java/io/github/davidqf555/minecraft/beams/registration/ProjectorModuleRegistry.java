@@ -30,6 +30,8 @@ public final class ProjectorModuleRegistry {
     public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, amt -> amt * 2.0));
     public static final RegistryObject<MiningModuleType> MINING = register("mining", () -> new MiningModuleType(20, amt -> amt * 2f));
     public static final RegistryObject<LayersModuleType> LAYERS = register("layers", () -> new LayersModuleType(amt -> amt));
+    public static final RegistryObject<EndSizeModuleType> GROWTH = register("growth", () -> new EndSizeModuleType(amt -> amt / 0.5 + 1));
+    public static final RegistryObject<TotalSizeModuleType> SHRINK = register("shrink", () -> new TotalSizeModuleType(amt -> Math.pow(0.75, amt), amt -> Math.pow(0.75, amt)));
 
     private static IForgeRegistry<ProjectorModuleType> registry = null;
 

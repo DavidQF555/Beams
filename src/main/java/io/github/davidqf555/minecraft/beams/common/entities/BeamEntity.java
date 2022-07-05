@@ -47,10 +47,32 @@ public class BeamEntity extends Entity {
         modules = new HashMap<>();
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double startWidth, double startHeight, double maxWidth, double maxHeight) {
+    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
         Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(poke));
-        double endFactor = end.subtract(start).length() / range;
-        return shoot(type, world, start, end, modules, startWidth, startHeight, startWidth + (maxWidth - startWidth) * endFactor, startHeight + (maxHeight - startHeight) * endFactor);
+        double endSizeFactor = getEndSizeFactor(modules);
+        baseMaxWidth *= endSizeFactor;
+        baseMaxHeight *= endSizeFactor;
+        double startSizeFactor = getStartSizeFactor(modules);
+        baseStartWidth *= startSizeFactor;
+        baseStartHeight *= startSizeFactor;
+        double distFactor = end.subtract(start).length() / range;
+        return shoot(type, world, start, end, modules, baseStartWidth, baseStartHeight, baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor, baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+    }
+
+    private static double getEndSizeFactor(Map<ProjectorModuleType, Integer> modules) {
+        double factor = 1;
+        for (ProjectorModuleType type : modules.keySet()) {
+            factor *= type.getEndSizeFactor(modules.get(type));
+        }
+        return factor;
+    }
+
+    private static double getStartSizeFactor(Map<ProjectorModuleType, Integer> modules) {
+        double factor = 1;
+        for (ProjectorModuleType type : modules.keySet()) {
+            factor *= type.getStartSizeFactor(modules.get(type));
+        }
+        return factor;
     }
 
     public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
@@ -74,6 +96,7 @@ public class BeamEntity extends Entity {
             if (entity != null) {
                 entity.setStart(start);
                 entity.setPos(endPos.x(), endPos.y(), endPos.z());
+                entity.setModules(modules);
                 double endDist = total - remaining;
                 double startFactor = (endDist - length) / total;
                 entity.setStartWidth(startWidth + (endWidth - startWidth) * startFactor);
@@ -81,7 +104,7 @@ public class BeamEntity extends Entity {
                 double endFactor = endDist / total;
                 entity.setEndWidth(startWidth + (endWidth - startWidth) * endFactor);
                 entity.setEndHeight(startHeight + (endHeight - startHeight) * endFactor);
-                entity.setModules(modules);
+                entity.initializeModules();
                 world.addFreshEntity(entity);
                 all.add(entity);
             }
@@ -201,13 +224,14 @@ public class BeamEntity extends Entity {
         return modules;
     }
 
-    public void setModules(Map<ProjectorModuleType, Integer> modules) {
+    protected void setModules(Map<ProjectorModuleType, Integer> modules) {
         this.modules.clear();
         this.modules.putAll(modules);
-        this.modules.forEach((type, amt) -> {
-            if (amt > 0) {
-                type.onStart(this, amt);
-            }
+    }
+
+    protected void initializeModules() {
+        getModules().forEach((module, amt) -> {
+            module.onStart(this, amt);
         });
     }
 
@@ -378,6 +402,12 @@ public class BeamEntity extends Entity {
         if (tag.contains("EndHeight", Constants.NBT.TAG_DOUBLE)) {
             setEndHeight(tag.getDouble("EndHeight"));
         }
+        if (tag.contains("Color", Constants.NBT.TAG_INT)) {
+            setColor(tag.getInt("Color"));
+        }
+        if (tag.contains("Layers", Constants.NBT.TAG_INT)) {
+            setLayers(tag.getInt("Layers"));
+        }
         if (tag.contains("Lifespan", Constants.NBT.TAG_INT)) {
             setLifespan(tag.getInt("Lifespan"));
         }
@@ -408,6 +438,8 @@ public class BeamEntity extends Entity {
         tag.putDouble("StartHeight", getStartHeight());
         tag.putDouble("EndWidth", getEndWidth());
         tag.putDouble("EndHeight", getEndHeight());
+        tag.putInt("Color", getColor());
+        tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
         UUID shooter = getShooter();
         if (shooter != null) {
