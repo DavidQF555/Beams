@@ -1,0 +1,22 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "GIG",
+    "IBI",
+    "GIG"
+  ],
+  "key": {
+    "B": {
+      "item": "beams:blank_module"
+    },
+    "I": {
+      "item": "iron_ingot"
+    },
+    "G": {
+      "item": "gold_ingot"
+    }
+  },
+  "result": {
+    "item": "beams:growth_module"
+  }
+}

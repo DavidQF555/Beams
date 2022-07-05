@@ -27,6 +27,8 @@
   "item.beams.force_module": "Force Module",
   "item.beams.mining_module": "Mining Module",
   "item.beams.layers_module": "Layers Module",
+  "item.beams.growth_module": "Growth Module",
+  "item.beams.shrink_module": "Shrink Module",
   "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector"
 }

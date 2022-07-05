@@ -22,4 +22,11 @@ public class ProjectorModuleType {
 
     }
 
+    public double getEndSizeFactor(int amt) {
+        return 1;
+    }
+
+    public double getStartSizeFactor(int amt) {
+        return 1;
+    }
 }
