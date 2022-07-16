@@ -76,9 +76,9 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
         }
     }
 
-    protected abstract Vector3d getStartOffset(BlockState state);
+    protected abstract Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state);
 
-    protected abstract Vector3d getBeamDirection(BlockState state);
+    protected abstract Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state);
 
     @SuppressWarnings("deprecation")
     @Override

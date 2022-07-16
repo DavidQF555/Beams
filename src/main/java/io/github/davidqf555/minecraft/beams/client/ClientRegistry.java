@@ -2,10 +2,10 @@ package io.github.davidqf555.minecraft.beams.client;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import io.github.davidqf555.minecraft.beams.registration.ContainerRegistry;
-import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
-import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
+import io.github.davidqf555.minecraft.beams.registration.*;
 import net.minecraft.client.gui.ScreenManager;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.item.DyeColor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,6 +24,8 @@ public final class ClientRegistry {
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(EntityRegistry.BEAM.get(), BeamRenderer<BeamEntity>::new);
+        net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), OmnidirectionalProjectorTileEntityRenderer::new);
+        RenderTypeLookup.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), RenderType.cutout());
         event.enqueueWork(() -> {
             ScreenManager.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new);
         });

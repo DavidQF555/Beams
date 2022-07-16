@@ -79,12 +79,12 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vector3d getStartOffset(BlockState state) {
+    protected Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
         return new Vector3d(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vector3d getBeamDirection(BlockState state) {
+    protected Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         Vector3d horz = Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).reverse();
         Vector3d vert = new Vector3d(0, state.getValue(HALF) == Half.TOP ? -1 : 1, 0);
         return horz.add(vert).scale(0.70710678118);

@@ -1,6 +1,7 @@
 package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
+import io.github.davidqf555.minecraft.beams.common.blocks.DirectionalProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.ProjectorTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -22,6 +23,6 @@ public final class TileEntityRegistry {
     }
 
     public static final RegistryObject<TileEntityType<ProjectorTileEntity>> BEAM_PROJECTOR = register("beam_projector", () -> TileEntityType.Builder.of(ProjectorTileEntity::new, BlockRegistry.PROJECTOR.get(), BlockRegistry.TILTED_PROJECTOR.get()).build(null));
-
+    public static final RegistryObject<TileEntityType<DirectionalProjectorTileEntity>> OMNIDIRECTIONAL_BEAM_PROJECTOR = register("omnidirectional_beam_projector", () -> TileEntityType.Builder.of(DirectionalProjectorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get()).build(null));
 
 }

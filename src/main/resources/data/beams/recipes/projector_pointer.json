@@ -1,0 +1,22 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "III",
+    "IBI",
+    "IRI"
+  ],
+  "key": {
+    "B": {
+      "tag": "buttons"
+    },
+    "I": {
+      "item": "iron_ingot"
+    },
+    "R": {
+      "item": "redstone"
+    }
+  },
+  "result": {
+    "item": "beams:projector_pointer"
+  }
+}

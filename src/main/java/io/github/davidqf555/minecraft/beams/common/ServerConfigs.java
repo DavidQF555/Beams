@@ -14,7 +14,7 @@ public class ServerConfigs {
         SPEC = pair.getRight();
     }
 
-    public final ForgeConfigSpec.DoubleValue beamSegmentLength, projectorMaxRange, defaultBeamSize;
+    public final ForgeConfigSpec.DoubleValue beamSegmentLength, projectorMaxRange, defaultBeamSize, pointerRange;
     public final ForgeConfigSpec.IntValue projectorUpdatePeriod, portableProjectorMaxRange;
 
     public ServerConfigs(ForgeConfigSpec.Builder builder) {
@@ -29,6 +29,8 @@ public class ServerConfigs {
                 .defineInRange("portableProjectorRange", 64, 0, Integer.MAX_VALUE);
         projectorUpdatePeriod = builder.comment("This is the period in ticks that projectors update their beams. Lowering this would cause more consistent beams but worse performance. ")
                 .defineInRange("projectorUpdatePeriod", 20, 1, Integer.MAX_VALUE);
+        pointerRange = builder.comment("This is the range in blocks of the projector pointer")
+                .defineInRange("pointerRange", 64, 0, Double.MAX_VALUE);
         builder.pop();
     }
 
