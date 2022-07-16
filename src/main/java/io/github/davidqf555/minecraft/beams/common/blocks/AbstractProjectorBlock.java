@@ -60,6 +60,7 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
                     } else {
                         ((ProjectorTileEntity) te).updateBeams();
                     }
+                    te.setChanged();
                 }
             }
         }
@@ -72,6 +73,7 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
             TileEntity te = world.getBlockEntity(pos);
             if (te instanceof ProjectorTileEntity) {
                 ((ProjectorTileEntity) te).updateBeams();
+                te.setChanged();
             }
         }
     }
@@ -88,6 +90,7 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
             if (te instanceof ProjectorTileEntity) {
                 ((ProjectorTileEntity) te).removeBeams();
                 InventoryHelper.dropContents(world, pos, (ProjectorTileEntity) te);
+                te.setChanged();
                 world.updateNeighbourForOutputSignal(pos, this);
             }
         }

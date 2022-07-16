@@ -88,6 +88,7 @@ public class ProjectorPointerItem extends Item {
                         Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
                         ((DirectionalProjectorTileEntity) te).setDirection(dir);
                         ((DirectionalProjectorTileEntity) te).updateBeams();
+                        te.setChanged();
                     } else {
                         connections.remove(key);
                     }

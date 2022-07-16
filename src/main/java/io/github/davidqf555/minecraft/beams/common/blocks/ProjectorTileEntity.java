@@ -70,6 +70,7 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
             World world = getLevel();
             if (world instanceof ServerWorld && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
                 updateBeams();
+                setChanged();
             }
         }
     }
@@ -93,7 +94,6 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
         for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), ProjectorInventory.getModuleTypes(this), 0.1, size, size, size, size)) {
             beams.add(beam.getUUID());
         }
-        setChanged();
     }
 
     public void removeBeams() {
@@ -107,7 +107,6 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
             }
         }
         beams.clear();
-        setChanged();
     }
 
     @Override
@@ -172,6 +171,7 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     public void setItem(int slot, ItemStack stack) {
         super.setItem(slot, stack);
         updateBeams();
+        setChanged();
     }
 
     @Override
