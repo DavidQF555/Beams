@@ -12,8 +12,8 @@ public class OmnidirectionalProjectorModel extends Model {
 
     public OmnidirectionalProjectorModel() {
         super(RenderType::entityCutoutNoCull);
-        model = new ModelRenderer(0, 0, 32, 16)
-                .addBox(-4, -4, -4, 8, 8, 8);
+        model = new ModelRenderer(64, 32, 0, 0);
+        model.addBox(-8, -8, -8, 16, 16, 16, -4, -4, -4);
     }
 
     @Override

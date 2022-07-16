@@ -25,7 +25,7 @@ public class OmnidirectionalProjectorTileEntityRenderer extends TileEntityRender
     public void render(DirectionalProjectorTileEntity p_225616_1_, float p_225616_2_, MatrixStack p_225616_3_, IRenderTypeBuffer p_225616_4_, int p_225616_5_, int p_225616_6_) {
         Vector3d dir = p_225616_1_.getDirection();
         double yRot = MathHelper.atan2(dir.x(), dir.z());
-        double xRot = MathHelper.atan2(dir.y(), MathHelper.sqrt(dir.x() * dir.x() + dir.z() * dir.z()));
+        double xRot = MathHelper.atan2(dir.y(), MathHelper.sqrt(dir.x() * dir.x() + dir.z() * dir.z())) + Math.PI;
         p_225616_3_.pushPose();
         p_225616_3_.translate(0.5, 0.5, 0.5);
         p_225616_3_.mulPose(Vector3f.YP.rotation((float) yRot));
