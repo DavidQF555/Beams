@@ -17,7 +17,7 @@ import net.minecraftforge.registries.RegistryObject;
 @Mod.EventBusSubscriber(modid = Beams.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class EntityRegistry {
 
-    public static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(ForgeRegistries.ENTITIES, Beams.ID);
+    public static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Beams.ID);
 
     public static final RegistryObject<EntityType<BeamEntity>> BEAM = register("beam", EntityType.Builder.of(BeamEntity::new, MobCategory.MISC).sized(0, 0));
 

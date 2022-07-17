@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public final class TileEntityRegistry {
 
-    public static final DeferredRegister<BlockEntityType<?>> TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, Beams.ID);
+    public static final DeferredRegister<BlockEntityType<?>> TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Beams.ID);
 
     private TileEntityRegistry() {
     }

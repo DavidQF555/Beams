@@ -10,7 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ContainerRegistry {
 
-    public static final DeferredRegister<MenuType<?>> TYPES = DeferredRegister.create(ForgeRegistries.CONTAINERS, Beams.ID);
+    public static final DeferredRegister<MenuType<?>> TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Beams.ID);
 
     private ContainerRegistry() {
     }
