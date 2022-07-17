@@ -67,6 +67,7 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
                     } else {
                         ((ProjectorTileEntity) te).updateBeams();
                     }
+                    te.setChanged();
                 }
             }
         }
@@ -79,13 +80,14 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
             BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ProjectorTileEntity) {
                 ((ProjectorTileEntity) te).updateBeams();
+                te.setChanged();
             }
         }
     }
 
-    protected abstract Vec3 getStartOffset(BlockState state);
+    protected abstract Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state);
 
-    protected abstract Vec3 getBeamDirection(BlockState state);
+    protected abstract Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state);
 
     @SuppressWarnings("deprecation")
     @Override
@@ -95,6 +97,7 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
             if (te instanceof ProjectorTileEntity) {
                 ((ProjectorTileEntity) te).removeBeams();
                 Containers.dropContents(world, pos, (ProjectorTileEntity) te);
+                te.setChanged();
                 world.updateNeighbourForOutputSignal(pos, this);
             }
         }

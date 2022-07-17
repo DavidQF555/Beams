@@ -22,12 +22,12 @@ public class ProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vec3 getStartOffset(BlockState state) {
+    protected Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state) {
         return Vec3.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vec3 getBeamDirection(BlockState state) {
+    protected Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         return Vec3.atLowerCornerOf(state.getValue(FACING).getNormal());
     }
 

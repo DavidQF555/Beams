@@ -2,7 +2,9 @@
   "itemGroup.beams": "Beams",
   "block.beams.projector": "Projector",
   "block.beams.tilted_projector": "Tilted Projector",
+  "block.beams.omnidirectional_projector": "Omnidirectional Projector",
   "item.beams.portable_projector": "Portable Projector",
+  "item.beams.projector_pointer": "Projector Pointer",
   "item.beams.blank_module": "Blank Module",
   "item.beams.white_module": "White Module",
   "item.beams.orange_module": "Orange Module",
@@ -30,5 +32,7 @@
   "item.beams.growth_module": "Growth Module",
   "item.beams.shrink_module": "Shrink Module",
   "entity.beams.beam": "Beam",
-  "container.beams.projector": "Projector"
+  "container.beams.projector": "Projector",
+  "message.beams.pointer_connected": "Connected",
+  "message.beams.pointer_disconnected": "Disconnected"
 }

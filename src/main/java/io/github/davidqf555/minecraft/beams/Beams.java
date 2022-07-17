@@ -4,7 +4,6 @@ import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.registration.*;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -25,7 +24,6 @@ public class Beams {
     public Beams() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfigs.SPEC);
         addRegistries(FMLJavaModLoadingContext.get().getModEventBus());
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
     private void addRegistries(IEventBus bus) {

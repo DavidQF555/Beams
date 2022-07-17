@@ -83,12 +83,12 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vec3 getStartOffset(BlockState state) {
+    protected Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state) {
         return new Vec3(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vec3 getBeamDirection(BlockState state) {
+    protected Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         Vec3 horz = Vec3.atLowerCornerOf(state.getValue(FACING).getNormal()).reverse();
         Vec3 vert = new Vec3(0, state.getValue(HALF) == Half.TOP ? -1 : 1, 0);
         return horz.add(vert).scale(0.70710678118);
@@ -128,5 +128,6 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
     public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType path) {
         return false;
     }
+
 
 }
