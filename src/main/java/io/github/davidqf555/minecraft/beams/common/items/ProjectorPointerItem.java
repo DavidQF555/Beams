@@ -10,7 +10,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,8 +32,8 @@ import java.util.UUID;
 
 public class ProjectorPointerItem extends Item {
 
-    private static final Component CONNECTED = new TranslatableComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_connected"))).withStyle(ChatFormatting.GREEN);
-    private static final Component DISCONNECTED = new TranslatableComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_disconnected"))).withStyle(ChatFormatting.RED);
+    private static final Component CONNECTED = Component.translatable(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_connected"))).withStyle(ChatFormatting.GREEN);
+    private static final Component DISCONNECTED = Component.translatable(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_disconnected"))).withStyle(ChatFormatting.RED);
 
     public ProjectorPointerItem(Properties properties) {
         super(properties);
@@ -54,12 +53,12 @@ public class ProjectorPointerItem extends Item {
                 if (connections.containsKey(id)) {
                     connections.remove(id);
                     if (world.isClientSide()) {
-                        player.sendMessage(DISCONNECTED, Util.NIL_UUID);
+                        player.sendSystemMessage(DISCONNECTED);
                     }
                 } else {
                     connections.put(id, pos);
                     if (world.isClientSide()) {
-                        player.sendMessage(CONNECTED, Util.NIL_UUID);
+                        player.sendSystemMessage(CONNECTED);
                     }
                 }
                 setConnected(stack, connections);
