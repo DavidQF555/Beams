@@ -1,13 +1,13 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
@@ -18,8 +18,8 @@ public class OmnidirectionalProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
-        Vector3d pos = new Vector3d(0.5, 0.5, 0.5);
+    protected Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state) {
+        Vec3 pos = new Vec3(0.5, 0.5, 0.5);
         if (entity instanceof DirectionalProjectorTileEntity) {
             pos = pos.add(((DirectionalProjectorTileEntity) entity).getDirection().scale(0.25));
         }
@@ -27,33 +27,33 @@ public class OmnidirectionalProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    protected Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         if (entity instanceof DirectionalProjectorTileEntity) {
             return ((DirectionalProjectorTileEntity) entity).getDirection();
         }
-        return Vector3d.ZERO;
+        return Vec3.ZERO;
     }
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new DirectionalProjectorTileEntity();
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new DirectionalProjectorTileEntity(pos, state);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getVisualShape(BlockState state, IBlockReader reader, BlockPos pos, ISelectionContext selection) {
-        return VoxelShapes.empty();
+    public VoxelShape getVisualShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext selection) {
+        return Shapes.empty();
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public float getShadeBrightness(BlockState state, IBlockReader reader, BlockPos pos) {
+    public float getShadeBrightness(BlockState state, BlockGetter reader, BlockPos pos) {
         return 1;
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
         return true;
     }
 

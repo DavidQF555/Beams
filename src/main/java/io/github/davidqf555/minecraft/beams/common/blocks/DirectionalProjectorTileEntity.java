@@ -1,35 +1,36 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
 public class DirectionalProjectorTileEntity extends ProjectorTileEntity {
 
     private UUID id;
-    private Vector3d direction;
+    private Vec3 direction;
 
-    protected DirectionalProjectorTileEntity(TileEntityType<?> type) {
-        super(type);
-        direction = new Vector3d(1, 0, 0);
-        id = MathHelper.createInsecureUUID();
+    protected DirectionalProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+        direction = new Vec3(1, 0, 0);
+        id = Mth.createInsecureUUID();
     }
 
-    public DirectionalProjectorTileEntity() {
-        this(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get());
+    public DirectionalProjectorTileEntity(BlockPos pos, BlockState state) {
+        this(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), pos, state);
     }
 
-    public Vector3d getDirection() {
+    public Vec3 getDirection() {
         return direction;
     }
 
-    public void setDirection(Vector3d direction) {
+    public void setDirection(Vec3 direction) {
         this.direction = direction;
     }
 
@@ -38,23 +39,21 @@ public class DirectionalProjectorTileEntity extends ProjectorTileEntity {
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
-        CompoundNBT out = super.save(tag);
-        Vector3d direction = getDirection();
-        out.putDouble("DirectionX", direction.x());
-        out.putDouble("DirectionY", direction.y());
-        out.putDouble("DirectionZ", direction.z());
-        out.putUUID("ID", getUUID());
-        return out;
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.putDouble("DirectionX", direction.x());
+        tag.putDouble("DirectionY", direction.y());
+        tag.putDouble("DirectionZ", direction.z());
+        tag.putUUID("ID", getUUID());
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag) {
-        super.load(state, tag);
-        if (tag.contains("DirectionX", Constants.NBT.TAG_DOUBLE) && tag.contains("DirectionY", Constants.NBT.TAG_DOUBLE) && tag.contains("DirectionZ", Constants.NBT.TAG_DOUBLE)) {
-            setDirection(new Vector3d(tag.getDouble("DirectionX"), tag.getDouble("DirectionY"), tag.getDouble("DirectionZ")));
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("DirectionX", Tag.TAG_DOUBLE) && tag.contains("DirectionY", Tag.TAG_DOUBLE) && tag.contains("DirectionZ", Tag.TAG_DOUBLE)) {
+            setDirection(new Vec3(tag.getDouble("DirectionX"), tag.getDouble("DirectionY"), tag.getDouble("DirectionZ")));
         }
-        if (tag.contains("ID", Constants.NBT.TAG_INT_ARRAY)) {
+        if (tag.contains("ID", Tag.TAG_INT_ARRAY)) {
             id = tag.getUUID("ID");
         }
     }
