@@ -1,0 +1,22 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "IGI",
+    "GPG",
+    "IGI"
+  ],
+  "key": {
+    "G": {
+      "item": "glass"
+    },
+    "P": {
+      "item": "beams:projector"
+    },
+    "I": {
+      "item": "iron_ingot"
+    }
+  },
+  "result": {
+    "item": "beams:omnidirectional_projector"
+  }
+}

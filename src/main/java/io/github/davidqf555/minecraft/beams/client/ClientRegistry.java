@@ -2,11 +2,13 @@ package io.github.davidqf555.minecraft.beams.client;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import io.github.davidqf555.minecraft.beams.registration.ContainerRegistry;
-import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
-import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
+import io.github.davidqf555.minecraft.beams.registration.*;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.item.DyeColor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,16 +21,25 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 @Mod.EventBusSubscriber(modid = Beams.ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientRegistry {
 
+    public static final ModelLayerLocation OMNIDIRECTIONAL_PROJECTOR = new ModelLayerLocation(new ResourceLocation(Beams.ID, "omnidirectional_projector"), "projector");
+
     private ClientRegistry() {
     }
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(EntityRegistry.BEAM.get(), BeamRenderer<BeamEntity>::new);
+        event.registerBlockEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), OmnidirectionalProjectorTileEntityRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(OMNIDIRECTIONAL_PROJECTOR, OmnidirectionalProjectorModel::createLayerDefinition);
     }
 
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
+        ItemBlockRenderTypes.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), RenderType.cutout());
         event.enqueueWork(() -> {
             MenuScreens.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new);
         });

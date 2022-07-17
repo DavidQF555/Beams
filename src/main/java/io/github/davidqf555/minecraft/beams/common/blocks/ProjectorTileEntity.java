@@ -53,6 +53,7 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
     public static void tick(Level world, BlockPos pos, BlockState state, ProjectorTileEntity entity) {
         if (world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
             entity.updateBeams();
+            entity.setChanged();
         }
     }
 
@@ -79,13 +80,12 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
         BlockPos pos = getBlockPos();
         BlockState state = getBlockState();
         Block block = state.getBlock();
-        Vec3 dir = ((AbstractProjectorBlock) block).getBeamDirection(state);
-        Vec3 start = Vec3.atLowerCornerOf(pos).add(((AbstractProjectorBlock) block).getStartOffset(state));
+        Vec3 dir = ((AbstractProjectorBlock) block).getBeamDirection(this, state);
+        Vec3 start = Vec3.atLowerCornerOf(pos).add(((AbstractProjectorBlock) block).getStartOffset(this, state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
         for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), ProjectorInventory.getModuleTypes(this), 0.1, size, size, size, size)) {
             beams.add(beam.getUUID());
         }
-        setChanged();
     }
 
     public void removeBeams() {
@@ -99,7 +99,6 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
             }
         }
         beams.clear();
-        setChanged();
     }
 
     @Override
@@ -160,6 +159,7 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
     public void setItem(int slot, ItemStack stack) {
         super.setItem(slot, stack);
         updateBeams();
+        setChanged();
     }
 
     @Override
