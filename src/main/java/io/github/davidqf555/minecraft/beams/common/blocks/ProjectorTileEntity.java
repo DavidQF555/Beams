@@ -69,18 +69,23 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
         if (hasLevel()) {
             World world = getLevel();
             if (world instanceof ServerWorld && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
-                updateBeams();
                 setChanged();
             }
         }
     }
 
-    public void updateBeams() {
+    protected void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
         if (state.getBlock() instanceof AbstractProjectorBlock && state.getValue(AbstractProjectorBlock.TRIGGERED)) {
             shoot();
         }
+    }
+
+    @Override
+    public void setChanged() {
+        updateBeams();
+        super.setChanged();
     }
 
     private void shoot() {
@@ -170,7 +175,6 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     @Override
     public void setItem(int slot, ItemStack stack) {
         super.setItem(slot, stack);
-        updateBeams();
         setChanged();
     }
 

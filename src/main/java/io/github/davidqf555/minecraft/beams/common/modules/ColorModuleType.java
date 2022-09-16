@@ -11,6 +11,15 @@ public class ColorModuleType extends ProjectorModuleType {
         this.color = color;
     }
 
+    private static int color(int alpha, int red, int green, int blue) {
+        return alpha << 24 | red << 16 | green << 8 | blue;
+    }
+
+    private static int merge(int color1, int color2) {
+        return color(ColorHelper.PackedColor.alpha(color1) * ColorHelper.PackedColor.alpha(color2) / 255, ColorHelper.PackedColor.red(color1) * ColorHelper.PackedColor.red(color2) / 255, ColorHelper.PackedColor.green(color1) * ColorHelper.PackedColor.green(color2) / 255, ColorHelper.PackedColor.blue(color1) * ColorHelper.PackedColor.blue(color2) / 255);
+
+    }
+
     public int getColor() {
         return color;
     }
@@ -27,15 +36,6 @@ public class ColorModuleType extends ProjectorModuleType {
             merged = merge(beam.getColor(), opaque);
         }
         beam.setColor(merged);
-    }
-
-    private static int color(int alpha, int red, int green, int blue) {
-        return alpha << 24 | red << 16 | green << 8 | blue;
-    }
-
-    private static int merge(int color1, int color2) {
-        return color(ColorHelper.PackedColor.alpha(color1) * ColorHelper.PackedColor.alpha(color2) / 255, ColorHelper.PackedColor.red(color1) * ColorHelper.PackedColor.red(color2) / 255, ColorHelper.PackedColor.green(color1) * ColorHelper.PackedColor.green(color2) / 255, ColorHelper.PackedColor.blue(color1) * ColorHelper.PackedColor.blue(color2) / 255);
-
     }
 
 }

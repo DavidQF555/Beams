@@ -23,6 +23,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -81,13 +82,12 @@ public class ProjectorPointerItem extends Item {
                 } else {
                     target = entity.getEntity().getEyePosition(1);
                 }
-                for (UUID key : connections.keySet()) {
+                for (UUID key : new ArrayList<>(connections.keySet())) {
                     BlockPos pos = connections.get(key);
                     TileEntity te = world.getBlockEntity(pos);
                     if (te instanceof DirectionalProjectorTileEntity && ((DirectionalProjectorTileEntity) te).getUUID().equals(key)) {
                         Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
                         ((DirectionalProjectorTileEntity) te).setDirection(dir);
-                        ((DirectionalProjectorTileEntity) te).updateBeams();
                         te.setChanged();
                     } else {
                         connections.remove(key);
