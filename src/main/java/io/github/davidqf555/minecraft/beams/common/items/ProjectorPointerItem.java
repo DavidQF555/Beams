@@ -26,6 +26,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -84,13 +85,12 @@ public class ProjectorPointerItem extends Item {
                 } else {
                     target = entity.getEntity().getEyePosition(1);
                 }
-                for (UUID key : connections.keySet()) {
+                for (UUID key : new ArrayList<>(connections.keySet())) {
                     BlockPos pos = connections.get(key);
                     BlockEntity te = world.getBlockEntity(pos);
                     if (te instanceof DirectionalProjectorTileEntity && ((DirectionalProjectorTileEntity) te).getUUID().equals(key)) {
                         Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
                         ((DirectionalProjectorTileEntity) te).setDirection(dir);
-                        ((DirectionalProjectorTileEntity) te).updateBeams();
                         te.setChanged();
                     } else {
                         connections.remove(key);

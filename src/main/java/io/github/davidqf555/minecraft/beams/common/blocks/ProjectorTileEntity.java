@@ -52,7 +52,6 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
 
     public static void tick(Level world, BlockPos pos, BlockState state, ProjectorTileEntity entity) {
         if (world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
-            entity.updateBeams();
             entity.setChanged();
         }
     }
@@ -67,12 +66,18 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
         this.items = items;
     }
 
-    public void updateBeams() {
+    protected void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
         if (state.getBlock() instanceof AbstractProjectorBlock && state.getValue(AbstractProjectorBlock.TRIGGERED)) {
             shoot();
         }
+    }
+
+    @Override
+    public void setChanged() {
+        updateBeams();
+        super.setChanged();
     }
 
     private void shoot() {
@@ -158,7 +163,6 @@ public class ProjectorTileEntity extends RandomizableContainerBlockEntity {
     @Override
     public void setItem(int slot, ItemStack stack) {
         super.setItem(slot, stack);
-        updateBeams();
         setChanged();
     }
 
