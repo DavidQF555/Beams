@@ -17,12 +17,25 @@ public class ColorModuleType extends ProjectorModuleType {
 
     @Override
     public void onStart(BeamEntity beam, int amt) {
-        int alpha = ColorHelper.PackedColor.alpha(beam.getColor());
+        int merged = beam.getColor();
         int color = getColor();
         int red = ColorHelper.PackedColor.red(color);
         int green = ColorHelper.PackedColor.green(color);
         int blue = ColorHelper.PackedColor.blue(color);
-        beam.setColor(ColorHelper.PackedColor.color(alpha, red, green, blue));
+        int opaque = color(255, red, green, blue);
+        for (int i = 0; i < amt; i++) {
+            merged = merge(beam.getColor(), opaque);
+        }
+        beam.setColor(merged);
+    }
+
+    private static int color(int alpha, int red, int green, int blue) {
+        return alpha << 24 | red << 16 | green << 8 | blue;
+    }
+
+    private static int merge(int color1, int color2) {
+        return color(ColorHelper.PackedColor.alpha(color1) * ColorHelper.PackedColor.alpha(color2) / 255, ColorHelper.PackedColor.red(color1) * ColorHelper.PackedColor.red(color2) / 255, ColorHelper.PackedColor.green(color1) * ColorHelper.PackedColor.green(color2) / 255, ColorHelper.PackedColor.blue(color1) * ColorHelper.PackedColor.blue(color2) / 255);
+
     }
 
 }
