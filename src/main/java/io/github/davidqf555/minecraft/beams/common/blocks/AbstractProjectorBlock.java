@@ -64,8 +64,7 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
                     world.setBlock(pos, state.cycle(TRIGGERED), 2);
                     if (triggered) {
                         ((ProjectorTileEntity) te).removeBeams();
-                    } else {
-                        ((ProjectorTileEntity) te).updateBeams();
+                        return;
                     }
                     te.setChanged();
                 }
@@ -78,8 +77,7 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
     public void onPlace(BlockState state, Level world, BlockPos pos, BlockState old, boolean update) {
         if (state.getValue(TRIGGERED)) {
             BlockEntity te = world.getBlockEntity(pos);
-            if (te instanceof ProjectorTileEntity) {
-                ((ProjectorTileEntity) te).updateBeams();
+            if (te != null) {
                 te.setChanged();
             }
         }

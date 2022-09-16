@@ -24,7 +24,7 @@ public final class ProjectorModuleRegistry {
     public static final RegistryObject<FireModuleType> HOT = register("hot", () -> new FireModuleType(amt -> amt * 2));
     public static final RegistryObject<DamageModuleType> DAMAGE = register("damage", () -> new DamageModuleType(10, amt -> (float) amt));
     public static final RegistryObject<EnderModuleType> ENDER = register("ender", () -> new EnderModuleType(16));
-    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(10, amt -> amt * 2.0));
+    public static final RegistryObject<ForceModuleType> FORCE = register("force", () -> new ForceModuleType(amt -> amt * 0.05));
     public static final RegistryObject<MiningModuleType> MINING = register("mining", () -> new MiningModuleType(20, amt -> amt * 2f));
     public static final RegistryObject<LayersModuleType> LAYERS = register("layers", () -> new LayersModuleType(amt -> amt));
     public static final RegistryObject<SizeModuleType> GROWTH = register("growth", () -> new SizeModuleType(amt -> 1.0, amt -> amt * 2 + 1.0));
