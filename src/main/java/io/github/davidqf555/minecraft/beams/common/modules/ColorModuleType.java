@@ -11,14 +11,6 @@ public class ColorModuleType extends ProjectorModuleType {
         this.color = color;
     }
 
-    private static int color(int alpha, int red, int green, int blue) {
-        return alpha << 24 | red << 16 | green << 8 | blue;
-    }
-
-    private static int merge(int color1, int color2) {
-        return color(FastColor.ARGB32.alpha(color1) * FastColor.ARGB32.alpha(color2) / 255, FastColor.ARGB32.red(color1) * FastColor.ARGB32.red(color2) / 255, FastColor.ARGB32.green(color1) * FastColor.ARGB32.green(color2) / 255, FastColor.ARGB32.blue(color1) * FastColor.ARGB32.blue(color2) / 255);
-    }
-
     public int getColor() {
         return color;
     }
@@ -30,9 +22,9 @@ public class ColorModuleType extends ProjectorModuleType {
         int red = FastColor.ARGB32.red(color);
         int green = FastColor.ARGB32.green(color);
         int blue = FastColor.ARGB32.blue(color);
-        int opaque = color(255, red, green, blue);
+        int opaque = FastColor.ARGB32.color(255, red, green, blue);
         for (int i = 0; i < amt; i++) {
-            merged = merge(beam.getColor(), opaque);
+            merged = FastColor.ARGB32.multiply(beam.getColor(), opaque);
         }
         beam.setColor(merged);
     }
