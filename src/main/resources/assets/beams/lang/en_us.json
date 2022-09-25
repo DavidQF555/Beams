@@ -34,5 +34,6 @@
   "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector",
   "message.beams.pointer_connected": "Connected",
-  "message.beams.pointer_disconnected": "Disconnected"
+  "message.beams.pointer_disconnected": "Disconnected",
+  "text.beams.position": "(%1$s, %2$s, %3$s)"
 }

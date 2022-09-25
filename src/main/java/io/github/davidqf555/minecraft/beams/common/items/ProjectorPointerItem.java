@@ -3,6 +3,7 @@ package io.github.davidqf555.minecraft.beams.common.items;
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.DirectionalProjectorTileEntity;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.item.Item;
@@ -23,18 +24,22 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class ProjectorPointerItem extends Item {
 
     private static final ITextComponent CONNECTED = new TranslationTextComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_connected"))).withStyle(TextFormatting.GREEN);
     private static final ITextComponent DISCONNECTED = new TranslationTextComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_disconnected"))).withStyle(TextFormatting.RED);
+    private static final String POSITION = Util.makeDescriptionId("text", new ResourceLocation(Beams.ID, "position"));
 
     public ProjectorPointerItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> text, ITooltipFlag flag) {
+        getConnected(stack).values().stream().map(pos -> new TranslationTextComponent(POSITION, pos.getX(), pos.getY(), pos.getZ()).withStyle(TextFormatting.GREEN)).forEach(text::add);
     }
 
     @Override
