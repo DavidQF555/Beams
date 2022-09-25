@@ -7,6 +7,9 @@ public class DoubleSerializer implements IDataSerializer<Double> {
 
     public static final DoubleSerializer INSTANCE = new DoubleSerializer();
 
+    protected DoubleSerializer() {
+    }
+
     @Override
     public void write(PacketBuffer packet, Double value) {
         packet.writeDouble(value);
