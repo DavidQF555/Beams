@@ -31,8 +31,10 @@
   "item.beams.layers_module": "Layers Module",
   "item.beams.growth_module": "Growth Module",
   "item.beams.shrink_module": "Shrink Module",
+  "item.beams.tractor_module": "Tractor Module",
   "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector",
   "message.beams.pointer_connected": "Connected",
-  "message.beams.pointer_disconnected": "Disconnected"
+  "message.beams.pointer_disconnected": "Disconnected",
+  "text.beams.position": "(%1$s, %2$s, %3$s)"
 }

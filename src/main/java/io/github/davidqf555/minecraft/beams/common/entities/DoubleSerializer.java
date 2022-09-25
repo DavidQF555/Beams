@@ -7,6 +7,9 @@ public class DoubleSerializer implements EntityDataSerializer<Double> {
 
     public static final DoubleSerializer INSTANCE = new DoubleSerializer();
 
+    protected DoubleSerializer() {
+    }
+
     @Override
     public void write(FriendlyByteBuf packet, Double value) {
         packet.writeDouble(value);
