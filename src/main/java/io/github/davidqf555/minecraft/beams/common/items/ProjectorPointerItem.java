@@ -19,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -27,18 +28,23 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class ProjectorPointerItem extends Item {
 
     private static final Component CONNECTED = new TranslatableComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_connected"))).withStyle(ChatFormatting.GREEN);
     private static final Component DISCONNECTED = new TranslatableComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_disconnected"))).withStyle(ChatFormatting.RED);
+    private static final String POSITION = Util.makeDescriptionId("text", new ResourceLocation(Beams.ID, "position"));
 
     public ProjectorPointerItem(Properties properties) {
         super(properties);
+    }
+
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> text, TooltipFlag flag) {
+        getConnected(stack).values().stream().map(pos -> new TranslatableComponent(POSITION, pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.GREEN)).forEach(text::add);
     }
 
     @Override

@@ -38,6 +38,7 @@ public final class ItemRegistry {
     public static final RegistryObject<ProjectorModuleItem<LayersModuleType>> LAYERS_MODULE = register("layers_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.LAYERS, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> GROWTH_MODULE = register("growth_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.GROWTH, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> SHRINK_MODULE = register("shrink_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.SHRINK, new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<ProjectorModuleItem<ForceModuleType>> TRACTOR_MODULE = register("tractor_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.TRACTOR, new Item.Properties().tab(Beams.GROUP)));
 
     private ItemRegistry() {
     }
