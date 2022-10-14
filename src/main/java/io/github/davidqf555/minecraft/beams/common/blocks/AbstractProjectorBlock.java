@@ -20,6 +20,8 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
 
     public abstract Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state);
 
+    public abstract boolean isActive(BlockState state);
+
     @Override
     public BlockRenderType getRenderShape(BlockState state) {
         return BlockRenderType.MODEL;

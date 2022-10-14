@@ -3,7 +3,6 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 import com.google.common.collect.ImmutableMap;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
-import io.github.davidqf555.minecraft.beams.common.blocks.RedstoneActivatedProjectorBlock;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
@@ -53,7 +52,8 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
     protected void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
-        if (state.getBlock() instanceof RedstoneActivatedProjectorBlock && state.getValue(RedstoneActivatedProjectorBlock.TRIGGERED)) {
+        Block block = state.getBlock();
+        if (block instanceof AbstractProjectorBlock && ((AbstractProjectorBlock) block).isActive(state)) {
             shoot();
         }
     }

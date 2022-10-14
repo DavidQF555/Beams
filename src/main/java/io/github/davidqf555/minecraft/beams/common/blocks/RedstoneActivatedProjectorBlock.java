@@ -22,6 +22,11 @@ public abstract class RedstoneActivatedProjectorBlock extends AbstractProjectorB
         registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false));
     }
 
+    @Override
+    public boolean isActive(BlockState state) {
+        return state.getValue(TRIGGERED);
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     public void neighborChanged(BlockState state, World world, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean update) {
