@@ -1,4 +1,4 @@
-package io.github.davidqf555.minecraft.beams.common.blocks;
+package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.block.BlockState;

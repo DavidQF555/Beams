@@ -1,8 +1,8 @@
 package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.blocks.DirectionalProjectorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.ProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectionalProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.ProjectorTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.fml.RegistryObject;

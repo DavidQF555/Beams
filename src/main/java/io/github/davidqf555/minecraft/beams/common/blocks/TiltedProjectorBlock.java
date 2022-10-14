@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import io.github.davidqf555.minecraft.beams.common.blocks.te.ProjectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;

@@ -2,7 +2,7 @@ package io.github.davidqf555.minecraft.beams.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.blocks.DirectionalProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectionalProjectorTileEntity;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;

@@ -1,7 +1,8 @@
-package io.github.davidqf555.minecraft.beams.common.blocks;
+package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
+import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
