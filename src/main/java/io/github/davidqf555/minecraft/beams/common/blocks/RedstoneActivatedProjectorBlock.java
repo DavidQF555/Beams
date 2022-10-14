@@ -1,6 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.ProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItemUseContext;
@@ -30,10 +30,10 @@ public abstract class RedstoneActivatedProjectorBlock extends AbstractProjectorB
             boolean triggered = state.getValue(TRIGGERED);
             if (triggered != world.hasNeighborSignal(pos)) {
                 TileEntity te = world.getBlockEntity(pos);
-                if (te instanceof ProjectorTileEntity) {
+                if (te instanceof ContainerProjectorTileEntity) {
                     world.setBlock(pos, state.cycle(TRIGGERED), 2);
                     if (triggered) {
-                        ((ProjectorTileEntity) te).removeBeams();
+                        ((ContainerProjectorTileEntity) te).removeBeams();
                         return;
                     }
                     te.setChanged();

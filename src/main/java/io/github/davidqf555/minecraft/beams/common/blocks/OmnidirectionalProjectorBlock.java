@@ -3,7 +3,6 @@ package io.github.davidqf555.minecraft.beams.common.blocks;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectionalProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.ProjectorTileEntity;
 import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -11,9 +10,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 
-import javax.annotation.Nullable;
-
-public class OmnidirectionalProjectorBlock extends RedstoneActivatedProjectorBlock {
+public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock {
 
     public OmnidirectionalProjectorBlock(Properties properties) {
         super(properties);
@@ -34,12 +31,6 @@ public class OmnidirectionalProjectorBlock extends RedstoneActivatedProjectorBlo
             return ((DirectionalProjectorTileEntity) entity).getDirection();
         }
         return Vector3d.ZERO;
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new DirectionalProjectorTileEntity();
     }
 
     @SuppressWarnings("deprecation")

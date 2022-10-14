@@ -13,11 +13,11 @@ import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
 
-public class ProjectorBlock extends RedstoneActivatedProjectorBlock {
+public class SimpleProjectorBlock extends ContainerProjectorBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    public ProjectorBlock(Properties properties) {
+    public SimpleProjectorBlock(Properties properties) {
         super(properties);
     }
 

@@ -21,7 +21,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 
-public class TiltedProjectorBlock extends RedstoneActivatedProjectorBlock {
+public class TiltedProjectorBlock extends ContainerProjectorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalBlock.FACING;
@@ -124,6 +124,5 @@ public class TiltedProjectorBlock extends RedstoneActivatedProjectorBlock {
     public boolean isPathfindable(BlockState state, IBlockReader reader, BlockPos pos, PathType path) {
         return false;
     }
-
 
 }

@@ -10,7 +10,7 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.UUID;
 
-public class DirectionalProjectorTileEntity extends ProjectorTileEntity {
+public class DirectionalProjectorTileEntity extends ContainerProjectorTileEntity {
 
     private UUID id;
     private Vector3d direction;
