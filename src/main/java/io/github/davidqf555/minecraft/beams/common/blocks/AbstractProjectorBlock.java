@@ -95,7 +95,6 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
             if (te instanceof ProjectorTileEntity) {
                 ((ProjectorTileEntity) te).removeBeams();
                 Containers.dropContents(world, pos, (ProjectorTileEntity) te);
-                te.setChanged();
                 world.updateNeighbourForOutputSignal(pos, this);
             }
         }
