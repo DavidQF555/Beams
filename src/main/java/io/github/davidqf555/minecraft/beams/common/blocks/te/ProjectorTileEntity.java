@@ -3,6 +3,7 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
+import io.github.davidqf555.minecraft.beams.common.blocks.RedstoneActivatedProjectorBlock;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
@@ -78,7 +79,7 @@ public class ProjectorTileEntity extends LockableLootTileEntity implements ITick
     protected void updateBeams() {
         removeBeams();
         BlockState state = getBlockState();
-        if (state.getBlock() instanceof AbstractProjectorBlock && state.getValue(AbstractProjectorBlock.TRIGGERED)) {
+        if (state.getBlock() instanceof RedstoneActivatedProjectorBlock && state.getValue(RedstoneActivatedProjectorBlock.TRIGGERED)) {
             shoot();
         }
     }

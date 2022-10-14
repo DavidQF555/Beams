@@ -13,22 +13,21 @@ import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
 
-public class ProjectorBlock extends AbstractProjectorBlock {
+public class ProjectorBlock extends RedstoneActivatedProjectorBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     public ProjectorBlock(Properties properties) {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false));
     }
 
     @Override
-    protected Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
         return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal());
     }
 
@@ -59,4 +58,5 @@ public class ProjectorBlock extends AbstractProjectorBlock {
         }
         return prev.setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
+
 }

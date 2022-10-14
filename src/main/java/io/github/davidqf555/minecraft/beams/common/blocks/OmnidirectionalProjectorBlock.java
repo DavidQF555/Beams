@@ -13,14 +13,14 @@ import net.minecraft.world.IBlockReader;
 
 import javax.annotation.Nullable;
 
-public class OmnidirectionalProjectorBlock extends AbstractProjectorBlock {
+public class OmnidirectionalProjectorBlock extends RedstoneActivatedProjectorBlock {
 
     public OmnidirectionalProjectorBlock(Properties properties) {
         super(properties);
     }
 
     @Override
-    protected Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
         Vector3d pos = new Vector3d(0.5, 0.5, 0.5);
         if (entity instanceof DirectionalProjectorTileEntity) {
             pos = pos.add(((DirectionalProjectorTileEntity) entity).getDirection().scale(0.25));
@@ -29,7 +29,7 @@ public class OmnidirectionalProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         if (entity instanceof DirectionalProjectorTileEntity) {
             return ((DirectionalProjectorTileEntity) entity).getDirection();
         }

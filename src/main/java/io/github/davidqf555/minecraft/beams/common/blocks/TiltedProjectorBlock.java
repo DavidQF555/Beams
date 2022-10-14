@@ -21,14 +21,32 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 
-public class TiltedProjectorBlock extends AbstractProjectorBlock {
+public class TiltedProjectorBlock extends RedstoneActivatedProjectorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalBlock.FACING;
+    private static final VoxelShape
+            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
+            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
+            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
+            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
+            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
+            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
+            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
+            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
+            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
+            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
+            TOP_PX = VoxelShapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
+            TOP_NX = VoxelShapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
+            BOT_PX = VoxelShapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
+            BOT_NX = VoxelShapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
+            TOP_PZ = VoxelShapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
+            TOP_NZ = VoxelShapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
+            BOT_PZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
+            BOT_NZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
 
     public TiltedProjectorBlock(Properties properties) {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false));
     }
 
     @SuppressWarnings("deprecation")
@@ -58,33 +76,15 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
                 }
                 return BOT_NZ;
         }
-    }    private static final VoxelShape
-            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
-            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
-            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
-            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
-            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
-            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
-            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
-            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
-            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
-            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
-            TOP_PX = VoxelShapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
-            TOP_NX = VoxelShapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
-            BOT_PX = VoxelShapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
-            BOT_NX = VoxelShapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
-            TOP_PZ = VoxelShapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
-            TOP_NZ = VoxelShapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
-            BOT_PZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
-            BOT_NZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
+    }
 
     @Override
-    protected Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
         return new Vector3d(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
         Vector3d horz = Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).reverse();
         Vector3d vert = new Vector3d(0, state.getValue(HALF) == Half.TOP ? -1 : 1, 0);
         return horz.add(vert).scale(0.70710678118);
@@ -124,8 +124,6 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
     public boolean isPathfindable(BlockState state, IBlockReader reader, BlockPos pos, PathType path) {
         return false;
     }
-
-
 
 
 }
