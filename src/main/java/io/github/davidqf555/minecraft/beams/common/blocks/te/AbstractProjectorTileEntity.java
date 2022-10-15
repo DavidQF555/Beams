@@ -1,16 +1,11 @@
 package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
-import com.google.common.collect.ImmutableMap;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
-import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -21,18 +16,14 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public abstract class AbstractProjectorTileEntity extends TileEntity implements ITickableTileEntity {
 
-    protected final List<UUID> beams;
+    protected UUID beam;
 
     public AbstractProjectorTileEntity(TileEntityType<?> type) {
         super(type);
-        beams = new ArrayList<>();
     }
 
     @Override
@@ -45,8 +36,8 @@ public abstract class AbstractProjectorTileEntity extends TileEntity implements 
         }
     }
 
-    protected void updateBeams() {
-        removeBeams();
+    protected void updateBeam() {
+        removeBeam();
         BlockState state = getBlockState();
         Block block = state.getBlock();
         if (block instanceof AbstractProjectorBlock && ((AbstractProjectorBlock) block).isActive(state)) {
@@ -56,43 +47,37 @@ public abstract class AbstractProjectorTileEntity extends TileEntity implements 
 
     @Override
     public void setChanged() {
-        updateBeams();
+        updateBeam();
         super.setChanged();
     }
 
     protected abstract void shoot();
 
-    public void removeBeams() {
+    public void removeBeam() {
         World world = getLevel();
-        if (world instanceof ServerWorld) {
-            for (UUID id : beams) {
-                Entity entity = ((ServerWorld) world).getEntity(id);
-                if (entity != null) {
-                    entity.remove();
-                }
+        if (beam != null && world instanceof ServerWorld) {
+            Entity entity = ((ServerWorld) world).getEntity(beam);
+            if (entity != null) {
+                entity.remove();
             }
+            beam = null;
         }
-        beams.clear();
     }
 
     @Override
     public CompoundNBT save(CompoundNBT tag) {
         CompoundNBT out = super.save(tag);
-        ListNBT all = new ListNBT();
-        for (UUID id : beams) {
-            all.add(NBTUtil.createUUID(id));
+        if (beam != null) {
+            out.putUUID("Beam", beam);
         }
-        out.put("Beams", all);
         return out;
     }
 
     @Override
     public void load(BlockState state, CompoundNBT tag) {
         super.load(state, tag);
-        if (tag.contains("Beams", Constants.NBT.TAG_LIST)) {
-            for (INBT nbt : tag.getList("Beams", Constants.NBT.TAG_INT_ARRAY)) {
-                beams.add(NBTUtil.loadUUID(nbt));
-            }
+        if (tag.contains("Beam", Constants.NBT.TAG_INT_ARRAY)) {
+            beam = tag.getUUID("Beam");
         }
     }
 
@@ -110,10 +95,6 @@ public abstract class AbstractProjectorTileEntity extends TileEntity implements 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
         deserializeNBT(pkt.getTag());
-    }
-
-    protected Map<ProjectorModuleType, Integer> getModules() {
-        return ImmutableMap.of();
     }
 
 }

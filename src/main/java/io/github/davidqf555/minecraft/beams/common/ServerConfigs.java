@@ -14,13 +14,11 @@ public class ServerConfigs {
         SPEC = pair.getRight();
     }
 
-    public final ForgeConfigSpec.DoubleValue beamSegmentLength, projectorMaxRange, defaultBeamSize, pointerRange;
+    public final ForgeConfigSpec.DoubleValue projectorMaxRange, defaultBeamSize, pointerRange;
     public final ForgeConfigSpec.IntValue projectorUpdatePeriod, portableProjectorMaxRange;
 
     public ServerConfigs(ForgeConfigSpec.Builder builder) {
         builder.push("Server config for Beams mod");
-        beamSegmentLength = builder.comment("Beams are separated into segments with a max of this length in blocks in order to improve efficiency and ensure consistent rendering. ")
-                .defineInRange("segmentLength", 16, 0.5, Double.MAX_VALUE);
         defaultBeamSize = builder.comment("This is the the default width/height in blocks of beams projected from projectors. ")
                 .defineInRange("beamSize", 0.5, 0, Double.MAX_VALUE);
         projectorMaxRange = builder.comment("This is the max range in blocks that a projector projects beams. ")

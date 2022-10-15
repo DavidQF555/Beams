@@ -1,6 +1,5 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
-import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.entity.Entity;
@@ -24,7 +23,10 @@ import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class BeamEntity extends Entity {
 
@@ -47,7 +49,8 @@ public class BeamEntity extends Entity {
         modules = new HashMap<>();
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
+    @Nullable
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
         Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(poke));
         double endSizeFactor = getEndSizeFactor(modules);
         baseMaxWidth *= endSizeFactor;
@@ -75,42 +78,22 @@ public class BeamEntity extends Entity {
         return factor;
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
-        List<T> all = new ArrayList<>();
-        double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
-        Vector3d center = end.subtract(start);
-        double total = center.length();
-        Vector3d unit = center.normalize();
-        double remaining = total;
-        while (remaining > 0) {
-            double length;
-            if (remaining < segment) {
-                length = remaining;
-                remaining = 0;
-            } else {
-                length = segment;
-                remaining -= segment;
-            }
-            Vector3d endPos = start.add(unit.scale(length));
-            T entity = type.create(world);
-            if (entity != null) {
-                entity.setStart(start);
-                entity.setPos(endPos.x(), endPos.y(), endPos.z());
-                entity.setModules(modules);
-                double endDist = total - remaining;
-                double startFactor = (endDist - length) / total;
-                entity.setStartWidth(startWidth + (endWidth - startWidth) * startFactor);
-                entity.setStartHeight(startHeight + (endHeight - startHeight) * startFactor);
-                double endFactor = endDist / total;
-                entity.setEndWidth(startWidth + (endWidth - startWidth) * endFactor);
-                entity.setEndHeight(startHeight + (endHeight - startHeight) * endFactor);
-                entity.initializeModules();
-                world.addFreshEntity(entity);
-                all.add(entity);
-            }
-            start = endPos;
+    @Nullable
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
+        T beam = type.create(world);
+        if (beam != null) {
+            beam.setStart(start);
+            beam.setPos(end.x(), end.y(), end.z());
+            beam.setModules(modules);
+            beam.setStartWidth(startWidth);
+            beam.setStartHeight(startHeight);
+            beam.setEndWidth(endWidth);
+            beam.setEndHeight(endHeight);
+            beam.initializeModules();
+            world.addFreshEntity(beam);
+            return beam;
         }
-        return all;
+        return null;
     }
 
     @Override

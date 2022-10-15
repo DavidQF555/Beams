@@ -45,7 +45,7 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
         if (!state1.is(state2.getBlock())) {
             TileEntity te = world.getBlockEntity(pos);
             if (te instanceof ContainerProjectorTileEntity) {
-                ((ContainerProjectorTileEntity) te).removeBeams();
+                ((ContainerProjectorTileEntity) te).removeBeam();
                 InventoryHelper.dropContents(world, pos, (ContainerProjectorTileEntity) te);
             }
             world.updateNeighbourForOutputSignal(pos, this);
