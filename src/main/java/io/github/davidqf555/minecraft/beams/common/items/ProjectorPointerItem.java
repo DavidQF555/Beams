@@ -2,7 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectionalProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
@@ -49,10 +49,10 @@ public class ProjectorPointerItem extends Item {
             World world = context.getLevel();
             BlockPos pos = context.getClickedPos();
             TileEntity te = world.getBlockEntity(pos);
-            if (te instanceof DirectionalProjectorTileEntity) {
+            if (te instanceof OmnidirectionalProjectorTileEntity) {
                 ItemStack stack = context.getItemInHand();
                 Map<UUID, BlockPos> connections = getConnected(stack);
-                UUID id = ((DirectionalProjectorTileEntity) te).getUUID();
+                UUID id = ((OmnidirectionalProjectorTileEntity) te).getUUID();
                 if (connections.containsKey(id)) {
                     connections.remove(id);
                     if (world.isClientSide()) {
@@ -90,9 +90,9 @@ public class ProjectorPointerItem extends Item {
                 for (UUID key : new ArrayList<>(connections.keySet())) {
                     BlockPos pos = connections.get(key);
                     TileEntity te = world.getBlockEntity(pos);
-                    if (te instanceof DirectionalProjectorTileEntity && ((DirectionalProjectorTileEntity) te).getUUID().equals(key)) {
+                    if (te instanceof OmnidirectionalProjectorTileEntity && ((OmnidirectionalProjectorTileEntity) te).getUUID().equals(key)) {
                         Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
-                        ((DirectionalProjectorTileEntity) te).setDirection(dir);
+                        ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
                         te.setChanged();
                     } else {
                         connections.remove(key);

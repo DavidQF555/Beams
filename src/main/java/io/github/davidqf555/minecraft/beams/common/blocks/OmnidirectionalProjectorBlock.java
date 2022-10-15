@@ -1,7 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectionalProjectorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.ProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectedProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -17,18 +18,18 @@ public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock {
     }
 
     @Override
-    public Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getStartOffset(DirectedProjectorTileEntity entity, BlockState state) {
         Vector3d pos = new Vector3d(0.5, 0.5, 0.5);
-        if (entity instanceof DirectionalProjectorTileEntity) {
-            pos = pos.add(((DirectionalProjectorTileEntity) entity).getDirection().scale(0.25));
+        if (entity instanceof OmnidirectionalProjectorTileEntity) {
+            pos = pos.add(((OmnidirectionalProjectorTileEntity) entity).getDirection().scale(0.25));
         }
         return pos;
     }
 
     @Override
-    public Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
-        if (entity instanceof DirectionalProjectorTileEntity) {
-            return ((DirectionalProjectorTileEntity) entity).getDirection();
+    public Vector3d getBeamDirection(DirectedProjectorTileEntity entity, BlockState state) {
+        if (entity instanceof OmnidirectionalProjectorTileEntity) {
+            return ((OmnidirectionalProjectorTileEntity) entity).getDirection();
         }
         return Vector3d.ZERO;
     }
@@ -50,4 +51,8 @@ public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock {
         return true;
     }
 
+    @Override
+    public ContainerProjectorTileEntity newBlockEntity(IBlockReader reader) {
+        return new OmnidirectionalProjectorTileEntity();
+    }
 }

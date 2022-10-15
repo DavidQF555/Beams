@@ -1,6 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItemUseContext;
@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public abstract class RedstoneActivatedProjectorBlock extends AbstractProjectorBlock {
+public abstract class RedstoneActivatedProjectorBlock extends DirectedProjectorBlock {
 
     public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
 
@@ -35,10 +35,10 @@ public abstract class RedstoneActivatedProjectorBlock extends AbstractProjectorB
             boolean triggered = state.getValue(TRIGGERED);
             if (triggered != world.hasNeighborSignal(pos)) {
                 TileEntity te = world.getBlockEntity(pos);
-                if (te instanceof ContainerProjectorTileEntity) {
+                if (te instanceof AbstractProjectorTileEntity) {
                     world.setBlock(pos, state.cycle(TRIGGERED), 2);
                     if (triggered) {
-                        ((ContainerProjectorTileEntity) te).removeBeams();
+                        ((AbstractProjectorTileEntity) te).removeBeam();
                         return;
                     }
                     te.setChanged();

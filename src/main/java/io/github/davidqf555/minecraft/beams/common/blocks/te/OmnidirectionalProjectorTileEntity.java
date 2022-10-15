@@ -10,18 +10,18 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.UUID;
 
-public class DirectionalProjectorTileEntity extends ContainerProjectorTileEntity {
+public class OmnidirectionalProjectorTileEntity extends ContainerProjectorTileEntity {
 
     private UUID id;
     private Vector3d direction;
 
-    protected DirectionalProjectorTileEntity(TileEntityType<?> type) {
+    protected OmnidirectionalProjectorTileEntity(TileEntityType<?> type) {
         super(type);
         direction = new Vector3d(1, 0, 0);
         id = MathHelper.createInsecureUUID();
     }
 
-    public DirectionalProjectorTileEntity() {
+    public OmnidirectionalProjectorTileEntity() {
         this(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get());
     }
 

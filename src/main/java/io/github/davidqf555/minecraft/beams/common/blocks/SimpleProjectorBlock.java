@@ -1,6 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.ProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectedProjectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItemUseContext;
@@ -22,12 +22,12 @@ public class SimpleProjectorBlock extends ContainerProjectorBlock {
     }
 
     @Override
-    public Vector3d getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getStartOffset(DirectedProjectorTileEntity entity, BlockState state) {
         return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
     }
 
     @Override
-    public Vector3d getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    public Vector3d getBeamDirection(DirectedProjectorTileEntity entity, BlockState state) {
         return Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal());
     }
 

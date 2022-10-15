@@ -26,7 +26,7 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class ContainerProjectorTileEntity extends ProjectorTileEntity implements IInventory, INamedContainerProvider, INameable {
+public class ContainerProjectorTileEntity extends DirectedProjectorTileEntity implements IInventory, INamedContainerProvider, INameable {
 
     private final NonNullList<ItemStack> items;
     private ITextComponent name;

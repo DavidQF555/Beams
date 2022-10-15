@@ -3,9 +3,7 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 import com.google.common.collect.ImmutableMap;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
-import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
-import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -18,8 +16,6 @@ import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
@@ -30,11 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class ProjectorTileEntity extends TileEntity implements ITickableTileEntity {
+public abstract class AbstractProjectorTileEntity extends TileEntity implements ITickableTileEntity {
 
-    private final List<UUID> beams;
+    protected final List<UUID> beams;
 
-    public ProjectorTileEntity(TileEntityType<?> type) {
+    public AbstractProjectorTileEntity(TileEntityType<?> type) {
         super(type);
         beams = new ArrayList<>();
     }
@@ -64,18 +60,7 @@ public class ProjectorTileEntity extends TileEntity implements ITickableTileEnti
         super.setChanged();
     }
 
-    private void shoot() {
-        World world = getLevel();
-        BlockPos pos = getBlockPos();
-        BlockState state = getBlockState();
-        Block block = state.getBlock();
-        Vector3d dir = ((AbstractProjectorBlock) block).getBeamDirection(this, state);
-        Vector3d start = Vector3d.atLowerCornerOf(pos).add(((AbstractProjectorBlock) block).getStartOffset(this, state));
-        double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        for (BeamEntity beam : BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModules(), 0.1, size, size, size, size)) {
-            beams.add(beam.getUUID());
-        }
-    }
+    protected abstract void shoot();
 
     public void removeBeams() {
         World world = getLevel();
