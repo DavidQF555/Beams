@@ -37,11 +37,6 @@ public abstract class RedstoneActivatedProjectorBlock extends DirectedProjectorB
                 TileEntity te = world.getBlockEntity(pos);
                 if (te instanceof AbstractProjectorTileEntity) {
                     world.setBlock(pos, state.cycle(TRIGGERED), 2);
-                    if (triggered) {
-                        ((AbstractProjectorTileEntity) te).removeBeam();
-                        return;
-                    }
-                    te.setChanged();
                 }
             }
         }
@@ -50,11 +45,9 @@ public abstract class RedstoneActivatedProjectorBlock extends DirectedProjectorB
     @SuppressWarnings("deprecation")
     @Override
     public void onPlace(BlockState state, World world, BlockPos pos, BlockState old, boolean update) {
-        if (state.getValue(TRIGGERED)) {
-            TileEntity te = world.getBlockEntity(pos);
-            if (te != null) {
-                te.setChanged();
-            }
+        TileEntity te = world.getBlockEntity(pos);
+        if (te != null) {
+            te.setChanged();
         }
     }
 

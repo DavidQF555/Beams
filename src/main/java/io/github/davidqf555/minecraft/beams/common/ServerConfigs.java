@@ -15,7 +15,7 @@ public class ServerConfigs {
     }
 
     public final ForgeConfigSpec.DoubleValue projectorMaxRange, defaultBeamSize, pointerRange;
-    public final ForgeConfigSpec.IntValue projectorUpdatePeriod, portableProjectorMaxRange;
+    public final ForgeConfigSpec.IntValue portableProjectorMaxRange;
 
     public ServerConfigs(ForgeConfigSpec.Builder builder) {
         builder.push("Server config for Beams mod");
@@ -25,8 +25,6 @@ public class ServerConfigs {
                 .defineInRange("projectorRange", 64, 0, Double.MAX_VALUE);
         portableProjectorMaxRange = builder.comment("This is the max range in blocks that a portable projector projects beams. ")
                 .defineInRange("portableProjectorRange", 64, 0, Integer.MAX_VALUE);
-        projectorUpdatePeriod = builder.comment("This is the period in ticks that projectors update their beams. Lowering this would cause more consistent beams but worse performance. ")
-                .defineInRange("projectorUpdatePeriod", 20, 1, Integer.MAX_VALUE);
         pointerRange = builder.comment("This is the range in blocks of the projector pointer")
                 .defineInRange("pointerRange", 64, 0, Double.MAX_VALUE);
         builder.pop();

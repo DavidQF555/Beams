@@ -28,7 +28,7 @@ public class PortableProjectorItem extends ShootableItem {
         int time = getUseDuration(stack) - duration;
         double range = getRange(time);
         if (range > 0) {
-            BeamEntity beam = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, entity.getEyePosition(1), entity.getLookAngle(), range, ProjectorInventory.getModuleTypes(ProjectorInventory.get(stack)), 0.1, 0.5, 0.5, 0.5, 0.5);
+            BeamEntity beam = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, entity.getEyePosition(1), entity.getLookAngle(), range, ProjectorInventory.getModuleTypes(ProjectorInventory.get(stack)), 0.5, 0.5, 0.5, 0.5);
             if (beam != null) {
                 beam.setLifespan(20);
                 beam.setShooter(entity.getUUID());

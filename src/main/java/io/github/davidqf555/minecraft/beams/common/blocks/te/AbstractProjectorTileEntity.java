@@ -1,6 +1,5 @@
 package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
-import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -8,7 +7,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.world.World;
@@ -18,22 +16,12 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public abstract class AbstractProjectorTileEntity extends TileEntity implements ITickableTileEntity {
+public abstract class AbstractProjectorTileEntity extends TileEntity {
 
     protected UUID beam;
 
     public AbstractProjectorTileEntity(TileEntityType<?> type) {
         super(type);
-    }
-
-    @Override
-    public void tick() {
-        if (hasLevel()) {
-            World world = getLevel();
-            if (world instanceof ServerWorld && world.getGameTime() % ServerConfigs.INSTANCE.projectorUpdatePeriod.get() == 0) {
-                setChanged();
-            }
-        }
     }
 
     protected void updateBeam() {

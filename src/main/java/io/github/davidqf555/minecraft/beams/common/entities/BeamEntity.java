@@ -10,10 +10,7 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
@@ -30,6 +27,7 @@ import java.util.UUID;
 
 public class BeamEntity extends Entity {
 
+    private static final double POKE = 0.1;
     private static final DataParameter<Double> X = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Double> Y = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Double> Z = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
@@ -40,6 +38,7 @@ public class BeamEntity extends Entity {
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules;
+    private double maxRange;
     private UUID shooter;
     private AxisAlignedBB bounds;
     private int lifespan;
@@ -50,16 +49,30 @@ public class BeamEntity extends Entity {
     }
 
     @Nullable
-    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
-        Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(poke));
-        double endSizeFactor = getEndSizeFactor(modules);
-        baseMaxWidth *= endSizeFactor;
-        baseMaxHeight *= endSizeFactor;
-        double startSizeFactor = getStartSizeFactor(modules);
-        baseStartWidth *= startSizeFactor;
-        baseStartHeight *= startSizeFactor;
-        double distFactor = end.subtract(start).length() / range;
-        return shoot(type, world, start, end, modules, baseStartWidth, baseStartHeight, baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor, baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
+        T beam = type.create(world);
+        if (beam != null) {
+            Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(POKE));
+            double endSizeFactor = getEndSizeFactor(modules);
+            baseMaxWidth *= endSizeFactor;
+            baseMaxHeight *= endSizeFactor;
+            double startSizeFactor = getStartSizeFactor(modules);
+            baseStartWidth *= startSizeFactor;
+            baseStartHeight *= startSizeFactor;
+            beam.setStart(start);
+            beam.setPos(end.x(), end.y(), end.z());
+            beam.setModules(modules);
+            beam.setStartWidth(baseStartWidth);
+            beam.setStartHeight(baseStartHeight);
+            double distFactor = end.subtract(start).length() / range;
+            beam.setEndWidth(baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor);
+            beam.setEndHeight(baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+            beam.setMaxRange(range);
+            beam.initializeModules();
+            world.addFreshEntity(beam);
+            return beam;
+        }
+        return null;
     }
 
     private static double getEndSizeFactor(Map<ProjectorModuleType, Integer> modules) {
@@ -78,22 +91,12 @@ public class BeamEntity extends Entity {
         return factor;
     }
 
-    @Nullable
-    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d end, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
-        T beam = type.create(world);
-        if (beam != null) {
-            beam.setStart(start);
-            beam.setPos(end.x(), end.y(), end.z());
-            beam.setModules(modules);
-            beam.setStartWidth(startWidth);
-            beam.setStartHeight(startHeight);
-            beam.setEndWidth(endWidth);
-            beam.setEndHeight(endHeight);
-            beam.initializeModules();
-            world.addFreshEntity(beam);
-            return beam;
-        }
-        return null;
+    public double getMaxRange() {
+        return maxRange;
+    }
+
+    public void setMaxRange(double maxRange) {
+        this.maxRange = maxRange;
     }
 
     @Override
@@ -104,6 +107,14 @@ public class BeamEntity extends Entity {
             if (lifespan > 0 && tickCount >= lifespan) {
                 remove();
             } else {
+                Vector3d start = getStart();
+                Vector3d original = position();
+                Vector3d dir = original.subtract(start).normalize();
+                BlockRayTraceResult trace = level.clip(new RayTraceContext(start, start.add(dir.scale(maxRange)), RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
+                Vector3d end = trace.getLocation().add(dir.scale(POKE));
+                if (!original.equals(end)) {
+                    setPos(end.x(), end.y(), end.z());
+                }
                 Map<ProjectorModuleType, Integer> modules = getModules();
                 AxisAlignedBB bounds = getMaxBounds();
                 for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
@@ -397,6 +408,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("Shooter", Constants.NBT.TAG_INT_ARRAY)) {
             setShooter(tag.getUUID("Shooter"));
         }
+        if (tag.contains("MaxRange", Constants.NBT.TAG_DOUBLE)) {
+            setMaxRange(tag.getDouble("MaxRange"));
+        }
         if (tag.contains("Modules", Constants.NBT.TAG_COMPOUND)) {
             Map<ProjectorModuleType, Integer> modules = new HashMap<>();
             IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
@@ -424,6 +438,7 @@ public class BeamEntity extends Entity {
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
+        tag.putDouble("MaxRange", getMaxRange());
         UUID shooter = getShooter();
         if (shooter != null) {
             tag.putUUID("Shooter", shooter);

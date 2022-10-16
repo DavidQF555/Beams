@@ -30,7 +30,7 @@ public class DirectedProjectorTileEntity extends AbstractProjectorTileEntity {
         Vector3d dir = ((DirectedProjectorBlock) block).getBeamDirection(this, state);
         Vector3d start = Vector3d.atLowerCornerOf(pos).add(((DirectedProjectorBlock) block).getStartOffset(this, state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        BeamEntity entity = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModules(), 0.1, size, size, size, size);
+        BeamEntity entity = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModules(), size, size, size, size);
         beam = entity == null ? null : entity.getUUID();
     }
 
