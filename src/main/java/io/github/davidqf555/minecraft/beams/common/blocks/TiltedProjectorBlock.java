@@ -1,6 +1,5 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.DirectedProjectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
@@ -20,6 +19,7 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
 public class TiltedProjectorBlock extends ContainerProjectorBlock {
 
@@ -79,12 +79,12 @@ public class TiltedProjectorBlock extends ContainerProjectorBlock {
     }
 
     @Override
-    public Vector3d getStartOffset(DirectedProjectorTileEntity entity, BlockState state) {
+    public Vector3d getStartOffset(World world, BlockPos pos, BlockState state) {
         return new Vector3d(0.5, 0.5, 0.5);
     }
 
     @Override
-    public Vector3d getBeamDirection(DirectedProjectorTileEntity entity, BlockState state) {
+    public Vector3d getBeamDirection(World world, BlockPos pos, BlockState state) {
         Vector3d horz = Vector3d.atLowerCornerOf(state.getValue(FACING).getNormal()).reverse();
         Vector3d vert = new Vector3d(0, state.getValue(HALF) == Half.TOP ? -1 : 1, 0);
         return horz.add(vert).scale(0.70710678118);

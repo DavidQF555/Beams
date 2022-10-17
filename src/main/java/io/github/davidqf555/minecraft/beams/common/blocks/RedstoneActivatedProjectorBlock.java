@@ -36,7 +36,7 @@ public abstract class RedstoneActivatedProjectorBlock extends DirectedProjectorB
             if (triggered != world.hasNeighborSignal(pos)) {
                 TileEntity te = world.getBlockEntity(pos);
                 if (te instanceof AbstractProjectorTileEntity) {
-                    world.setBlock(pos, state.cycle(TRIGGERED), 2);
+                    world.setBlockAndUpdate(pos, state.cycle(TRIGGERED));
                 }
             }
         }

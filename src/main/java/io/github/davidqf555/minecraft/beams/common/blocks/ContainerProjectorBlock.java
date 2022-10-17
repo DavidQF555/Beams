@@ -1,6 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,6 +14,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+
+import java.util.Map;
 
 public abstract class ContainerProjectorBlock extends RedstoneActivatedProjectorBlock {
 
@@ -39,13 +42,11 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void onRemove(BlockState state1, World world, BlockPos pos, BlockState state2, boolean update) {
         if (!state1.is(state2.getBlock())) {
             TileEntity te = world.getBlockEntity(pos);
             if (te instanceof ContainerProjectorTileEntity) {
-                ((ContainerProjectorTileEntity) te).removeBeam();
                 InventoryHelper.dropContents(world, pos, (ContainerProjectorTileEntity) te);
             }
             world.updateNeighbourForOutputSignal(pos, this);
@@ -62,4 +63,14 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
             }
         }
     }
+
+    @Override
+    protected Map<ProjectorModuleType, Integer> getModules(World world, BlockPos pos, BlockState state) {
+        TileEntity te = world.getBlockEntity(pos);
+        if (te instanceof ContainerProjectorTileEntity) {
+            return ((ContainerProjectorTileEntity) te).getModules();
+        }
+        return super.getModules(world, pos, state);
+    }
+
 }

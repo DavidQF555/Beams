@@ -26,7 +26,7 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class ContainerProjectorTileEntity extends DirectedProjectorTileEntity implements IInventory, INamedContainerProvider, INameable {
+public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity implements IInventory, INamedContainerProvider, INameable {
 
     private final NonNullList<ItemStack> items;
     private ITextComponent name;
@@ -143,8 +143,8 @@ public class ContainerProjectorTileEntity extends DirectedProjectorTileEntity im
         return 1;
     }
 
-    @Override
-    protected Map<ProjectorModuleType, Integer> getModules() {
+    public Map<ProjectorModuleType, Integer> getModules() {
         return ProjectorInventory.getModuleTypes(this);
     }
+
 }
