@@ -27,8 +27,8 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
         float length = MathHelper.sqrt(dif.x() * dif.x() + dif.y() * dif.y() + dif.z() * dif.z());
         Vector3f vertex = new Vector3f(0, 0, length);
         matrixStackIn.pushPose();
-        float yaw = (float) Math.PI / 2 - (float) MathHelper.atan2(-dif.z(), dif.x());
-        float pitch = (float) Math.asin(dif.y() / length);
+        float yaw = (float) (Math.PI / 2 - MathHelper.atan2(-dif.z(), dif.x()));//pi/2
+        float pitch = (float) Math.asin(MathHelper.clamp(dif.y() / length, -1, 1));//
         matrixStackIn.mulPose(Vector3f.YN.rotation(yaw));
         matrixStackIn.mulPose(Vector3f.XP.rotation(pitch));
         IVertexBuilder builder = bufferIn.getBuffer(RenderType.lightning());
