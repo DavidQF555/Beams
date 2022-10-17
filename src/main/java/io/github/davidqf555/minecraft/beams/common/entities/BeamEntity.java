@@ -110,7 +110,7 @@ public class BeamEntity extends Entity {
                 Vector3d start = getStart();
                 Vector3d original = position();
                 Vector3d dir = original.subtract(start).normalize();
-                BlockRayTraceResult trace = level.clip(new RayTraceContext(start, start.add(dir.scale(maxRange)), RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
+                BlockRayTraceResult trace = level.clip(new RayTraceContext(start, start.add(dir.scale(maxRange)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null));
                 Vector3d end = trace.getLocation().add(dir.scale(POKE));
                 if (!original.equals(end)) {
                     setPos(end.x(), end.y(), end.z());
