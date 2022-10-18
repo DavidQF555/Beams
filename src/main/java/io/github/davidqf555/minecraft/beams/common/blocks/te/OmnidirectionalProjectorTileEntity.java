@@ -1,4 +1,4 @@
-package io.github.davidqf555.minecraft.beams.common.blocks;
+package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
@@ -11,18 +11,18 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-public class DirectionalProjectorTileEntity extends ProjectorTileEntity {
+public class OmnidirectionalProjectorTileEntity extends ContainerProjectorTileEntity {
 
     private UUID id;
     private Vec3 direction;
 
-    protected DirectionalProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    protected OmnidirectionalProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         direction = new Vec3(1, 0, 0);
         id = Mth.createInsecureUUID();
     }
 
-    public DirectionalProjectorTileEntity(BlockPos pos, BlockState state) {
+    public OmnidirectionalProjectorTileEntity(BlockPos pos, BlockState state) {
         this(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), pos, state);
     }
 

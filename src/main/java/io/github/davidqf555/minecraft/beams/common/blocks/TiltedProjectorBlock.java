@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class TiltedProjectorBlock extends AbstractProjectorBlock {
+public class TiltedProjectorBlock extends ContainerProjectorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -46,7 +47,6 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
 
     public TiltedProjectorBlock(Properties properties) {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false));
     }
 
     @SuppressWarnings("deprecation")
@@ -83,12 +83,12 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
     }
 
     @Override
-    protected Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vec3 getStartOffset(Level world, BlockPos pos, BlockState state) {
         return new Vec3(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    public Vec3 getBeamDirection(Level world, BlockPos pos, BlockState state) {
         Vec3 horz = Vec3.atLowerCornerOf(state.getValue(FACING).getNormal()).reverse();
         Vec3 vert = new Vec3(0, state.getValue(HALF) == Half.TOP ? -1 : 1, 0);
         return horz.add(vert).scale(0.70710678118);
@@ -128,6 +128,5 @@ public class TiltedProjectorBlock extends AbstractProjectorBlock {
     public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType path) {
         return false;
     }
-
 
 }
