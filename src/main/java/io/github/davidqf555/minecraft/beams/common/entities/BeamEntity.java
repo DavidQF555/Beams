@@ -1,10 +1,16 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
+import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -38,6 +44,7 @@ public class BeamEntity extends Entity {
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules;
+    private final Map<BlockPos, BlockState> collisions;
     private double maxRange;
     private UUID shooter;
     private AxisAlignedBB bounds;
@@ -46,6 +53,7 @@ public class BeamEntity extends Entity {
     public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
         super(type, world);
         modules = new HashMap<>();
+        collisions = new HashMap<>();
     }
 
     @Nullable
@@ -115,6 +123,7 @@ public class BeamEntity extends Entity {
                 if (!original.equals(end)) {
                     setPos(end.x(), end.y(), end.z());
                 }
+                Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
                 AxisAlignedBB bounds = getMaxBounds();
                 for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
@@ -128,6 +137,7 @@ public class BeamEntity extends Entity {
                                     }
                                 });
                                 if (isColliding(pos)) {
+                                    collisions.put(pos, level.getBlockState(pos));
                                     modules.forEach((type, amt) -> {
                                         if (amt > 0) {
                                             type.onCollisionTick(this, pos, amt);
@@ -138,6 +148,28 @@ public class BeamEntity extends Entity {
                         }
                     }
                 }
+                Map<BlockPos, BlockState> past = new HashMap<>(getCollisions());
+                past.forEach((pos, state) -> {
+                    if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
+                        removeCollision(pos);
+                        Block block = state.getBlock();
+                        if (block instanceof IBeamCollisionEffect) {
+                            ((IBeamCollisionEffect) block).onBeamStopCollision(this, pos, state);
+                        }
+                    }
+                });
+                collisions.forEach((pos, state) -> {
+                    Block block = state.getBlock();
+                    if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
+                        addCollision(pos, state);
+                        if (block instanceof IBeamCollisionEffect) {
+                            ((IBeamCollisionEffect) block).onBeamStartCollision(this, pos, state);
+                        }
+                    }
+                    if (block instanceof IBeamCollisionEffect) {
+                        ((IBeamCollisionEffect) block).onBeamCollisionTick(this, pos, state);
+                    }
+                });
                 for (Entity entity : level.getEntities(this, bounds)) {
                     if (isAffected(entity)) {
                         modules.forEach((type, amt) -> {
@@ -149,6 +181,17 @@ public class BeamEntity extends Entity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        getCollisions().forEach((pos, state) -> {
+            Block block = state.getBlock();
+            if (block instanceof IBeamCollisionEffect) {
+                ((IBeamCollisionEffect) block).onBeamStopCollision(this, pos, state);
+            }
+        });
+        super.onRemovedFromWorld();
     }
 
     protected boolean isColliding(BlockPos pos) {
@@ -282,6 +325,18 @@ public class BeamEntity extends Entity {
     public void setPos(double x, double y, double z) {
         super.setPos(x, y, z);
         refreshMaxBounds();
+    }
+
+    public Map<BlockPos, BlockState> getCollisions() {
+        return collisions;
+    }
+
+    public void addCollision(BlockPos pos, BlockState state) {
+        getCollisions().put(pos, state);
+    }
+
+    public void removeCollision(BlockPos pos) {
+        getCollisions().remove(pos);
     }
 
     public int getColor() {
@@ -423,6 +478,13 @@ public class BeamEntity extends Entity {
             }
             setModules(modules);
         }
+        if (tag.contains("Collisions", Constants.NBT.TAG_LIST)) {
+            for (INBT nbt : tag.getList("Collisions", Constants.NBT.TAG_COMPOUND)) {
+                if (((CompoundNBT) nbt).contains("Pos", Constants.NBT.TAG_COMPOUND) && ((CompoundNBT) nbt).contains("State", Constants.NBT.TAG_COMPOUND)) {
+                    addCollision(NBTUtil.readBlockPos(((CompoundNBT) nbt).getCompound("Pos")), NBTUtil.readBlockState(((CompoundNBT) nbt).getCompound("State")));
+                }
+            }
+        }
     }
 
     @Override
@@ -448,6 +510,14 @@ public class BeamEntity extends Entity {
             modules.putInt(type.getRegistryName().toString(), amt);
         });
         tag.put("Modules", modules);
+        ListNBT collisions = new ListNBT();
+        getCollisions().forEach((pos, state) -> {
+            CompoundNBT collision = new CompoundNBT();
+            collision.put("Pos", NBTUtil.writeBlockPos(pos));
+            collision.put("State", NBTUtil.writeBlockState(state));
+            collisions.add(collision);
+        });
+        tag.put("Collisions", collisions);
     }
 
     @Override
