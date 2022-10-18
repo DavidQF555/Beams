@@ -2,7 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
-import io.github.davidqf555.minecraft.beams.common.blocks.DirectionalProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -54,10 +54,10 @@ public class ProjectorPointerItem extends Item {
             Level world = context.getLevel();
             BlockPos pos = context.getClickedPos();
             BlockEntity te = world.getBlockEntity(pos);
-            if (te instanceof DirectionalProjectorTileEntity) {
+            if (te instanceof OmnidirectionalProjectorTileEntity) {
                 ItemStack stack = context.getItemInHand();
                 Map<UUID, BlockPos> connections = getConnected(stack);
-                UUID id = ((DirectionalProjectorTileEntity) te).getUUID();
+                UUID id = ((OmnidirectionalProjectorTileEntity) te).getUUID();
                 if (connections.containsKey(id)) {
                     connections.remove(id);
                     if (world.isClientSide()) {
@@ -95,9 +95,9 @@ public class ProjectorPointerItem extends Item {
                 for (UUID key : new ArrayList<>(connections.keySet())) {
                     BlockPos pos = connections.get(key);
                     BlockEntity te = world.getBlockEntity(pos);
-                    if (te instanceof DirectionalProjectorTileEntity && ((DirectionalProjectorTileEntity) te).getUUID().equals(key)) {
+                    if (te instanceof OmnidirectionalProjectorTileEntity && ((OmnidirectionalProjectorTileEntity) te).getUUID().equals(key)) {
                         Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
-                        ((DirectionalProjectorTileEntity) te).setDirection(dir);
+                        ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
                         te.setChanged();
                     } else {
                         connections.remove(key);

@@ -1,6 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -12,22 +14,21 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-public class ProjectorBlock extends AbstractProjectorBlock {
+public class SimpleProjectorBlock extends ContainerProjectorBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    public ProjectorBlock(Properties properties) {
+    public SimpleProjectorBlock(Properties properties) {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false));
     }
 
     @Override
-    protected Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state) {
+    public Vec3 getStartOffset(Level world, BlockPos pos, BlockState state) {
         return Vec3.atLowerCornerOf(state.getValue(FACING).getNormal()).scale(0.5).add(0.5, 0.5, 0.5);
     }
 
     @Override
-    protected Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state) {
+    public Vec3 getBeamDirection(Level world, BlockPos pos, BlockState state) {
         return Vec3.atLowerCornerOf(state.getValue(FACING).getNormal());
     }
 
@@ -58,4 +59,5 @@ public class ProjectorBlock extends AbstractProjectorBlock {
         }
         return prev.setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
+
 }

@@ -1,7 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
 import com.mojang.math.Vector3f;
-import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
@@ -19,15 +18,20 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class BeamEntity extends Entity {
 
+    private static final double POKE = 0.1;
     private static final EntityDataAccessor<Double> X = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Double> Y = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Double> Z = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
@@ -38,6 +42,7 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules;
+    private double maxRange;
     private UUID shooter;
     private AABB bounds;
     private int lifespan;
@@ -47,16 +52,31 @@ public class BeamEntity extends Entity {
         modules = new HashMap<>();
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double poke, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
-        Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation().add(dir.scale(poke));
-        double endSizeFactor = getEndSizeFactor(modules);
-        baseMaxWidth *= endSizeFactor;
-        baseMaxHeight *= endSizeFactor;
-        double startSizeFactor = getStartSizeFactor(modules);
-        baseStartWidth *= startSizeFactor;
-        baseStartHeight *= startSizeFactor;
-        double distFactor = end.subtract(start).length() / range;
-        return shoot(type, world, start, end, modules, baseStartWidth, baseStartHeight, baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor, baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+    @Nullable
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
+        T beam = type.create(world);
+        if (beam != null) {
+            Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation().add(dir.scale(POKE));
+            double endSizeFactor = getEndSizeFactor(modules);
+            baseMaxWidth *= endSizeFactor;
+            baseMaxHeight *= endSizeFactor;
+            double startSizeFactor = getStartSizeFactor(modules);
+            baseStartWidth *= startSizeFactor;
+            baseStartHeight *= startSizeFactor;
+            beam.setStart(start);
+            beam.setPos(end.x(), end.y(), end.z());
+            beam.setModules(modules);
+            beam.setStartWidth(baseStartWidth);
+            beam.setStartHeight(baseStartHeight);
+            double distFactor = end.subtract(start).length() / range;
+            beam.setEndWidth(baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor);
+            beam.setEndHeight(baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+            beam.setMaxRange(range);
+            beam.initializeModules();
+            world.addFreshEntity(beam);
+            return beam;
+        }
+        return null;
     }
 
     private static double getEndSizeFactor(Map<ProjectorModuleType, Integer> modules) {
@@ -75,42 +95,12 @@ public class BeamEntity extends Entity {
         return factor;
     }
 
-    public static <T extends BeamEntity> List<T> shoot(EntityType<T> type, Level world, Vec3 start, Vec3 end, Map<ProjectorModuleType, Integer> modules, double startWidth, double startHeight, double endWidth, double endHeight) {
-        List<T> all = new ArrayList<>();
-        double segment = ServerConfigs.INSTANCE.beamSegmentLength.get();
-        Vec3 center = end.subtract(start);
-        double total = center.length();
-        Vec3 unit = center.normalize();
-        double remaining = total;
-        while (remaining > 0) {
-            double length;
-            if (remaining < segment) {
-                length = remaining;
-                remaining = 0;
-            } else {
-                length = segment;
-                remaining -= segment;
-            }
-            Vec3 endPos = start.add(unit.scale(length));
-            T entity = type.create(world);
-            if (entity != null) {
-                entity.setStart(start);
-                entity.setPos(endPos.x(), endPos.y(), endPos.z());
-                entity.setModules(modules);
-                double endDist = total - remaining;
-                double startFactor = (endDist - length) / total;
-                entity.setStartWidth(startWidth + (endWidth - startWidth) * startFactor);
-                entity.setStartHeight(startHeight + (endHeight - startHeight) * startFactor);
-                double endFactor = endDist / total;
-                entity.setEndWidth(startWidth + (endWidth - startWidth) * endFactor);
-                entity.setEndHeight(startHeight + (endHeight - startHeight) * endFactor);
-                entity.initializeModules();
-                world.addFreshEntity(entity);
-                all.add(entity);
-            }
-            start = endPos;
-        }
-        return all;
+    public double getMaxRange() {
+        return maxRange;
+    }
+
+    public void setMaxRange(double maxRange) {
+        this.maxRange = maxRange;
     }
 
     @Override
@@ -121,6 +111,14 @@ public class BeamEntity extends Entity {
             if (lifespan > 0 && tickCount >= lifespan) {
                 remove(RemovalReason.DISCARDED);
             } else {
+                Vec3 start = getStart();
+                Vec3 original = position();
+                Vec3 dir = original.subtract(start).normalize();
+                BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
+                Vec3 end = trace.getLocation().add(dir.scale(POKE));
+                if (!original.equals(end)) {
+                    setPos(end.x(), end.y(), end.z());
+                }
                 Map<ProjectorModuleType, Integer> modules = getModules();
                 AABB bounds = getMaxBounds();
                 for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
@@ -414,6 +412,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("Shooter", Tag.TAG_INT_ARRAY)) {
             setShooter(tag.getUUID("Shooter"));
         }
+        if (tag.contains("MaxRange", Tag.TAG_DOUBLE)) {
+            setMaxRange(tag.getDouble("MaxRange"));
+        }
         if (tag.contains("Modules", Tag.TAG_COMPOUND)) {
             Map<ProjectorModuleType, Integer> modules = new HashMap<>();
             IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
@@ -441,6 +442,7 @@ public class BeamEntity extends Entity {
         tag.putInt("Color", getColor());
         tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
+        tag.putDouble("MaxRange", getMaxRange());
         UUID shooter = getShooter();
         if (shooter != null) {
             tag.putUUID("Shooter", shooter);

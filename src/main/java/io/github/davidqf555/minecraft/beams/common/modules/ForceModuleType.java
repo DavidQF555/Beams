@@ -16,10 +16,9 @@ public class ForceModuleType extends ProjectorModuleType {
 
     @Override
     public void onEntityTick(BeamEntity beam, Entity target, int amt) {
-        if (target.isPushable()) {
-            Vec3 force = beam.position().subtract(beam.getStart()).normalize().scale(magnitude.apply(amt));
-            target.push(force.x(), force.y(), force.z());
-            target.hurtMarked = true;
-        }
+        Vec3 force = beam.position().subtract(beam.getStart()).normalize().scale(magnitude.apply(amt));
+        target.push(force.x(), force.y(), force.z());
+        target.hurtMarked = true;
     }
+
 }

@@ -1,7 +1,10 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -9,35 +12,29 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
-
-public class OmnidirectionalProjectorBlock extends AbstractProjectorBlock {
+public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock {
 
     public OmnidirectionalProjectorBlock(Properties properties) {
         super(properties);
     }
 
     @Override
-    protected Vec3 getStartOffset(ProjectorTileEntity entity, BlockState state) {
-        Vec3 pos = new Vec3(0.5, 0.5, 0.5);
-        if (entity instanceof DirectionalProjectorTileEntity) {
-            pos = pos.add(((DirectionalProjectorTileEntity) entity).getDirection().scale(0.25));
+    public Vec3 getStartOffset(Level world, BlockPos pos, BlockState state) {
+        BlockEntity te = world.getBlockEntity(pos);
+        Vec3 center = new Vec3(0.5, 0.5, 0.5);
+        if (te instanceof OmnidirectionalProjectorTileEntity) {
+            center = center.add(((OmnidirectionalProjectorTileEntity) te).getDirection().scale(0.25));
         }
-        return pos;
+        return center;
     }
 
     @Override
-    protected Vec3 getBeamDirection(ProjectorTileEntity entity, BlockState state) {
-        if (entity instanceof DirectionalProjectorTileEntity) {
-            return ((DirectionalProjectorTileEntity) entity).getDirection();
+    public Vec3 getBeamDirection(Level world, BlockPos pos, BlockState state) {
+        BlockEntity te = world.getBlockEntity(pos);
+        if (te instanceof OmnidirectionalProjectorTileEntity) {
+            return ((OmnidirectionalProjectorTileEntity) te).getDirection();
         }
         return Vec3.ZERO;
-    }
-
-    @Nullable
-    @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new DirectionalProjectorTileEntity(pos, state);
     }
 
     @SuppressWarnings("deprecation")
@@ -55,6 +52,11 @@ public class OmnidirectionalProjectorBlock extends AbstractProjectorBlock {
     @Override
     public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
         return true;
+    }
+
+    @Override
+    public ContainerProjectorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new OmnidirectionalProjectorTileEntity(pos, state);
     }
 
 }

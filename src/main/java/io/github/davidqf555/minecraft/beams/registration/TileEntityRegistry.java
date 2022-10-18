@@ -1,8 +1,8 @@
 package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.blocks.DirectionalProjectorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.ProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
@@ -22,7 +22,7 @@ public final class TileEntityRegistry {
         return TYPES.register(name, type);
     }
 
-    public static final RegistryObject<BlockEntityType<ProjectorTileEntity>> BEAM_PROJECTOR = register("beam_projector", () -> BlockEntityType.Builder.of(ProjectorTileEntity::new, BlockRegistry.PROJECTOR.get(), BlockRegistry.TILTED_PROJECTOR.get()).build(null));
-    public static final RegistryObject<BlockEntityType<DirectionalProjectorTileEntity>> OMNIDIRECTIONAL_BEAM_PROJECTOR = register("omnidirectional_beam_projector", () -> BlockEntityType.Builder.of(DirectionalProjectorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ContainerProjectorTileEntity>> BEAM_PROJECTOR = register("beam_projector", () -> BlockEntityType.Builder.of(ContainerProjectorTileEntity::new, BlockRegistry.PROJECTOR.get(), BlockRegistry.TILTED_PROJECTOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<OmnidirectionalProjectorTileEntity>> OMNIDIRECTIONAL_BEAM_PROJECTOR = register("omnidirectional_beam_projector", () -> BlockEntityType.Builder.of(OmnidirectionalProjectorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get()).build(null));
 
 }
