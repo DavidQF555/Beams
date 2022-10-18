@@ -5,39 +5,40 @@ import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.INameable;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.Nameable;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity implements IInventory, INamedContainerProvider, INameable {
+public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity implements Container, MenuProvider, Nameable {
 
     private final NonNullList<ItemStack> items;
-    private ITextComponent name;
+    private Component name;
 
-    public ContainerProjectorTileEntity(TileEntityType<?> type) {
-        super(type);
+    public ContainerProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         items = NonNullList.withSize(5, ItemStack.EMPTY);
     }
 
-    public ContainerProjectorTileEntity() {
-        this(TileEntityRegistry.BEAM_PROJECTOR.get());
+    public ContainerProjectorTileEntity(BlockPos pos, BlockState state) {
+        this(TileEntityRegistry.BEAM_PROJECTOR.get(), pos, state);
     }
 
     @Override
@@ -57,7 +58,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
 
     @Override
     public ItemStack removeItem(int index, int amount) {
-        ItemStack stack = ItemStackHelper.removeItem(items, index, amount);
+        ItemStack stack = ContainerHelper.removeItem(items, index, amount);
         if (!stack.isEmpty()) {
             setChanged();
         }
@@ -66,7 +67,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
 
     @Override
     public ItemStack removeItemNoUpdate(int index) {
-        return ItemStackHelper.takeItem(items, index);
+        return ContainerHelper.takeItem(items, index);
     }
 
     @Override
@@ -79,7 +80,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     }
 
     @Override
-    public boolean stillValid(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return getLevel().getBlockEntity(getBlockPos()) == this && player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, (double) this.worldPosition.getZ() + 0.5) <= 64;
     }
 
@@ -89,53 +90,53 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
-        ITextComponent custom = getCustomName();
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        Component custom = getCustomName();
         if (custom != null) {
-            tag.putString("CustomName", ITextComponent.Serializer.toJson(custom));
+            tag.putString("CustomName", Component.Serializer.toJson(custom));
         }
-        ItemStackHelper.saveAllItems(tag, items);
-        return super.save(tag);
+        ContainerHelper.saveAllItems(tag, items);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag) {
-        super.load(state, tag);
-        if (tag.contains("CustomName", Constants.NBT.TAG_STRING)) {
-            setCustomName(ITextComponent.Serializer.fromJson(tag.getString("CustomName")));
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("CustomName", Tag.TAG_STRING)) {
+            setCustomName(Component.Serializer.fromJson(tag.getString("CustomName")));
         }
-        ItemStackHelper.loadAllItems(tag, items);
+        ContainerHelper.loadAllItems(tag, items);
     }
 
     @Nullable
     @Override
-    public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ProjectorContainer(id, inventory, this);
     }
 
     @Override
-    public ITextComponent getName() {
-        ITextComponent custom = getCustomName();
+    public Component getName() {
+        Component custom = getCustomName();
         return custom == null ? getDefaultName() : custom;
     }
 
     @Override
-    public ITextComponent getDisplayName() {
+    public Component getDisplayName() {
         return getName();
     }
 
     @Nullable
     @Override
-    public ITextComponent getCustomName() {
+    public Component getCustomName() {
         return name;
     }
 
-    public void setCustomName(ITextComponent name) {
+    public void setCustomName(Component name) {
         this.name = name;
     }
 
-    protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
+    protected Component getDefaultName() {
+        return new TranslatableComponent(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
     }
 
     @Override

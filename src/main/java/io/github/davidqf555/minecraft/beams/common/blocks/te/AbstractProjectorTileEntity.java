@@ -1,29 +1,28 @@
 package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public abstract class AbstractProjectorTileEntity extends TileEntity {
+public abstract class AbstractProjectorTileEntity extends BlockEntity {
 
     private final List<UUID> beams;
 
-    public AbstractProjectorTileEntity(TileEntityType<?> type) {
-        super(type);
+    public AbstractProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         beams = new ArrayList<>();
     }
 
@@ -50,40 +49,36 @@ public abstract class AbstractProjectorTileEntity extends TileEntity {
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
-        CompoundNBT out = super.save(tag);
-        ListNBT beams = new ListNBT();
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ListTag beams = new ListTag();
         for (UUID beam : getBeams()) {
-            beams.add(NBTUtil.createUUID(beam));
+            beams.add(NbtUtils.createUUID(beam));
         }
-        out.put("Beams", beams);
-        return out;
+        tag.put("Beams", beams);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag) {
-        super.load(state, tag);
-        if (tag.contains("Beams", Constants.NBT.TAG_LIST)) {
-            for (INBT nbt : tag.getList("Beams", Constants.NBT.TAG_INT_ARRAY)) {
-                addBeam(NBTUtil.loadUUID(nbt));
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("Beams", Tag.TAG_LIST)) {
+            for (Tag nbt : tag.getList("Beams", Tag.TAG_INT_ARRAY)) {
+                addBeam(NbtUtils.loadUUID(nbt));
             }
         }
     }
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(getBlockPos(), 0, getUpdateTag());
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public CompoundNBT getUpdateTag() {
-        return save(new CompoundNBT());
-    }
-
-    @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        deserializeNBT(pkt.getTag());
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return tag;
     }
 
 }

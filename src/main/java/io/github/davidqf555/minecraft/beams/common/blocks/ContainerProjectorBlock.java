@@ -2,18 +2,17 @@ package io.github.davidqf555.minecraft.beams.common.blocks;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.Map;
 
@@ -24,30 +23,30 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
     }
 
     @Override
-    public ContainerProjectorTileEntity newBlockEntity(IBlockReader reader) {
-        return new ContainerProjectorTileEntity();
+    public ContainerProjectorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ContainerProjectorTileEntity(pos, state);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult clip) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult clip) {
         if (world.isClientSide()) {
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         } else {
-            TileEntity te = world.getBlockEntity(pos);
+            BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ContainerProjectorTileEntity) {
                 player.openMenu((ContainerProjectorTileEntity) te);
             }
-            return ActionResultType.CONSUME;
+            return InteractionResult.CONSUME;
         }
     }
 
     @Override
-    public void onRemove(BlockState state1, World world, BlockPos pos, BlockState state2, boolean update) {
+    public void onRemove(BlockState state1, Level world, BlockPos pos, BlockState state2, boolean update) {
         if (!state1.is(state2.getBlock())) {
-            TileEntity te = world.getBlockEntity(pos);
+            BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ContainerProjectorTileEntity) {
-                InventoryHelper.dropContents(world, pos, (ContainerProjectorTileEntity) te);
+                Containers.dropContents(world, pos, (ContainerProjectorTileEntity) te);
             }
             world.updateNeighbourForOutputSignal(pos, this);
         }
@@ -55,9 +54,9 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
         if (stack.hasCustomHoverName()) {
-            TileEntity te = world.getBlockEntity(pos);
+            BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ContainerProjectorTileEntity) {
                 ((ContainerProjectorTileEntity) te).setCustomName(stack.getHoverName());
             }
@@ -65,8 +64,8 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
     }
 
     @Override
-    protected Map<ProjectorModuleType, Integer> getModules(World world, BlockPos pos, BlockState state) {
-        TileEntity te = world.getBlockEntity(pos);
+    protected Map<ProjectorModuleType, Integer> getModules(Level world, BlockPos pos, BlockState state) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ContainerProjectorTileEntity) {
             return ((ContainerProjectorTileEntity) te).getModules();
         }
