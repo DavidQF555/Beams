@@ -24,6 +24,7 @@ public final class ItemRegistry {
     public static final RegistryObject<BlockItem> PROJECTOR = register("projector", () -> new BlockItem(BlockRegistry.PROJECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> TILTED_PROJECTOR = register("tilted_projector", () -> new BlockItem(BlockRegistry.TILTED_PROJECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> OMNIDIRECTIONAL_PROJECTOR = register("omnidirectional_projector", () -> new BlockItem(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<BlockItem> MIRROR = register("mirror", () -> new BlockItem(BlockRegistry.MIRROR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<PortableProjectorItem> PORTABLE_PROJECTOR = register("portable_projector", () -> new PortableProjectorItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorPointerItem> PROJECTOR_POINTER = register("projector_pointer", () -> new ProjectorPointerItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
 

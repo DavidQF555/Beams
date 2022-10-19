@@ -45,8 +45,8 @@ public abstract class AbstractProjectorTileEntity extends TileEntity {
         getBeams().add(beam);
     }
 
-    public void clearBeams() {
-        beams.clear();
+    public void removeBeam(UUID beam) {
+        getBeams().remove(beam);
     }
 
     @Override
