@@ -1,6 +1,5 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.MirrorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
@@ -162,11 +161,14 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
         for (BeamEntity beam : getHit(world, pos)) {
             Vector3d start = beam.getStart();
             Vector3d hitPos = beam.position();
-            Vector3d original = hitPos.subtract(start).normalize();
+            Vector3d original = hitPos.subtract(start);
+            double length = original.length();
+            original = original.scale(1 / length);
             Vector3d dir = getReflectedDirection(state, original);
             double width = beam.getEndWidth();
             double height = beam.getEndHeight();
-            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, hitPos, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), beam.getModules(), width, height, width, height);
+            double maxLength = beam.getMaxRange() - length;
+            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, hitPos, dir, maxLength, beam.getModules(), width, height, width, height);
             if (reflect != null) {
                 beams.add(reflect);
             }
