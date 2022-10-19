@@ -235,11 +235,7 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
         }
 
         public Vector3d reflect(Vector3d dir) {
-            return getNormal();
-        }
-
-        public Vector3d getNormal() {
-            return normal;
+            return dir.subtract(normal.scale(dir.dot(normal) * 2));
         }
 
     }
