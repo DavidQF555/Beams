@@ -33,7 +33,7 @@ import java.util.UUID;
 
 public class BeamEntity extends Entity {
 
-    private static final double POKE = 0.1;
+    public static final double POKE = 0.1;
     private static final DataParameter<Double> X = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Double> Y = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Double> Z = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);

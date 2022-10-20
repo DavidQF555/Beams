@@ -160,15 +160,16 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
         List<BeamEntity> beams = new ArrayList<>();
         for (BeamEntity beam : getHit(world, pos)) {
             Vector3d start = beam.getStart();
-            Vector3d hitPos = beam.position();
-            Vector3d original = hitPos.subtract(start);
+            Vector3d end = beam.position();
+            Vector3d original = end.subtract(start);
             double length = original.length();
             original = original.scale(1 / length);
             Vector3d dir = getReflectedDirection(state, original);
             double width = beam.getEndWidth();
             double height = beam.getEndHeight();
             double maxLength = beam.getMaxRange() - length;
-            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, hitPos, dir, maxLength, beam.getModules(), width, height, width, height);
+            Vector3d reflectStart = end.subtract(original.scale(BeamEntity.POKE));
+            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, reflectStart, dir, maxLength, beam.getModules(), width, height, width, height);
             if (reflect != null) {
                 beams.add(reflect);
             }
