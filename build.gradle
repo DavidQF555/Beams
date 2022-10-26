@@ -13,7 +13,7 @@ plugins {
 }
 apply plugin: 'net.minecraftforge.gradle'
 
-version = '1.18.2-1.8.3'
+version = '1.18.2-1.8.4'
 group = 'io.github.davidqf555.minecraft.beams'
 archivesBaseName = 'beams'
 
