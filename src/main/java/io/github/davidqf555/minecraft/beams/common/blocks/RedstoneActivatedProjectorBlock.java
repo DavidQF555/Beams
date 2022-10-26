@@ -45,10 +45,7 @@ public abstract class RedstoneActivatedProjectorBlock extends DirectedProjectorB
     @SuppressWarnings("deprecation")
     @Override
     public void onPlace(BlockState state, Level world, BlockPos pos, BlockState old, boolean update) {
-        BlockEntity te = world.getBlockEntity(pos);
-        if (te != null) {
-            te.setChanged();
-        }
+        updateBeam(world, pos, state);
     }
 
     @Override
