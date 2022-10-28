@@ -54,10 +54,9 @@
     }
   },
   "textures": {
-    "side": "beams:block/mirror_side",
-    "bottom": "beams:block/mirror_bottom",
+    "outer": "block/gold_block",
     "inner": "beams:block/mirror_inner",
-    "particle": "#side"
+    "particle": "#outer"
   },
   "elements": [
     {
@@ -79,7 +78,7 @@
             16,
             16
           ],
-          "texture": "#bottom",
+          "texture": "#outer",
           "cullface": "down"
         },
         "up": {
@@ -99,7 +98,7 @@
             16,
             16
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "north"
         },
         "south": {
@@ -109,7 +108,7 @@
             16,
             16
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "south"
         },
         "west": {
@@ -119,7 +118,7 @@
             16,
             16
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "west"
         },
         "east": {
@@ -129,7 +128,7 @@
             16,
             16
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "east"
         }
       }
@@ -153,7 +152,7 @@
             16,
             16
           ],
-          "texture": "#bottom",
+          "texture": "#outer",
           "cullface": "up"
         },
         "north": {
@@ -163,7 +162,7 @@
             8,
             8
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "north"
         },
         "south": {
@@ -173,7 +172,7 @@
             16,
             8
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "south"
         },
         "west": {
@@ -192,7 +191,7 @@
             16,
             8
           ],
-          "texture": "#side",
+          "texture": "#outer",
           "cullface": "east"
         }
       }
