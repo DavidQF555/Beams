@@ -1,0 +1,38 @@
+{
+  "variants": {
+    "facing=east,half=bottom": {
+      "model": "beams:block/mirror"
+    },
+    "facing=east,half=top": {
+      "model": "beams:block/mirror",
+      "x": 180
+    },
+    "facing=north,half=bottom": {
+      "model": "beams:block/mirror",
+      "y": 270
+    },
+    "facing=north,half=top": {
+      "model": "beams:block/mirror",
+      "x": 180,
+      "y": 270
+    },
+    "facing=south,half=bottom": {
+      "model": "beams:block/mirror",
+      "y": 90
+    },
+    "facing=south,half=top": {
+      "model": "beams:block/mirror",
+      "x": 180,
+      "y": 90
+    },
+    "facing=west,half=bottom": {
+      "model": "beams:block/mirror",
+      "y": 180
+    },
+    "facing=west,half=top": {
+      "model": "beams:block/mirror",
+      "x": 180,
+      "y": 180
+    }
+  }
+}

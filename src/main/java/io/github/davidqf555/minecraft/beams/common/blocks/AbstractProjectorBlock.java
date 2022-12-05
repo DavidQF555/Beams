@@ -14,6 +14,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
     }
 
     public void updateBeam(World world, BlockPos pos, BlockState state) {
-        removeBeam(world, pos);
+        removeBeams(world, pos);
         if (isActive(state)) {
             TileEntity te = world.getBlockEntity(pos);
             if (te instanceof AbstractProjectorTileEntity) {
@@ -44,18 +45,25 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
         }
     }
 
-    public void removeBeam(World world, BlockPos pos) {
+    public void removeBeam(World world, BlockPos pos, UUID beam) {
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof AbstractProjectorTileEntity) {
             if (world instanceof ServerWorld) {
-                for (UUID beam : ((AbstractProjectorTileEntity) te).getBeams()) {
-                    Entity entity = ((ServerWorld) world).getEntity(beam);
-                    if (entity != null) {
-                        entity.remove();
-                    }
+                Entity entity = ((ServerWorld) world).getEntity(beam);
+                if (entity != null) {
+                    entity.remove();
                 }
             }
-            ((AbstractProjectorTileEntity) te).clearBeams();
+            ((AbstractProjectorTileEntity) te).removeBeam(beam);
+        }
+    }
+
+    public void removeBeams(World world, BlockPos pos) {
+        TileEntity te = world.getBlockEntity(pos);
+        if (te instanceof AbstractProjectorTileEntity) {
+            for (UUID id : new ArrayList<>(((AbstractProjectorTileEntity) te).getBeams())) {
+                removeBeam(world, pos, id);
+            }
         }
     }
 
@@ -68,7 +76,7 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
     @Override
     public void onRemove(BlockState state1, World world, BlockPos pos, BlockState state2, boolean update) {
         if (!state1.is(state2.getBlock())) {
-            removeBeam(world, pos);
+            removeBeams(world, pos);
         }
         super.onRemove(state1, world, pos, state2, update);
     }
