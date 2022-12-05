@@ -169,7 +169,7 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
             double height = beam.getEndHeight();
             double maxLength = beam.getMaxRange() - length;
             Vector3d reflectStart = end.subtract(original.scale(BeamEntity.POKE));
-            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, reflectStart, dir, maxLength, beam.getModules(), width, height, width, height);
+            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, reflectStart, dir, maxLength, beam.getModules(), width, height, width, height, beam.getUUID());
             if (reflect != null) {
                 beams.add(reflect);
             }
@@ -202,7 +202,7 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
     @Override
     public void onBeamStartCollision(BeamEntity beam, BlockPos pos, BlockState state) {
         TileEntity te = beam.level.getBlockEntity(pos);
-        if (te instanceof MirrorTileEntity && !((MirrorTileEntity) te).getBeams().contains(beam.getUUID()) && ((MirrorTileEntity) te).addHit(beam.getUUID())) {
+        if (te instanceof MirrorTileEntity && !((MirrorTileEntity) te).getBeams().contains(beam.getUUID()) && beam.getParents().stream().noneMatch(parent -> ((MirrorTileEntity) te).getHit().contains(parent)) && ((MirrorTileEntity) te).addHit(beam.getUUID())) {
             te.setChanged();
         }
     }

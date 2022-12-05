@@ -26,10 +26,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class BeamEntity extends Entity {
 
@@ -46,7 +43,7 @@ public class BeamEntity extends Entity {
     private final Map<ProjectorModuleType, Integer> modules;
     private final Map<BlockPos, BlockState> collisions;
     private double maxRange;
-    private UUID shooter;
+    private UUID shooter, parent;
     private AxisAlignedBB bounds;
     private int lifespan;
 
@@ -57,9 +54,10 @@ public class BeamEntity extends Entity {
     }
 
     @Nullable
-    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight, @Nullable UUID parent) {
         T beam = type.create(world);
         if (beam != null) {
+            beam.setDirectParent(parent);
             Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(POKE));
             double endSizeFactor = getEndSizeFactor(modules);
             baseMaxWidth *= endSizeFactor;
@@ -255,6 +253,30 @@ public class BeamEntity extends Entity {
             }
         }
         return false;
+    }
+
+    @Nullable
+    public UUID getDirectParent() {
+        return parent;
+    }
+
+    public void setDirectParent(@Nullable UUID parent) {
+        this.parent = parent;
+    }
+
+    public Set<UUID> getParents() {
+        Set<UUID> parents = new HashSet<>();
+        UUID direct = getDirectParent();
+        if (direct != null) {
+            parents.add(direct);
+            if (level instanceof ServerWorld) {
+                Entity parent = ((ServerWorld) level).getEntity(direct);
+                if (parent instanceof BeamEntity) {
+                    parents.addAll(((BeamEntity) parent).getParents());
+                }
+            }
+        }
+        return parents;
     }
 
     public Map<ProjectorModuleType, Integer> getModules() {
@@ -460,6 +482,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("Lifespan", Constants.NBT.TAG_INT)) {
             setLifespan(tag.getInt("Lifespan"));
         }
+        if (tag.contains("Parent", Constants.NBT.TAG_INT_ARRAY)) {
+            setDirectParent(tag.getUUID("Parent"));
+        }
         if (tag.contains("Shooter", Constants.NBT.TAG_INT_ARRAY)) {
             setShooter(tag.getUUID("Shooter"));
         }
@@ -501,6 +526,10 @@ public class BeamEntity extends Entity {
         tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
         tag.putDouble("MaxRange", getMaxRange());
+        UUID parent = getDirectParent();
+        if (parent != null) {
+            tag.putUUID("Parent", parent);
+        }
         UUID shooter = getShooter();
         if (shooter != null) {
             tag.putUUID("Shooter", shooter);
