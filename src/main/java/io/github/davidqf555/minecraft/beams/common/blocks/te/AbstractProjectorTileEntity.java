@@ -44,8 +44,8 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
         getBeams().add(beam);
     }
 
-    public void clearBeams() {
-        beams.clear();
+    public void removeBeam(UUID beam) {
+        getBeams().remove(beam);
     }
 
     @Override

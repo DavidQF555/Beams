@@ -1,10 +1,13 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
 import com.mojang.math.Vector3f;
+import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -17,6 +20,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -24,14 +29,11 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class BeamEntity extends Entity {
 
-    private static final double POKE = 0.1;
+    public static final double POKE = 0.1;
     private static final EntityDataAccessor<Double> X = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Double> Y = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Double> Z = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
@@ -42,20 +44,23 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules;
+    private final Map<BlockPos, BlockState> collisions;
     private double maxRange;
-    private UUID shooter;
+    private UUID shooter, parent;
     private AABB bounds;
     private int lifespan;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
         modules = new HashMap<>();
+        collisions = new HashMap<>();
     }
 
     @Nullable
-    public static <T extends BeamEntity> T shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight) {
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight, @Nullable UUID parent) {
         T beam = type.create(world);
         if (beam != null) {
+            beam.setDirectParent(parent);
             Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation().add(dir.scale(POKE));
             double endSizeFactor = getEndSizeFactor(modules);
             baseMaxWidth *= endSizeFactor;
@@ -119,6 +124,7 @@ public class BeamEntity extends Entity {
                 if (!original.equals(end)) {
                     setPos(end.x(), end.y(), end.z());
                 }
+                Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
                 AABB bounds = getMaxBounds();
                 for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
@@ -132,6 +138,7 @@ public class BeamEntity extends Entity {
                                     }
                                 });
                                 if (isColliding(pos)) {
+                                    collisions.put(pos, level.getBlockState(pos));
                                     modules.forEach((type, amt) -> {
                                         if (amt > 0) {
                                             type.onCollisionTick(this, pos, amt);
@@ -142,6 +149,28 @@ public class BeamEntity extends Entity {
                         }
                     }
                 }
+                Map<BlockPos, BlockState> past = new HashMap<>(getCollisions());
+                past.forEach((pos, state) -> {
+                    if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
+                        removeCollision(pos);
+                        Block block = state.getBlock();
+                        if (block instanceof IBeamCollisionEffect) {
+                            ((IBeamCollisionEffect) block).onBeamStopCollision(this, pos, state);
+                        }
+                    }
+                });
+                collisions.forEach((pos, state) -> {
+                    Block block = state.getBlock();
+                    if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
+                        addCollision(pos, state);
+                        if (block instanceof IBeamCollisionEffect) {
+                            ((IBeamCollisionEffect) block).onBeamStartCollision(this, pos, state);
+                        }
+                    }
+                    if (block instanceof IBeamCollisionEffect) {
+                        ((IBeamCollisionEffect) block).onBeamCollisionTick(this, pos, state);
+                    }
+                });
                 for (Entity entity : level.getEntities(this, bounds)) {
                     if (isAffected(entity)) {
                         modules.forEach((type, amt) -> {
@@ -153,6 +182,17 @@ public class BeamEntity extends Entity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        getCollisions().forEach((pos, state) -> {
+            Block block = state.getBlock();
+            if (block instanceof IBeamCollisionEffect) {
+                ((IBeamCollisionEffect) block).onBeamStopCollision(this, pos, state);
+            }
+        });
+        super.onRemovedFromWorld();
     }
 
     protected boolean isColliding(BlockPos pos) {
@@ -216,6 +256,30 @@ public class BeamEntity extends Entity {
             }
         }
         return false;
+    }
+
+    @Nullable
+    public UUID getDirectParent() {
+        return parent;
+    }
+
+    public void setDirectParent(@Nullable UUID parent) {
+        this.parent = parent;
+    }
+
+    public Set<UUID> getParents() {
+        Set<UUID> parents = new HashSet<>();
+        UUID direct = getDirectParent();
+        if (direct != null) {
+            parents.add(direct);
+            if (level instanceof ServerLevel) {
+                Entity parent = ((ServerLevel) level).getEntity(direct);
+                if (parent instanceof BeamEntity) {
+                    parents.addAll(((BeamEntity) parent).getParents());
+                }
+            }
+        }
+        return parents;
     }
 
     public Map<ProjectorModuleType, Integer> getModules() {
@@ -286,6 +350,18 @@ public class BeamEntity extends Entity {
     public void setPos(double x, double y, double z) {
         super.setPos(x, y, z);
         refreshMaxBounds();
+    }
+
+    public Map<BlockPos, BlockState> getCollisions() {
+        return collisions;
+    }
+
+    public void addCollision(BlockPos pos, BlockState state) {
+        getCollisions().put(pos, state);
+    }
+
+    public void removeCollision(BlockPos pos) {
+        getCollisions().remove(pos);
     }
 
     public int getColor() {
@@ -409,6 +485,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("Lifespan", Tag.TAG_INT)) {
             setLifespan(tag.getInt("Lifespan"));
         }
+        if (tag.contains("Parent", Tag.TAG_INT_ARRAY)) {
+            setDirectParent(tag.getUUID("Parent"));
+        }
         if (tag.contains("Shooter", Tag.TAG_INT_ARRAY)) {
             setShooter(tag.getUUID("Shooter"));
         }
@@ -427,6 +506,13 @@ public class BeamEntity extends Entity {
             }
             setModules(modules);
         }
+        if (tag.contains("Collisions", Tag.TAG_LIST)) {
+            for (Tag nbt : tag.getList("Collisions", Tag.TAG_COMPOUND)) {
+                if (((CompoundTag) nbt).contains("Pos", Tag.TAG_COMPOUND) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
+                    addCollision(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(((CompoundTag) nbt).getCompound("State")));
+                }
+            }
+        }
     }
 
     @Override
@@ -443,6 +529,10 @@ public class BeamEntity extends Entity {
         tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
         tag.putDouble("MaxRange", getMaxRange());
+        UUID parent = getDirectParent();
+        if (parent != null) {
+            tag.putUUID("Parent", parent);
+        }
         UUID shooter = getShooter();
         if (shooter != null) {
             tag.putUUID("Shooter", shooter);
@@ -452,6 +542,14 @@ public class BeamEntity extends Entity {
             modules.putInt(type.getRegistryName().toString(), amt);
         });
         tag.put("Modules", modules);
+        ListTag collisions = new ListTag();
+        getCollisions().forEach((pos, state) -> {
+            CompoundTag collision = new CompoundTag();
+            collision.put("Pos", NbtUtils.writeBlockPos(pos));
+            collision.put("State", NbtUtils.writeBlockState(state));
+            collisions.add(collision);
+        });
+        tag.put("Collisions", collisions);
     }
 
     @Override
