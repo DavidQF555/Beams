@@ -30,9 +30,7 @@ public final class EntityRegistry {
 
     @SubscribeEvent
     public static void onFMLCommonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> {
-            DataSerializers.registerSerializer(DoubleSerializer.INSTANCE);
-        });
+        event.enqueueWork(() -> DataSerializers.registerSerializer(DoubleSerializer.INSTANCE));
     }
 
 }

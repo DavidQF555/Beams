@@ -26,9 +26,7 @@ public final class ClientRegistry {
         RenderingRegistry.registerEntityRenderingHandler(EntityRegistry.BEAM.get(), BeamRenderer<BeamEntity>::new);
         net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), OmnidirectionalProjectorTileEntityRenderer::new);
         RenderTypeLookup.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), RenderType.cutout());
-        event.enqueueWork(() -> {
-            ScreenManager.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new);
-        });
+        event.enqueueWork(() -> ScreenManager.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new));
     }
 
     @SubscribeEvent

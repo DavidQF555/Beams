@@ -289,9 +289,7 @@ public class BeamEntity extends Entity {
     }
 
     protected void initializeModules() {
-        getModules().forEach((module, amt) -> {
-            module.onStart(this, amt);
-        });
+        getModules().forEach((module, amt) -> module.onStart(this, amt));
     }
 
     public Vector3d getStart() {
@@ -535,9 +533,7 @@ public class BeamEntity extends Entity {
             tag.putUUID("Shooter", shooter);
         }
         CompoundNBT modules = new CompoundNBT();
-        this.modules.forEach((type, amt) -> {
-            modules.putInt(type.getRegistryName().toString(), amt);
-        });
+        this.modules.forEach((type, amt) -> modules.putInt(type.getRegistryName().toString(), amt));
         tag.put("Modules", modules);
         ListNBT collisions = new ListNBT();
         getCollisions().forEach((pos, state) -> {

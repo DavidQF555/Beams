@@ -42,9 +42,7 @@ public class MirrorTileEntity extends AbstractProjectorTileEntity {
     public CompoundNBT save(CompoundNBT tag) {
         CompoundNBT out = super.save(tag);
         ListNBT hit = new ListNBT();
-        getHit().forEach(id -> {
-            hit.add(NBTUtil.createUUID(id));
-        });
+        getHit().forEach(id -> hit.add(NBTUtil.createUUID(id)));
         out.put("Hit", hit);
         return out;
     }

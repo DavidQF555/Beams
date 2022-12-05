@@ -69,7 +69,7 @@ public class ProjectorContainer extends Container {
         projector.stopOpen(player);
     }
 
-    private class ModuleSlot extends Slot {
+    private static class ModuleSlot extends Slot {
 
         private ModuleSlot(IInventory inventory, int slot, int x, int y) {
             super(inventory, slot, x, y);
