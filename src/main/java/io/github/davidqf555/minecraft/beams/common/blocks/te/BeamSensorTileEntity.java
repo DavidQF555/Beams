@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -13,36 +14,36 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class MirrorTileEntity extends AbstractProjectorTileEntity {
+public class BeamSensorTileEntity extends BlockEntity {
 
     private final Set<UUID> hit;
 
-    protected MirrorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    protected BeamSensorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         hit = new HashSet<>();
     }
 
-    public MirrorTileEntity(BlockPos pos, BlockState state) {
-        this(TileEntityRegistry.MIRROR.get(), pos, state);
+    public BeamSensorTileEntity(BlockPos pos, BlockState state) {
+        this(TileEntityRegistry.BEAM_SENSOR.get(), pos, state);
+    }
+
+    public boolean addHit(UUID hit) {
+        return this.hit.add(hit);
+    }
+
+    public boolean removeHit(UUID hit) {
+        return this.hit.remove(hit);
     }
 
     public Set<UUID> getHit() {
         return hit;
     }
 
-    public boolean addHit(UUID hit) {
-        return getHit().add(hit);
-    }
-
-    public boolean removeHit(UUID hit) {
-        return getHit().remove(hit);
-    }
-
     @Override
-    public void saveAdditional(CompoundTag tag) {
+    protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         ListTag hit = new ListTag();
-        getHit().forEach(id -> hit.add(NbtUtils.createUUID(id)));
+        this.hit.forEach(id -> hit.add(NbtUtils.createUUID(id)));
         tag.put("Hit", hit);
     }
 
@@ -55,5 +56,4 @@ public class MirrorTileEntity extends AbstractProjectorTileEntity {
             }
         }
     }
-
 }

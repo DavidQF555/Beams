@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "triggered=true": {
+      "model": "beams:block/photodetector_triggered"
+    },
+    "triggered=false": {
+      "model": "beams:block/photodetector"
+    }
+  }
+}

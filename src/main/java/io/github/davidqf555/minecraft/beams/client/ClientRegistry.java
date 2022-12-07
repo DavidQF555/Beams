@@ -40,9 +40,7 @@ public final class ClientRegistry {
 
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            MenuScreens.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new);
-        });
+        event.enqueueWork(() -> MenuScreens.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new));
     }
 
     @SubscribeEvent

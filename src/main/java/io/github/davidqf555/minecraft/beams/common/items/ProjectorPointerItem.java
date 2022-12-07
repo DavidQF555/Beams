@@ -134,9 +134,7 @@ public class ProjectorPointerItem extends Item {
 
     public void setConnected(ItemStack stack, Map<UUID, BlockPos> connections) {
         CompoundTag tag = new CompoundTag();
-        connections.forEach((id, pos) -> {
-            tag.put(id.toString(), new IntArrayTag(new int[]{pos.getX(), pos.getY(), pos.getZ()}));
-        });
+        connections.forEach((id, pos) -> tag.put(id.toString(), new IntArrayTag(new int[]{pos.getX(), pos.getY(), pos.getZ()})));
         stack.getOrCreateTagElement(Beams.ID).put("Connections", tag);
     }
 
