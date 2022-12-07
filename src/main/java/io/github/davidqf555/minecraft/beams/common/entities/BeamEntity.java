@@ -292,9 +292,7 @@ public class BeamEntity extends Entity {
     }
 
     protected void initializeModules() {
-        getModules().forEach((module, amt) -> {
-            module.onStart(this, amt);
-        });
+        getModules().forEach((module, amt) -> module.onStart(this, amt));
     }
 
     public Vec3 getStart() {
@@ -538,9 +536,7 @@ public class BeamEntity extends Entity {
             tag.putUUID("Shooter", shooter);
         }
         CompoundTag modules = new CompoundTag();
-        this.modules.forEach((type, amt) -> {
-            modules.putInt(type.getRegistryName().toString(), amt);
-        });
+        this.modules.forEach((type, amt) -> modules.putInt(type.getRegistryName().toString(), amt));
         tag.put("Modules", modules);
         ListTag collisions = new ListTag();
         getCollisions().forEach((pos, state) -> {
