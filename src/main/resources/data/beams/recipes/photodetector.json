@@ -1,0 +1,23 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "CCC",
+    "CLC",
+    "CRC"
+  ],
+  "key": {
+    "C": {
+      "item": "cobblestone"
+    },
+    "L": {
+      "item": "redstone_lamp"
+    },
+    "R": {
+      "item": "redstone"
+    }
+  },
+  "result": {
+    "item": "beams:photodetector",
+    "count": 1
+  }
+}

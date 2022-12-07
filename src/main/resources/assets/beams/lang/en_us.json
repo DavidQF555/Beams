@@ -4,6 +4,7 @@
   "block.beams.tilted_projector": "Tilted Projector",
   "block.beams.omnidirectional_projector": "Omnidirectional Projector",
   "block.beams.mirror": "Mirror",
+  "block.beams.photodetector": "Photodetector",
   "item.beams.portable_projector": "Portable Projector",
   "item.beams.projector_pointer": "Projector Pointer",
   "item.beams.blank_module": "Blank Module",
