@@ -1,15 +1,14 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
-import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,7 +24,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
@@ -226,7 +224,7 @@ public class BeamEntity extends Entity {
         double maxWidth = (startWidth + factor * (getEndWidth() - startWidth)) / 2;
         double startHeight = getStartHeight();
         double maxHeight = (startHeight + factor * (getEndHeight() - startHeight)) / 2;
-        Vec3 cross = center.cross(new Vec3(Vector3f.YP));
+        Vec3 cross = center.cross(new Vec3(0, 1, 0));
         if (cross.lengthSqr() == 0) {
             return Math.abs(dist.z()) <= maxWidth && Math.abs(dist.x()) <= maxHeight;
         } else {
@@ -400,9 +398,9 @@ public class BeamEntity extends Entity {
         Vec3 start = getStart();
         Vec3 end = position();
         Vec3 center = end.subtract(start);
-        Vec3 perpY = center.cross(new Vec3(Vector3f.YP)).normalize();
+        Vec3 perpY = center.cross(new Vec3(0, 1, 0)).normalize();
         if (perpY.lengthSqr() == 0) {
-            perpY = new Vec3(Vector3f.ZP);
+            perpY = new Vec3(0, 0, 1);
         }
         Vec3 perp = center.cross(perpY).normalize();
         double startWidth = getStartWidth();
@@ -507,7 +505,7 @@ public class BeamEntity extends Entity {
         if (tag.contains("Collisions", Tag.TAG_LIST)) {
             for (Tag nbt : tag.getList("Collisions", Tag.TAG_COMPOUND)) {
                 if (((CompoundTag) nbt).contains("Pos", Tag.TAG_COMPOUND) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
-                    addCollision(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(((CompoundTag) nbt).getCompound("State")));
+                    addCollision(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State")));
                 }
             }
         }
@@ -547,11 +545,6 @@ public class BeamEntity extends Entity {
             collisions.add(collision);
         });
         tag.put("Collisions", collisions);
-    }
-
-    @Override
-    public Packet<?> getAddEntityPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override

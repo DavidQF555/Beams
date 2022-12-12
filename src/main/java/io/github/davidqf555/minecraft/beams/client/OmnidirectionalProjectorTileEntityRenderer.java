@@ -1,7 +1,7 @@
 package io.github.davidqf555.minecraft.beams.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,8 +27,8 @@ public class OmnidirectionalProjectorTileEntityRenderer implements BlockEntityRe
         double xRot = Mth.atan2(dir.y(), Mth.sqrt((float) (dir.x() * dir.x() + dir.z() * dir.z()))) + Math.PI;
         p_225616_3_.pushPose();
         p_225616_3_.translate(0.5, 0.5, 0.5);
-        p_225616_3_.mulPose(Vector3f.YP.rotation((float) yRot));
-        p_225616_3_.mulPose(Vector3f.XN.rotation((float) xRot));
+        p_225616_3_.mulPose(Axis.YP.rotation((float) yRot));
+        p_225616_3_.mulPose(Axis.XN.rotation((float) xRot));
         model.renderToBuffer(p_225616_3_, p_225616_4_.getBuffer(model.renderType(getTexture())), p_225616_5_, p_225616_6_, 1, 1, 1, 1);
         p_225616_3_.popPose();
     }

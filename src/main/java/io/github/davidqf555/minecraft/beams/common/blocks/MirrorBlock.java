@@ -35,7 +35,9 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    private static final VoxelShape
+    public MirrorBlock(Properties properties) {
+        super(properties);
+    }    private static final VoxelShape
             TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
             BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
             OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
@@ -54,10 +56,6 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
             TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
             BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
             BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
-
-    public MirrorBlock(Properties properties) {
-        super(properties);
-    }
 
     public Face getFace(BlockState state) {
         Half half = state.getValue(HALF);
@@ -242,5 +240,7 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
         }
 
     }
+
+
 
 }
