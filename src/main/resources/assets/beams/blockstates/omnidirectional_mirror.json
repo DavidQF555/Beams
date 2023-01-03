@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "block/glass"
+      "model": "beams:block/glass_cutout"
     }
   }
 }
