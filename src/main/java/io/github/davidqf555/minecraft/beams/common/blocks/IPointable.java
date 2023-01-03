@@ -1,8 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -10,8 +10,8 @@ import java.util.UUID;
 public interface IPointable {
 
     @Nullable
-    UUID getConnectionID(World world, BlockPos pos);
+    UUID getConnectionID(Level world, BlockPos pos);
 
-    void onPoint(World world, BlockPos pos, Vector3d target);
+    void onPoint(Level world, BlockPos pos, Vec3 target);
 
 }

@@ -64,8 +64,8 @@ public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock imple
 
     @Nullable
     @Override
-    public UUID getConnectionID(World world, BlockPos pos) {
-        TileEntity te = world.getBlockEntity(pos);
+    public UUID getConnectionID(Level world, BlockPos pos) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalProjectorTileEntity) {
             return ((OmnidirectionalProjectorTileEntity) te).getUUID();
         }
@@ -73,10 +73,10 @@ public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock imple
     }
 
     @Override
-    public void onPoint(World world, BlockPos pos, Vector3d target) {
-        TileEntity te = world.getBlockEntity(pos);
+    public void onPoint(Level world, BlockPos pos, Vec3 target) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalProjectorTileEntity) {
-            Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
+            Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
             ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
             te.setChanged();
         }

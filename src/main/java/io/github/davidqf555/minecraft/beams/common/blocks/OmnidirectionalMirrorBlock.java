@@ -2,15 +2,15 @@ package io.github.davidqf555.minecraft.beams.common.blocks;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.te.MirrorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalMirrorTileEntity;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -24,28 +24,28 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
     }
 
     @Override
-    public VoxelShape getVisualShape(BlockState state, IBlockReader reader, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getVisualShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         return VISUAL;
     }
 
     @Override
-    protected Vector3d getFaceNormal(World world, BlockPos pos, BlockState state) {
-        TileEntity te = world.getBlockEntity(pos);
+    protected Vec3 getFaceNormal(Level world, BlockPos pos, BlockState state) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalMirrorTileEntity) {
             return ((OmnidirectionalMirrorTileEntity) te).getNormal();
         }
-        return new Vector3d(1, 0, 0);
+        return new Vec3(1, 0, 0);
     }
 
     @Override
-    public MirrorTileEntity newBlockEntity(IBlockReader reader) {
-        return new OmnidirectionalMirrorTileEntity();
+    public MirrorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new OmnidirectionalMirrorTileEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public UUID getConnectionID(World world, BlockPos pos) {
-        TileEntity te = world.getBlockEntity(pos);
+    public UUID getConnectionID(Level world, BlockPos pos) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalMirrorTileEntity) {
             return ((OmnidirectionalMirrorTileEntity) te).getUUID();
         }
@@ -53,10 +53,10 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
     }
 
     @Override
-    public void onPoint(World world, BlockPos pos, Vector3d target) {
-        TileEntity te = world.getBlockEntity(pos);
+    public void onPoint(Level world, BlockPos pos, Vec3 target) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalMirrorTileEntity) {
-            Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
+            Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
             ((OmnidirectionalMirrorTileEntity) te).setNormal(dir);
             te.setChanged();
         }
