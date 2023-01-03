@@ -1,0 +1,124 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "glass": "block/glass",
+    "projector": "beams:block/omnidirectional_mirror"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#glass",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#glass",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#glass",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#glass",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#glass",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#glass",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        7.5
+      ],
+      "to": [
+        13,
+        13,
+        8.5
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45
+      },
+      "faces": {
+        "down": {
+          "texture": "#projector",
+          "uv": [
+            4.25,
+            0,
+            8.25,
+            0.5
+          ]
+        },
+        "up": {
+          "texture": "#projector",
+          "uv": [
+            0.25,
+            0,
+            4.25,
+            0.5
+          ]
+        },
+        "north": {
+          "texture": "#projector",
+          "uv": [
+            0.25,
+            0.5,
+            4.25,
+            8.5
+          ]
+        },
+        "south": {
+          "texture": "#projector",
+          "uv": [
+            8.25,
+            0.5,
+            8.25,
+            8.5
+          ]
+        },
+        "west": {
+          "texture": "#projector",
+          "uv": [
+            0,
+            0.5,
+            0.25,
+            8.5
+          ]
+        },
+        "east": {
+          "texture": "#projector",
+          "uv": [
+            8.25,
+            0.5,
+            8.5,
+            8.5
+          ]
+        }
+      }
+    }
+  ]
+}

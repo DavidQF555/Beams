@@ -1,10 +1,7 @@
 package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.BeamSensorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.MirrorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.*;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.fml.RegistryObject;
@@ -28,5 +25,6 @@ public final class TileEntityRegistry {
     public static final RegistryObject<TileEntityType<OmnidirectionalProjectorTileEntity>> OMNIDIRECTIONAL_BEAM_PROJECTOR = register("omnidirectional_beam_projector", () -> TileEntityType.Builder.of(OmnidirectionalProjectorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get()).build(null));
     public static final RegistryObject<TileEntityType<MirrorTileEntity>> MIRROR = register("mirror", () -> TileEntityType.Builder.of(MirrorTileEntity::new, BlockRegistry.MIRROR.get()).build(null));
     public static final RegistryObject<TileEntityType<BeamSensorTileEntity>> BEAM_SENSOR = register("beam_sensor", () -> TileEntityType.Builder.of(BeamSensorTileEntity::new, BlockRegistry.PHOTODETECTOR.get()).build(null));
+    public static final RegistryObject<TileEntityType<OmnidirectionalMirrorTileEntity>> OMNIDIRECTIONAL_MIRROR = register("omnidirectional_mirror", () -> TileEntityType.Builder.of(OmnidirectionalMirrorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_MIRROR.get()).build(null));
 
 }

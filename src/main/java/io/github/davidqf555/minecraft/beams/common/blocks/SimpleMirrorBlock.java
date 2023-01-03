@@ -1,12 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.MirrorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.state.DirectionProperty;
@@ -14,7 +10,6 @@ import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.state.properties.Half;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
@@ -25,13 +20,10 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Nullable;
 
-public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisionEffect {
+public class SimpleMirrorBlock extends AbstractMirrorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalBlock.FACING;
@@ -55,7 +47,7 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
             BOT_PZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
             BOT_NZ = VoxelShapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
 
-    public MirrorBlock(Properties properties) {
+    public SimpleMirrorBlock(Properties properties) {
         super(properties);
     }
 
@@ -150,74 +142,10 @@ public class MirrorBlock extends AbstractProjectorBlock implements IBeamCollisio
         return false;
     }
 
+    @Nullable
     @Override
-    public boolean isActive(BlockState state) {
-        return true;
-    }
-
-    @Override
-    protected List<BeamEntity> shoot(World world, BlockPos pos, BlockState state) {
-        List<BeamEntity> beams = new ArrayList<>();
-        for (BeamEntity beam : getHit(world, pos)) {
-            Vector3d start = beam.getStart();
-            Vector3d end = beam.position();
-            Vector3d original = end.subtract(start);
-            double length = original.length();
-            original = original.scale(1 / length);
-            Vector3d dir = getReflectedDirection(state, original);
-            double width = beam.getEndWidth();
-            double height = beam.getEndHeight();
-            double maxLength = beam.getMaxRange() - length;
-            Vector3d reflectStart = end.subtract(original.scale(BeamEntity.POKE));
-            BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, reflectStart, dir, maxLength, beam.getModules(), width, height, width, height, beam.getUUID());
-            if (reflect != null) {
-                beams.add(reflect);
-            }
-        }
-        return beams;
-    }
-
-    protected Vector3d getReflectedDirection(BlockState state, Vector3d original) {
+    protected Vector3d getReflectedDirection(World world, BlockPos pos, BlockState state, Vector3d original) {
         return getFace(state).reflect(original);
-    }
-
-    protected List<BeamEntity> getHit(World world, BlockPos pos) {
-        List<BeamEntity> beams = new ArrayList<>();
-        if (world instanceof ServerWorld) {
-            TileEntity te = world.getBlockEntity(pos);
-            if (te instanceof MirrorTileEntity) {
-                for (UUID id : new ArrayList<>(((MirrorTileEntity) te).getHit())) {
-                    Entity entity = ((ServerWorld) world).getEntity(id);
-                    if (entity instanceof BeamEntity && entity.isAlive()) {
-                        beams.add((BeamEntity) entity);
-                    } else {
-                        ((MirrorTileEntity) te).removeHit(id);
-                    }
-                }
-            }
-        }
-        return beams;
-    }
-
-    @Override
-    public void onBeamStartCollision(BeamEntity beam, BlockPos pos, BlockState state) {
-        TileEntity te = beam.level.getBlockEntity(pos);
-        if (te instanceof MirrorTileEntity && !((MirrorTileEntity) te).getBeams().contains(beam.getUUID()) && beam.getParents().stream().noneMatch(parent -> ((MirrorTileEntity) te).getHit().contains(parent)) && ((MirrorTileEntity) te).addHit(beam.getUUID())) {
-            te.setChanged();
-        }
-    }
-
-    @Override
-    public void onBeamStopCollision(BeamEntity beam, BlockPos pos, BlockState state) {
-        TileEntity te = beam.level.getBlockEntity(pos);
-        if (te instanceof MirrorTileEntity && ((MirrorTileEntity) te).removeHit(beam.getUUID())) {
-            te.setChanged();
-        }
-    }
-
-    @Override
-    public MirrorTileEntity newBlockEntity(IBlockReader reader) {
-        return new MirrorTileEntity();
     }
 
     public enum Face {

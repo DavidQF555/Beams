@@ -25,7 +25,9 @@ public final class ClientRegistry {
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(EntityRegistry.BEAM.get(), BeamRenderer<BeamEntity>::new);
         net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), OmnidirectionalProjectorTileEntityRenderer::new);
+        net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), OmnidirectionalMirrorTileEntityRenderer::new);
         RenderTypeLookup.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), RenderType.cutout());
+        RenderTypeLookup.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_MIRROR.get(), RenderType.cutout());
         event.enqueueWork(() -> ScreenManager.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new));
     }
 
