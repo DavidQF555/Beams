@@ -1,0 +1,22 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "IGI",
+    "GMG",
+    "IGI"
+  ],
+  "key": {
+    "G": {
+      "item": "glass"
+    },
+    "M": {
+      "item": "beams:mirror"
+    },
+    "I": {
+      "item": "gold_ingot"
+    }
+  },
+  "result": {
+    "item": "beams:omnidirectional_mirror"
+  }
+}

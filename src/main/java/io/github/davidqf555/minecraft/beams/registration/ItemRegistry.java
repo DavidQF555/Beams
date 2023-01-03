@@ -2,9 +2,9 @@ package io.github.davidqf555.minecraft.beams.registration;
 
 import com.mojang.datafixers.util.Pair;
 import io.github.davidqf555.minecraft.beams.Beams;
+import io.github.davidqf555.minecraft.beams.common.items.PointerItem;
 import io.github.davidqf555.minecraft.beams.common.items.PortableProjectorItem;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
-import io.github.davidqf555.minecraft.beams.common.items.ProjectorPointerItem;
 import io.github.davidqf555.minecraft.beams.common.modules.*;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
@@ -39,8 +39,9 @@ public final class ItemRegistry {
     public static final RegistryObject<BlockItem> OMNIDIRECTIONAL_PROJECTOR = register("omnidirectional_projector", ItemRegistry::getTab, () -> new BlockItem(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), new Item.Properties()));
     public static final RegistryObject<BlockItem> MIRROR = register("mirror", ItemRegistry::getTab, () -> new BlockItem(BlockRegistry.MIRROR.get(), new Item.Properties()));
     public static final RegistryObject<BlockItem> PHOTODETECTOR = register("photodetector", ItemRegistry::getTab, () -> new BlockItem(BlockRegistry.PHOTODETECTOR.get(), new Item.Properties()));
+    public static final RegistryObject<BlockItem> OMNIDIRECTIONAL_MIRROR = register("omnidirectional_mirror", ItemRegistry::getTab, () -> new BlockItem(BlockRegistry.OMNIDIRECTIONAL_MIRROR.get(), new Item.Properties()));
     public static final RegistryObject<PortableProjectorItem> PORTABLE_PROJECTOR = register("portable_projector", ItemRegistry::getTab, () -> new PortableProjectorItem(new Item.Properties().stacksTo(1)));
-    public static final RegistryObject<ProjectorPointerItem> PROJECTOR_POINTER = register("projector_pointer", ItemRegistry::getTab, () -> new ProjectorPointerItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<PointerItem> POINTER = register("projector_pointer", ItemRegistry::getTab, () -> new PointerItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> BLANK_MODULE = register("blank_module", ItemRegistry::getTab, () -> new Item(new Item.Properties()));
     public static final Map<DyeColor, RegistryObject<ProjectorModuleItem<ColorModuleType>>> COLOR_MODULES = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName() + "_module", ItemRegistry::getTab, () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.COLORS.get(color), new Item.Properties()))));
