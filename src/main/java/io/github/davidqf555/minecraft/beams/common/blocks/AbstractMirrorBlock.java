@@ -19,6 +19,8 @@ import java.util.UUID;
 
 public abstract class AbstractMirrorBlock extends AbstractProjectorBlock implements IBeamCollisionEffect {
 
+    private static final double OFFSET = 0.2;
+
     protected AbstractMirrorBlock(Properties properties) {
         super(properties);
     }
@@ -41,8 +43,8 @@ public abstract class AbstractMirrorBlock extends AbstractProjectorBlock impleme
             if (dir != null) {
                 double width = beam.getEndWidth();
                 double height = beam.getEndHeight();
-                double maxLength = beam.getMaxRange() - length;
-                Vector3d reflectStart = end.subtract(original.scale(BeamEntity.POKE));
+                double maxLength = beam.getMaxRange() - length - OFFSET;
+                Vector3d reflectStart = end.subtract(original.scale(BeamEntity.POKE)).add(dir.scale(OFFSET));
                 BeamEntity reflect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, reflectStart, dir, maxLength, beam.getModules(), width, height, width, height, beam.getUUID());
                 if (reflect != null) {
                     beams.add(reflect);
