@@ -16,7 +16,7 @@ public final class DataGenRegistry {
     public static void onGatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         if (event.includeClient()) {
-            gen.addProvider(true, new CustomItemModelProvider(gen, event.getExistingFileHelper()));
+            gen.addProvider(true, new CustomItemModelProvider(gen.getPackOutput(), event.getExistingFileHelper()));
         }
         if (event.includeServer()) {
             gen.addProvider(true, new CustomRecipeProvider(gen.getPackOutput()));
