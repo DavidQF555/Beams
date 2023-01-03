@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.IForgeRegistry;
 
@@ -137,7 +138,7 @@ public class BeamEntity extends Entity {
                                         type.onBlockTick(this, pos, amt);
                                     }
                                 });
-                                if (isColliding(pos)) {
+                                if (isVisualColliding(pos)) {
                                     collisions.put(pos, level.getBlockState(pos));
                                     modules.forEach((type, amt) -> {
                                         if (amt > 0) {
@@ -195,8 +196,8 @@ public class BeamEntity extends Entity {
         super.onRemovedFromWorld();
     }
 
-    protected boolean isColliding(BlockPos pos) {
-        for (AABB bounds : level.getBlockState(pos).getCollisionShape(level, pos).toAabbs()) {
+    protected boolean isVisualColliding(BlockPos pos) {
+        for (AABB bounds : level.getBlockState(pos).getVisualShape(level, pos, CollisionContext.empty()).toAabbs()) {
             if (isAffected(bounds.move(pos))) {
                 return true;
             }

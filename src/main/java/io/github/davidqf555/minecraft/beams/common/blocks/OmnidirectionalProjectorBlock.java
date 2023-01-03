@@ -12,7 +12,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock {
+import javax.annotation.Nullable;
+import java.util.UUID;
+
+public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock implements IPointable {
 
     public OmnidirectionalProjectorBlock(Properties properties) {
         super(properties);
@@ -57,6 +60,26 @@ public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock {
     @Override
     public ContainerProjectorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new OmnidirectionalProjectorTileEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public UUID getConnectionID(World world, BlockPos pos) {
+        TileEntity te = world.getBlockEntity(pos);
+        if (te instanceof OmnidirectionalProjectorTileEntity) {
+            return ((OmnidirectionalProjectorTileEntity) te).getUUID();
+        }
+        return null;
+    }
+
+    @Override
+    public void onPoint(World world, BlockPos pos, Vector3d target) {
+        TileEntity te = world.getBlockEntity(pos);
+        if (te instanceof OmnidirectionalProjectorTileEntity) {
+            Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
+            ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
+            te.setChanged();
+        }
     }
 
 }

@@ -2,7 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.IPointable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -23,7 +23,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -31,13 +31,13 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class ProjectorPointerItem extends Item {
+public class PointerItem extends Item {
 
     private static final Component CONNECTED = new TranslatableComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_connected"))).withStyle(ChatFormatting.GREEN);
     private static final Component DISCONNECTED = new TranslatableComponent(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_disconnected"))).withStyle(ChatFormatting.RED);
     private static final String POSITION = Util.makeDescriptionId("text", new ResourceLocation(Beams.ID, "position"));
 
-    public ProjectorPointerItem(Properties properties) {
+    public PointerItem(Properties properties) {
         super(properties);
     }
 
@@ -53,23 +53,25 @@ public class ProjectorPointerItem extends Item {
         if (player != null && player.isCrouching()) {
             Level world = context.getLevel();
             BlockPos pos = context.getClickedPos();
-            BlockEntity te = world.getBlockEntity(pos);
-            if (te instanceof OmnidirectionalProjectorTileEntity) {
-                ItemStack stack = context.getItemInHand();
-                Map<UUID, BlockPos> connections = getConnected(stack);
-                UUID id = ((OmnidirectionalProjectorTileEntity) te).getUUID();
-                if (connections.containsKey(id)) {
-                    connections.remove(id);
-                    if (world.isClientSide()) {
-                        player.sendMessage(DISCONNECTED, Util.NIL_UUID);
+            Block block = world.getBlockState(pos).getBlock();
+            if (block instanceof IPointable) {
+                UUID id = ((IPointable) block).getConnectionID(world, pos);
+                if (id != null) {
+                    ItemStack stack = context.getItemInHand();
+                    Map<UUID, BlockPos> connections = getConnected(stack);
+                    if (connections.containsKey(id)) {
+                        connections.remove(id);
+                        if (world.isClientSide()) {
+                            player.sendMessage(DISCONNECTED, Util.NIL_UUID);
+                        }
+                    } else {
+                        connections.put(id, pos);
+                        if (world.isClientSide()) {
+                            player.sendMessage(CONNECTED, Util.NIL_UUID);
+                        }
                     }
-                } else {
-                    connections.put(id, pos);
-                    if (world.isClientSide()) {
-                        player.sendMessage(CONNECTED, Util.NIL_UUID);
-                    }
+                    setConnected(stack, connections);
                 }
-                setConnected(stack, connections);
                 return InteractionResult.SUCCESS;
             }
         }
@@ -94,11 +96,9 @@ public class ProjectorPointerItem extends Item {
                 }
                 for (UUID key : new ArrayList<>(connections.keySet())) {
                     BlockPos pos = connections.get(key);
-                    BlockEntity te = world.getBlockEntity(pos);
-                    if (te instanceof OmnidirectionalProjectorTileEntity && ((OmnidirectionalProjectorTileEntity) te).getUUID().equals(key)) {
-                        Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
-                        ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
-                        te.setChanged();
+                    Block block = world.getBlockState(pos).getBlock();
+                    if (block instanceof IPointable && key.equals(((IPointable) block).getConnectionID(world, pos))) {
+                        ((IPointable) block).onPoint(world, pos, target);
                     } else {
                         connections.remove(key);
                     }

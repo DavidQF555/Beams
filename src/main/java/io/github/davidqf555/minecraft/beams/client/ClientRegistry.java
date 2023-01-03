@@ -22,6 +22,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public final class ClientRegistry {
 
     public static final ModelLayerLocation OMNIDIRECTIONAL_PROJECTOR = new ModelLayerLocation(new ResourceLocation(Beams.ID, "omnidirectional_projector"), "projector");
+    public static final ModelLayerLocation OMNIDIRECTIONAL_MIRROR = new ModelLayerLocation(new ResourceLocation(Beams.ID, "omnidirectional_mirror"), "mirror");
 
     private ClientRegistry() {
     }
@@ -30,16 +31,19 @@ public final class ClientRegistry {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(EntityRegistry.BEAM.get(), BeamRenderer<BeamEntity>::new);
         event.registerBlockEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), OmnidirectionalProjectorTileEntityRenderer::new);
+        event.registerBlockEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), OmnidirectionalMirrorTileEntityRenderer::new);
     }
 
     @SubscribeEvent
     public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(OMNIDIRECTIONAL_PROJECTOR, OmnidirectionalProjectorModel::createLayerDefinition);
+        event.registerLayerDefinition(OMNIDIRECTIONAL_MIRROR, OmnidirectionalMirrorModel::createLayerDefinition);
     }
 
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_MIRROR.get(), RenderType.cutout());
         event.enqueueWork(() -> MenuScreens.register(ContainerRegistry.PROJECTOR.get(), ProjectorScreen::new));
     }
 
