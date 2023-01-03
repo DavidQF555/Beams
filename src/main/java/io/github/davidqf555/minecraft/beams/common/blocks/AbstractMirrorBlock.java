@@ -73,7 +73,15 @@ public abstract class AbstractMirrorBlock extends AbstractProjectorBlock impleme
     }
 
     @Nullable
-    protected abstract Vector3d getReflectedDirection(World world, BlockPos pos, BlockState state, Vector3d original);
+    protected Vector3d getReflectedDirection(World world, BlockPos pos, BlockState state, Vector3d original) {
+        Vector3d normal = getFaceNormal(world, pos, state);
+        if (normal.dot(original) < 0) {
+            return original.subtract(normal.scale(original.dot(normal) * 2));
+        }
+        return null;
+    }
+
+    protected abstract Vector3d getFaceNormal(World world, BlockPos pos, BlockState state);
 
     @Override
     public void onBeamStartCollision(BeamEntity beam, BlockPos pos, BlockState state) {

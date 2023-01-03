@@ -21,8 +21,6 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-
 public class SimpleMirrorBlock extends AbstractMirrorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
@@ -142,10 +140,9 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         return false;
     }
 
-    @Nullable
     @Override
-    protected Vector3d getReflectedDirection(World world, BlockPos pos, BlockState state, Vector3d original) {
-        return getFace(state).reflect(original);
+    protected Vector3d getFaceNormal(World world, BlockPos pos, BlockState state) {
+        return getFace(state).getNormal();
     }
 
     public enum Face {
@@ -165,8 +162,8 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
             this.normal = normal;
         }
 
-        public Vector3d reflect(Vector3d dir) {
-            return dir.subtract(normal.scale(dir.dot(normal) * 2));
+        public Vector3d getNormal() {
+            return normal;
         }
 
     }

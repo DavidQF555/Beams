@@ -28,15 +28,13 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
         return VISUAL;
     }
 
-    @Nullable
     @Override
-    protected Vector3d getReflectedDirection(World world, BlockPos pos, BlockState state, Vector3d original) {
+    protected Vector3d getFaceNormal(World world, BlockPos pos, BlockState state) {
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalMirrorTileEntity) {
-            Vector3d normal = ((OmnidirectionalMirrorTileEntity) te).getNormal();
-            return original.subtract(normal.scale(original.dot(normal) * 2));
+            return ((OmnidirectionalMirrorTileEntity) te).getNormal();
         }
-        return null;
+        return new Vector3d(1, 0, 0);
     }
 
     @Override
