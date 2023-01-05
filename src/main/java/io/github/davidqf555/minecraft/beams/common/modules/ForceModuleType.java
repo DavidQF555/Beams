@@ -16,7 +16,7 @@ public class ForceModuleType extends ProjectorModuleType {
 
     @Override
     public void onEntityTick(BeamEntity beam, Entity target, int amt) {
-        Vector3d force = beam.position().subtract(beam.getStart()).normalize().scale(magnitude.apply(amt));
+        Vector3d force = beam.getEnd().subtract(beam.position()).normalize().scale(magnitude.apply(amt));
         target.push(force.x(), force.y(), force.z());
         target.hurtMarked = true;
     }

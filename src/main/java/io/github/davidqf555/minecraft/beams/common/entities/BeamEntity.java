@@ -66,8 +66,8 @@ public class BeamEntity extends Entity {
             double startSizeFactor = getStartSizeFactor(modules);
             baseStartWidth *= startSizeFactor;
             baseStartHeight *= startSizeFactor;
-            beam.setStart(start);
-            beam.setPos(end.x(), end.y(), end.z());
+            beam.setPos(start.x(), start.y(), start.z());
+            beam.setEnd(end);
             beam.setModules(modules);
             beam.setStartWidth(baseStartWidth);
             beam.setStartHeight(baseStartHeight);
@@ -114,13 +114,13 @@ public class BeamEntity extends Entity {
             if (lifespan > 0 && tickCount >= lifespan) {
                 remove();
             } else {
-                Vector3d start = getStart();
-                Vector3d original = position();
+                Vector3d start = position();
+                Vector3d original = getEnd();
                 Vector3d dir = original.subtract(start).normalize();
                 BlockRayTraceResult trace = level.clip(new RayTraceContext(start, start.add(dir.scale(maxRange)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null));
                 Vector3d end = trace.getLocation().add(dir.scale(POKE));
                 if (!original.equals(end)) {
-                    setPos(end.x(), end.y(), end.z());
+                    setEnd(end);
                 }
                 Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
@@ -211,8 +211,8 @@ public class BeamEntity extends Entity {
     }
 
     protected boolean isAffected(Vector3d pos) {
-        Vector3d start = getStart();
-        Vector3d center = position().subtract(start);
+        Vector3d start = position();
+        Vector3d center = getEnd().subtract(start);
         Vector3d dir = pos.subtract(start);
         double factor = center.dot(dir) / center.lengthSqr();
         if (factor <= 0 || factor > 1) {
@@ -293,16 +293,16 @@ public class BeamEntity extends Entity {
         getModules().forEach((module, amt) -> module.onStart(this, amt));
     }
 
-    public Vector3d getStart() {
+    public Vector3d getEnd() {
         EntityDataManager manager = getEntityData();
         return new Vector3d(manager.get(X), manager.get(Y), manager.get(Z));
     }
 
-    public void setStart(Vector3d start) {
+    public void setEnd(Vector3d end) {
         EntityDataManager manager = getEntityData();
-        manager.set(X, start.x());
-        manager.set(Y, start.y());
-        manager.set(Z, start.z());
+        manager.set(X, end.x());
+        manager.set(Y, end.y());
+        manager.set(Z, end.z());
         refreshMaxBounds();
     }
 
@@ -395,8 +395,8 @@ public class BeamEntity extends Entity {
 
     private Vector3d[] getVertices() {
         Vector3d[] vertices = new Vector3d[8];
-        Vector3d start = getStart();
-        Vector3d end = position();
+        Vector3d start = position();
+        Vector3d end = getEnd();
         Vector3d center = end.subtract(start);
         Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
         if (perpY.lengthSqr() == 0) {
@@ -457,8 +457,8 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(CompoundNBT tag) {
-        if (tag.contains("StartX", Constants.NBT.TAG_DOUBLE) && tag.contains("StartY", Constants.NBT.TAG_DOUBLE) && tag.contains("StartZ", Constants.NBT.TAG_DOUBLE)) {
-            setStart(new Vector3d(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ")));
+        if (tag.contains("EndX", Constants.NBT.TAG_DOUBLE) && tag.contains("EndY", Constants.NBT.TAG_DOUBLE) && tag.contains("EndZ", Constants.NBT.TAG_DOUBLE)) {
+            setEnd(new Vector3d(tag.getDouble("EndX"), tag.getDouble("EndY"), tag.getDouble("EndZ")));
         }
         if (tag.contains("StartWidth", Constants.NBT.TAG_DOUBLE)) {
             setStartWidth(tag.getDouble("StartWidth"));
@@ -513,10 +513,10 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(CompoundNBT tag) {
-        Vector3d start = getStart();
-        tag.putDouble("StartX", start.x());
-        tag.putDouble("StartY", start.y());
-        tag.putDouble("StartZ", start.z());
+        Vector3d end = getEnd();
+        tag.putDouble("EndX", end.x());
+        tag.putDouble("EndY", end.y());
+        tag.putDouble("EndZ", end.z());
         tag.putDouble("StartWidth", getStartWidth());
         tag.putDouble("StartHeight", getStartHeight());
         tag.putDouble("EndWidth", getEndWidth());

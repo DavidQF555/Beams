@@ -34,8 +34,8 @@ public abstract class AbstractMirrorBlock extends AbstractProjectorBlock impleme
     protected List<BeamEntity> shoot(World world, BlockPos pos, BlockState state) {
         List<BeamEntity> beams = new ArrayList<>();
         for (BeamEntity beam : getHit(world, pos)) {
-            Vector3d start = beam.getStart();
-            Vector3d end = beam.position();
+            Vector3d start = beam.position();
+            Vector3d end = beam.getEnd();
             Vector3d original = end.subtract(start);
             double length = original.length();
             original = original.scale(1 / length);
