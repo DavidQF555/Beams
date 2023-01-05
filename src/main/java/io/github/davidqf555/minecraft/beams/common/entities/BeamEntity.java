@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
+import io.github.davidqf555.minecraft.beams.common.blocks.IBeamAffectEffect;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
@@ -43,7 +44,7 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules;
-    private final Map<BlockPos, BlockState> collisions;
+    private final Map<BlockPos, BlockState> affecting;
     private double maxRange;
     private UUID shooter, parent;
     private AABB bounds;
@@ -52,7 +53,7 @@ public class BeamEntity extends Entity {
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
         modules = new HashMap<>();
-        collisions = new HashMap<>();
+        affecting = new HashMap<>();
     }
 
     @Nullable
@@ -67,8 +68,8 @@ public class BeamEntity extends Entity {
             double startSizeFactor = getStartSizeFactor(modules);
             baseStartWidth *= startSizeFactor;
             baseStartHeight *= startSizeFactor;
-            beam.setStart(start);
-            beam.setPos(end.x(), end.y(), end.z());
+            beam.setPos(start.x(), start.y(), start.z());
+            beam.setEnd(end);
             beam.setModules(modules);
             beam.setStartWidth(baseStartWidth);
             beam.setStartHeight(baseStartHeight);
@@ -115,13 +116,19 @@ public class BeamEntity extends Entity {
             if (lifespan > 0 && tickCount >= lifespan) {
                 remove(RemovalReason.DISCARDED);
             } else {
-                Vec3 start = getStart();
-                Vec3 original = position();
+                Vec3 start = position();
+                Vec3 original = getEnd();
                 Vec3 dir = original.subtract(start).normalize();
                 BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
                 Vec3 end = trace.getLocation().add(dir.scale(POKE));
                 if (!original.equals(end)) {
-                    setPos(end.x(), end.y(), end.z());
+                    setEnd(end);
+                }
+                BlockPos endPos = new BlockPos(end);
+                BlockState endState = level.getBlockState(endPos);
+                Block endBlock = endState.getBlock();
+                if (endBlock instanceof IBeamCollisionEffect) {
+                    ((IBeamCollisionEffect) endBlock).onBeamCollisionTick(this, endPos, endState);
                 }
                 Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
@@ -148,26 +155,26 @@ public class BeamEntity extends Entity {
                         }
                     }
                 }
-                Map<BlockPos, BlockState> past = new HashMap<>(getCollisions());
+                Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
                 past.forEach((pos, state) -> {
                     if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
-                        removeCollision(pos);
+                        removeAffecting(pos);
                         Block block = state.getBlock();
-                        if (block instanceof IBeamCollisionEffect) {
-                            ((IBeamCollisionEffect) block).onBeamStopCollision(this, pos, state);
+                        if (block instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
                         }
                     }
                 });
                 collisions.forEach((pos, state) -> {
                     Block block = state.getBlock();
                     if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
-                        addCollision(pos, state);
-                        if (block instanceof IBeamCollisionEffect) {
-                            ((IBeamCollisionEffect) block).onBeamStartCollision(this, pos, state);
+                        addAffecting(pos, state);
+                        if (block instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) block).onBeamStartAffect(this, pos, state);
                         }
                     }
-                    if (block instanceof IBeamCollisionEffect) {
-                        ((IBeamCollisionEffect) block).onBeamCollisionTick(this, pos, state);
+                    if (block instanceof IBeamAffectEffect) {
+                        ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
                     }
                 });
                 for (Entity entity : level.getEntities(this, bounds)) {
@@ -185,10 +192,16 @@ public class BeamEntity extends Entity {
 
     @Override
     public void onRemovedFromWorld() {
-        getCollisions().forEach((pos, state) -> {
+        BlockPos endPos = new BlockPos(getEnd());
+        BlockState endState = level.getBlockState(endPos);
+        Block endBlock = endState.getBlock();
+        if (endBlock instanceof IBeamCollisionEffect) {
+            ((IBeamCollisionEffect) endBlock).onBeamStopCollision(this, endPos, endState);
+        }
+        getAffecting().forEach((pos, state) -> {
             Block block = state.getBlock();
-            if (block instanceof IBeamCollisionEffect) {
-                ((IBeamCollisionEffect) block).onBeamStopCollision(this, pos, state);
+            if (block instanceof IBeamAffectEffect) {
+                ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
             }
         });
         super.onRemovedFromWorld();
@@ -212,8 +225,8 @@ public class BeamEntity extends Entity {
     }
 
     protected boolean isAffected(Vec3 pos) {
-        Vec3 start = getStart();
-        Vec3 center = position().subtract(start);
+        Vec3 start = position();
+        Vec3 center = getEnd().subtract(start);
         Vec3 dir = pos.subtract(start);
         double factor = center.dot(dir) / center.lengthSqr();
         if (factor <= 0 || factor > 1) {
@@ -294,16 +307,35 @@ public class BeamEntity extends Entity {
         getModules().forEach((module, amt) -> module.onStart(this, amt));
     }
 
-    public Vec3 getStart() {
+    public Vec3 getEnd() {
         SynchedEntityData manager = getEntityData();
         return new Vec3(manager.get(X), manager.get(Y), manager.get(Z));
     }
 
-    public void setStart(Vec3 start) {
+    public void setEnd(Vec3 end) {
+        Vec3 before = getEnd();
+        setEndRaw(end);
+        if (!end.equals(before)) {
+            BlockPos beforePos = new BlockPos(before);
+            BlockState beforeState = level.getBlockState(beforePos);
+            Block beforeBlock = beforeState.getBlock();
+            if (beforeBlock instanceof IBeamCollisionEffect) {
+                ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
+            }
+            BlockPos afterPos = new BlockPos(end);
+            BlockState afterState = level.getBlockState(afterPos);
+            Block afterBlock = afterState.getBlock();
+            if (afterBlock instanceof IBeamCollisionEffect) {
+                ((IBeamCollisionEffect) afterBlock).onBeamStartCollision(this, afterPos, afterState);
+            }
+        }
+    }
+
+    public void setEndRaw(Vec3 end) {
         SynchedEntityData manager = getEntityData();
-        manager.set(X, start.x());
-        manager.set(Y, start.y());
-        manager.set(Z, start.z());
+        manager.set(X, end.x());
+        manager.set(Y, end.y());
+        manager.set(Z, end.z());
         refreshMaxBounds();
     }
 
@@ -349,16 +381,16 @@ public class BeamEntity extends Entity {
         refreshMaxBounds();
     }
 
-    public Map<BlockPos, BlockState> getCollisions() {
-        return collisions;
+    public Map<BlockPos, BlockState> getAffecting() {
+        return affecting;
     }
 
-    public void addCollision(BlockPos pos, BlockState state) {
-        getCollisions().put(pos, state);
+    public void addAffecting(BlockPos pos, BlockState state) {
+        getAffecting().put(pos, state);
     }
 
-    public void removeCollision(BlockPos pos) {
-        getCollisions().remove(pos);
+    public void removeAffecting(BlockPos pos) {
+        getAffecting().remove(pos);
     }
 
     public int getColor() {
@@ -396,8 +428,8 @@ public class BeamEntity extends Entity {
 
     private Vec3[] getVertices() {
         Vec3[] vertices = new Vec3[8];
-        Vec3 start = getStart();
-        Vec3 end = position();
+        Vec3 start = position();
+        Vec3 end = getEnd();
         Vec3 center = end.subtract(start);
         Vec3 perpY = center.cross(new Vec3(0, 1, 0)).normalize();
         if (perpY.lengthSqr() == 0) {
@@ -458,8 +490,8 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        if (tag.contains("StartX", Tag.TAG_DOUBLE) && tag.contains("StartY", Tag.TAG_DOUBLE) && tag.contains("StartZ", Tag.TAG_DOUBLE)) {
-            setStart(new Vec3(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ")));
+        if (tag.contains("EndX", Tag.TAG_DOUBLE) && tag.contains("EndY", Tag.TAG_DOUBLE) && tag.contains("EndZ", Tag.TAG_DOUBLE)) {
+            setEndRaw(new Vec3(tag.getDouble("EndX"), tag.getDouble("EndY"), tag.getDouble("EndZ")));
         }
         if (tag.contains("StartWidth", Tag.TAG_DOUBLE)) {
             setStartWidth(tag.getDouble("StartWidth"));
@@ -503,10 +535,10 @@ public class BeamEntity extends Entity {
             }
             setModules(modules);
         }
-        if (tag.contains("Collisions", Tag.TAG_LIST)) {
-            for (Tag nbt : tag.getList("Collisions", Tag.TAG_COMPOUND)) {
+        if (tag.contains("Affecting", Tag.TAG_LIST)) {
+            for (Tag nbt : tag.getList("Affecting", Tag.TAG_COMPOUND)) {
                 if (((CompoundTag) nbt).contains("Pos", Tag.TAG_COMPOUND) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
-                    addCollision(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State")));
+                    addAffecting(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State")));
                 }
             }
         }
@@ -514,10 +546,10 @@ public class BeamEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
-        Vec3 start = getStart();
-        tag.putDouble("StartX", start.x());
-        tag.putDouble("StartY", start.y());
-        tag.putDouble("StartZ", start.z());
+        Vec3 end = getEnd();
+        tag.putDouble("EndX", end.x());
+        tag.putDouble("EndY", end.y());
+        tag.putDouble("EndZ", end.z());
         tag.putDouble("StartWidth", getStartWidth());
         tag.putDouble("StartHeight", getStartHeight());
         tag.putDouble("EndWidth", getEndWidth());
@@ -539,13 +571,13 @@ public class BeamEntity extends Entity {
         this.modules.forEach((type, amt) -> modules.putInt(registry.getKey(type).toString(), amt));
         tag.put("Modules", modules);
         ListTag collisions = new ListTag();
-        getCollisions().forEach((pos, state) -> {
+        getAffecting().forEach((pos, state) -> {
             CompoundTag collision = new CompoundTag();
             collision.put("Pos", NbtUtils.writeBlockPos(pos));
             collision.put("State", NbtUtils.writeBlockState(state));
             collisions.add(collision);
         });
-        tag.put("Collisions", collisions);
+        tag.put("Affecting", collisions);
     }
 
     @Override

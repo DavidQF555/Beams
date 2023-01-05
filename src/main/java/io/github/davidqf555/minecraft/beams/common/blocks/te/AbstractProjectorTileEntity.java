@@ -1,12 +1,16 @@
 package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
+import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,20 +24,45 @@ import java.util.UUID;
 public abstract class AbstractProjectorTileEntity extends BlockEntity {
 
     private final List<UUID> beams;
+    private boolean changed;
 
     public AbstractProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         beams = new ArrayList<>();
     }
 
-    @Override
-    public void setChanged() {
+    public static <T extends AbstractProjectorTileEntity> void tick(Level level, BlockPos pos, BlockState state, T te) {
+        te.tick();
+    }
+
+    protected void updateBeams() {
         BlockState state = getBlockState();
         Block block = state.getBlock();
         if (hasLevel() && block instanceof AbstractProjectorBlock) {
-            ((AbstractProjectorBlock) block).updateBeam(getLevel(), getBlockPos(), state);
+            clearBeams();
+            if (((AbstractProjectorBlock) block).isActive(state)) {
+                for (BeamEntity beam : ((AbstractProjectorBlock) block).shoot(getLevel(), getBlockPos(), state)) {
+                    addBeam(beam.getUUID());
+                }
+            }
         }
-        super.setChanged();
+    }
+
+    public void clearBeams() {
+        for (UUID id : new ArrayList<>(getBeams())) {
+            removeBeam(id);
+        }
+    }
+
+    public void tick() {
+        if (changed) {
+            updateBeams();
+            changed = false;
+        }
+    }
+
+    public void markChanged() {
+        changed = true;
     }
 
     public List<UUID> getBeams() {
@@ -45,6 +74,13 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
     }
 
     public void removeBeam(UUID beam) {
+        Level world = getLevel();
+        if (world instanceof ServerLevel) {
+            Entity entity = ((ServerLevel) world).getEntity(beam);
+            if (entity != null) {
+                entity.remove(Entity.RemovalReason.DISCARDED);
+            }
+        }
         getBeams().remove(beam);
     }
 
@@ -56,6 +92,7 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
             beams.add(NbtUtils.createUUID(beam));
         }
         tag.put("Beams", beams);
+        tag.putBoolean("Changed", changed);
     }
 
     @Override
@@ -65,6 +102,9 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
             for (Tag nbt : tag.getList("Beams", Tag.TAG_INT_ARRAY)) {
                 addBeam(NbtUtils.loadUUID(nbt));
             }
+        }
+        if (tag.contains("Changed", Tag.TAG_BYTE)) {
+            changed = tag.getBoolean("Changed");
         }
     }
 
