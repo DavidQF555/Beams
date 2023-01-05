@@ -45,7 +45,7 @@ public abstract class RedstoneActivatedProjectorBlock extends DirectedProjectorB
     @SuppressWarnings("deprecation")
     @Override
     public void onPlace(BlockState state, World world, BlockPos pos, BlockState old, boolean update) {
-        updateBeam(world, pos, state);
+        updateBeams(world, pos);
     }
 
     @Override
