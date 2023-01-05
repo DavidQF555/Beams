@@ -35,7 +35,6 @@ public class BeamSensorBlock extends ContainerBlock implements IBeamAffectEffect
         TileEntity te = beam.level.getBlockEntity(pos);
         if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).addHit(beam.getUUID())) {
             beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, true));
-            te.setChanged();
         }
     }
 
@@ -46,7 +45,6 @@ public class BeamSensorBlock extends ContainerBlock implements IBeamAffectEffect
             if (((BeamSensorTileEntity) te).getHit().isEmpty()) {
                 beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, false));
             }
-            te.setChanged();
         }
     }
 

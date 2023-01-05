@@ -43,7 +43,6 @@ public abstract class AbstractProjectorTileEntity extends TileEntity implements 
                     addBeam(beam.getUUID());
                 }
             }
-            setChanged();
         }
     }
 

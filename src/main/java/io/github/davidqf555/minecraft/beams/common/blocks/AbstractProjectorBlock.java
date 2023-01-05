@@ -41,7 +41,6 @@ public abstract class AbstractProjectorBlock extends ContainerBlock {
             TileEntity te = world.getBlockEntity(pos);
             if (te instanceof AbstractProjectorTileEntity) {
                 ((AbstractProjectorTileEntity) te).clearBeams();
-                te.setChanged();
             }
         }
         super.onRemove(state1, world, pos, state2, update);
