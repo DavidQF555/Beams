@@ -16,7 +16,7 @@ import net.minecraft.world.IBlockReader;
 
 import javax.annotation.Nullable;
 
-public class BeamSensorBlock extends ContainerBlock implements IBeamCollisionEffect {
+public class BeamSensorBlock extends ContainerBlock implements IBeamAffectEffect {
 
     public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
 
@@ -31,22 +31,20 @@ public class BeamSensorBlock extends ContainerBlock implements IBeamCollisionEff
     }
 
     @Override
-    public void onBeamStartCollision(BeamEntity beam, BlockPos pos, BlockState state) {
+    public void onBeamStartAffect(BeamEntity beam, BlockPos pos, BlockState state) {
         TileEntity te = beam.level.getBlockEntity(pos);
         if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).addHit(beam.getUUID())) {
             beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, true));
-            te.setChanged();
         }
     }
 
     @Override
-    public void onBeamStopCollision(BeamEntity beam, BlockPos pos, BlockState state) {
+    public void onBeamStopAffect(BeamEntity beam, BlockPos pos, BlockState state) {
         TileEntity te = beam.level.getBlockEntity(pos);
         if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).removeHit(beam.getUUID())) {
             if (((BeamSensorTileEntity) te).getHit().isEmpty()) {
                 beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, false));
             }
-            te.setChanged();
         }
     }
 

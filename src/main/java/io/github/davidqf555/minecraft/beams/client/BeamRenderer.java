@@ -22,7 +22,7 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
 
     @Override
     public void render(T entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
-        Vector3d dif = entityIn.getStart().subtract(entityIn.position());
+        Vector3d dif = entityIn.getEnd().subtract(entityIn.position());
         double startHeightRadius = entityIn.getStartHeight() / 2;
         float length = MathHelper.sqrt(dif.x() * dif.x() + dif.y() * dif.y() + dif.z() * dif.z());
         Vector3f vertex = new Vector3f(0, 0, length);
