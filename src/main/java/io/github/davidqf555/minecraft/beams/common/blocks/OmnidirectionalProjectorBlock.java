@@ -78,6 +78,7 @@ public class OmnidirectionalProjectorBlock extends ContainerProjectorBlock imple
         if (te instanceof OmnidirectionalProjectorTileEntity) {
             Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
             ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
+            updateBeams(world, pos);
             te.setChanged();
         }
     }

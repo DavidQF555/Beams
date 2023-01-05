@@ -30,11 +30,11 @@ public abstract class AbstractMirrorBlock extends AbstractProjectorBlock impleme
     }
 
     @Override
-    protected List<BeamEntity> shoot(Level world, BlockPos pos, BlockState state) {
+    public List<BeamEntity> shoot(Level world, BlockPos pos, BlockState state) {
         List<BeamEntity> beams = new ArrayList<>();
         for (BeamEntity beam : getHit(world, pos)) {
-            Vec3 start = beam.getStart();
-            Vec3 end = beam.position();
+            Vec3 start = beam.position();
+            Vec3 end = beam.getEnd();
             Vec3 original = end.subtract(start);
             double length = original.length();
             original = original.scale(1 / length);
@@ -86,7 +86,7 @@ public abstract class AbstractMirrorBlock extends AbstractProjectorBlock impleme
     public void onBeamStartCollision(BeamEntity beam, BlockPos pos, BlockState state) {
         BlockEntity te = beam.level.getBlockEntity(pos);
         if (te instanceof MirrorTileEntity && !((MirrorTileEntity) te).getBeams().contains(beam.getUUID()) && beam.getParents().stream().noneMatch(parent -> ((MirrorTileEntity) te).getHit().contains(parent)) && ((MirrorTileEntity) te).addHit(beam.getUUID())) {
-            te.setChanged();
+            updateBeams(beam.level, pos);
         }
     }
 
@@ -94,7 +94,7 @@ public abstract class AbstractMirrorBlock extends AbstractProjectorBlock impleme
     public void onBeamStopCollision(BeamEntity beam, BlockPos pos, BlockState state) {
         BlockEntity te = beam.level.getBlockEntity(pos);
         if (te instanceof MirrorTileEntity && ((MirrorTileEntity) te).removeHit(beam.getUUID())) {
-            te.setChanged();
+            updateBeams(beam.level, pos);
         }
     }
 

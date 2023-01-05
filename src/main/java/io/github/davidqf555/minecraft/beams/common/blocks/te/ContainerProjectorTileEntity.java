@@ -60,6 +60,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     public ItemStack removeItem(int index, int amount) {
         ItemStack stack = ContainerHelper.removeItem(items, index, amount);
         if (!stack.isEmpty()) {
+            markChanged();
             setChanged();
         }
         return stack;
@@ -76,6 +77,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
         if (stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
         }
+        markChanged();
         setChanged();
     }
 

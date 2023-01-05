@@ -58,6 +58,7 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
         if (te instanceof OmnidirectionalMirrorTileEntity) {
             Vec3 dir = target.subtract(Vec3.atCenterOf(pos)).normalize();
             ((OmnidirectionalMirrorTileEntity) te).setNormal(dir);
+            updateBeams(world, pos);
             te.setChanged();
         }
     }
