@@ -2,7 +2,7 @@
   "parent": "block/block",
   "textures": {
     "glass": "block/glass",
-    "projector": "beams:block/omnidirectional_mirror"
+    "mirror": "beams:block/omnidirectional_mirror"
   },
   "elements": [
     {
@@ -65,7 +65,7 @@
       },
       "faces": {
         "down": {
-          "texture": "#projector",
+          "texture": "#mirror",
           "uv": [
             4.25,
             0,
@@ -74,7 +74,7 @@
           ]
         },
         "up": {
-          "texture": "#projector",
+          "texture": "#mirror",
           "uv": [
             0.25,
             0,
@@ -83,7 +83,7 @@
           ]
         },
         "north": {
-          "texture": "#projector",
+          "texture": "#mirror",
           "uv": [
             0.25,
             0.5,
@@ -92,16 +92,16 @@
           ]
         },
         "south": {
-          "texture": "#projector",
+          "texture": "#mirror",
           "uv": [
-            8.25,
+            4.5,
             0.5,
-            8.25,
+            8.5,
             8.5
           ]
         },
         "west": {
-          "texture": "#projector",
+          "texture": "#mirror",
           "uv": [
             0,
             0.5,
@@ -110,11 +110,11 @@
           ]
         },
         "east": {
-          "texture": "#projector",
+          "texture": "#mirror",
           "uv": [
-            8.25,
+            4.25,
             0.5,
-            8.5,
+            4.5,
             8.5
           ]
         }
