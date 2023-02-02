@@ -193,7 +193,7 @@ public class BeamEntity extends Entity {
     }
 
     @Override
-    public void onRemovedFromWorld() {
+    public void remove(RemovalReason reason) {
         BlockPos endPos = new BlockPos(getEnd());
         BlockState endState = level.getBlockState(endPos);
         Block endBlock = endState.getBlock();
@@ -206,7 +206,7 @@ public class BeamEntity extends Entity {
                 ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
             }
         });
-        super.onRemovedFromWorld();
+        super.remove(reason);
     }
 
     protected boolean isVisualColliding(BlockPos pos) {
