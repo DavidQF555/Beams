@@ -190,20 +190,22 @@ public class BeamEntity extends Entity {
     }
 
     @Override
-    public void onRemovedFromWorld() {
-        BlockPos endPos = new BlockPos(getEnd());
-        BlockState endState = level.getBlockState(endPos);
-        Block endBlock = endState.getBlock();
-        if (endBlock instanceof IBeamCollisionEffect) {
-            ((IBeamCollisionEffect) endBlock).onBeamStopCollision(this, endPos, endState);
-        }
-        getAffecting().forEach((pos, state) -> {
-            Block block = state.getBlock();
-            if (block instanceof IBeamAffectEffect) {
-                ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
+    public void remove(boolean keepData) {
+        if (!level.isClientSide() && isAlive()) {
+            BlockPos endPos = new BlockPos(getEnd());
+            BlockState endState = level.getBlockState(endPos);
+            Block endBlock = endState.getBlock();
+            if (endBlock instanceof IBeamCollisionEffect) {
+                ((IBeamCollisionEffect) endBlock).onBeamStopCollision(this, endPos, endState);
             }
-        });
-        super.onRemovedFromWorld();
+            getAffecting().forEach((pos, state) -> {
+                Block block = state.getBlock();
+                if (block instanceof IBeamAffectEffect) {
+                    ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
+                }
+            });
+        }
+        super.remove(keepData);
     }
 
     protected boolean isVisualColliding(BlockPos pos) {
