@@ -107,6 +107,16 @@ public class BeamEntity extends Entity {
         this.maxRange = maxRange;
     }
 
+    protected boolean isSignificantlyDifferent(Vector3d v1, Vector3d v2) {
+        long x1 = Double.doubleToLongBits(v1.x());
+        long y1 = Double.doubleToLongBits(v1.y());
+        long z1 = Double.doubleToLongBits(v1.z());
+        long x2 = Double.doubleToLongBits(v2.x());
+        long y2 = Double.doubleToLongBits(v2.y());
+        long z2 = Double.doubleToLongBits(v2.z());
+        return (x1 & ~0b11111) != (x2 & ~0b11111) || (y1 & ~0b11111) != (y2 & ~0b11111) || (z1 & ~0b11111) != (z2 & ~0b11111);
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -120,7 +130,7 @@ public class BeamEntity extends Entity {
                 Vector3d dir = original.subtract(start).normalize();
                 BlockRayTraceResult trace = level.clip(new RayTraceContext(start, start.add(dir.scale(maxRange)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null));
                 Vector3d end = trace.getLocation().add(dir.scale(POKE));
-                if (!original.equals(end)) {
+                if (!isSignificantlyDifferent(original, end)) {
                     setEnd(end);
                 }
                 BlockPos endPos = new BlockPos(end);
