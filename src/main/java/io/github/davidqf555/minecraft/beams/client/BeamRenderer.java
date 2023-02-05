@@ -2,7 +2,8 @@ package io.github.davidqf555.minecraft.beams.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -12,8 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
 
@@ -30,8 +29,8 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
         matrixStackIn.pushPose();
         float yaw = (float) (Math.PI / 2 - Mth.atan2(-dif.z(), dif.x()));
         float pitch = (float) Math.asin(Mth.clamp(dif.y() / length, -1, 1));
-        matrixStackIn.mulPose(Axis.YN.rotation(yaw));
-        matrixStackIn.mulPose(Axis.XP.rotation(pitch));
+        matrixStackIn.mulPose(Vector3f.YN.rotation(yaw));
+        matrixStackIn.mulPose(Vector3f.XP.rotation(pitch));
         VertexConsumer builder = bufferIn.getBuffer(RenderType.lightning());
         Matrix4f matrix4f = matrixStackIn.last().pose();
         int color = entityIn.getColor();

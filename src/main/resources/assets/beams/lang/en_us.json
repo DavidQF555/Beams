@@ -1,5 +1,5 @@
 {
-  "itemGroup.beams.main": "Beams",
+  "itemGroup.beams": "Beams",
   "block.beams.projector": "Projector",
   "block.beams.tilted_projector": "Tilted Projector",
   "block.beams.omnidirectional_projector": "Omnidirectional Projector",
