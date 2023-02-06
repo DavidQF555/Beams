@@ -55,6 +55,7 @@ public final class ItemRegistry {
     public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> GROWTH_MODULE = register("growth_module", ItemRegistry::getTab, () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.GROWTH, new Item.Properties()));
     public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> SHRINK_MODULE = register("shrink_module", ItemRegistry::getTab, () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.SHRINK, new Item.Properties()));
     public static final RegistryObject<ProjectorModuleItem<ForceModuleType>> TRACTOR_MODULE = register("tractor_module", ItemRegistry::getTab, () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.TRACTOR, new Item.Properties()));
+    public static final RegistryObject<ProjectorModuleItem<FreezeModuleType>> FREEZE_MODULE = register("freeze_module", ItemRegistry::getTab, () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.FREEZE, new Item.Properties()));
 
     private ItemRegistry() {
     }
