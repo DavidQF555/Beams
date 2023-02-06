@@ -35,6 +35,7 @@
   "item.beams.growth_module": "Growth Module",
   "item.beams.shrink_module": "Shrink Module",
   "item.beams.tractor_module": "Tractor Module",
+  "item.beams.freeze_module": "Freeze Module",
   "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector",
   "message.beams.pointer_connected": "Connected",

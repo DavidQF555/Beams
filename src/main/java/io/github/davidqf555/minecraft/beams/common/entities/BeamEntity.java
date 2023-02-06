@@ -110,14 +110,9 @@ public class BeamEntity extends Entity {
         this.maxRange = maxRange;
     }
 
+
     protected boolean isSignificantlyDifferent(Vec3 v1, Vec3 v2) {
-        long x1 = Double.doubleToLongBits(v1.x());
-        long y1 = Double.doubleToLongBits(v1.y());
-        long z1 = Double.doubleToLongBits(v1.z());
-        long x2 = Double.doubleToLongBits(v2.x());
-        long y2 = Double.doubleToLongBits(v2.y());
-        long z2 = Double.doubleToLongBits(v2.z());
-        return (x1 & ~0b11111) != (x2 & ~0b11111) || (y1 & ~0b11111) != (y2 & ~0b11111) || (z1 & ~0b11111) != (z2 & ~0b11111);
+        return v1.distanceToSqr(v2) >= 0.00001;
     }
 
     @Override
@@ -133,7 +128,7 @@ public class BeamEntity extends Entity {
                 Vec3 dir = original.subtract(start).normalize();
                 BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
                 Vec3 end = trace.getLocation().add(dir.scale(POKE));
-                if (!isSignificantlyDifferent(original, end)) {
+                if (isSignificantlyDifferent(original, end)) {
                     setEnd(end);
                 }
                 BlockPos endPos = new BlockPos(end);
