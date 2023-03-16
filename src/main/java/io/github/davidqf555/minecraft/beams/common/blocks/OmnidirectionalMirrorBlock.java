@@ -33,6 +33,7 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
         return createTickerHelper(type, TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), AbstractProjectorTileEntity::tick);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getVisualShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         return VISUAL;
