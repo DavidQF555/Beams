@@ -33,6 +33,7 @@ import java.util.*;
 public class BeamEntity extends Entity {
 
     public static final double POKE = 0.1;
+    private static final double SEGMENT_LENGTH = 4;
     private static final DataParameter<Double> X = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Double> Y = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Double> Z = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
@@ -136,7 +137,7 @@ public class BeamEntity extends Entity {
                 }
                 Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
-                getAffectingPos().forEach(pos -> {
+                getAffectingPositions().forEach(pos -> {
                     modules.forEach((type, amt) -> {
                         if (amt > 0) {
                             type.onBlockTick(this, pos, amt);
@@ -424,24 +425,18 @@ public class BeamEntity extends Entity {
         this.lifespan = lifespan;
     }
 
-    private Vector3d[] getVertices() {
+    private static Vector3d[] getVertices(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
         Vector3d[] vertices = new Vector3d[8];
-        Vector3d start = position();
-        Vector3d end = getEnd();
         Vector3d center = end.subtract(start);
         Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
         if (perpY.lengthSqr() == 0) {
             perpY = new Vector3d(Vector3f.ZP);
         }
         Vector3d perp = center.cross(perpY).normalize();
-        double startWidth = getStartWidth();
-        double startHeight = getStartHeight();
         vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
         vertices[1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
         vertices[2] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
         vertices[3] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        double endWidth = getEndWidth();
-        double endHeight = getEndHeight();
         vertices[4] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
         vertices[5] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
         vertices[6] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
@@ -449,30 +444,53 @@ public class BeamEntity extends Entity {
         return vertices;
     }
 
+    private static AxisAlignedBB getMaxBounds(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
+        Vector3d[] vertices = getVertices(start, end, startWidth, startHeight, endWidth, endHeight);
+        double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
+        double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
+        double minY = Arrays.stream(vertices).mapToDouble(Vector3d::y).min().getAsDouble();
+        double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
+        double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
+        double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
+        return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
     public AxisAlignedBB getMaxBounds() {
         if (maxBounds == null) {
-            Vector3d[] vertices = getVertices();
-            double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
-            double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
-            double minY = Arrays.stream(vertices).mapToDouble(Vector3d::y).min().getAsDouble();
-            double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
-            double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
-            double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
-            maxBounds = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+            maxBounds = getMaxBounds(position(), getEnd(), getStartWidth(), getStartHeight(), getEndWidth(), getEndHeight());
         }
         return maxBounds;
     }
 
-    public Set<BlockPos> getAffectingPos() {
+    public Set<BlockPos> getAffectingPositions() {
         if (affectingPos == null) {
+            Vector3d start = position();
+            Vector3d dir = getEnd().subtract(position());
+            double length = dir.length();
+            dir = dir.scale(1 / length);
             affectingPos = new HashSet<>();
-            AxisAlignedBB total = getMaxBounds();
-            for (int x = MathHelper.floor(total.minX); x <= MathHelper.floor(total.maxX); x++) {
-                for (int z = MathHelper.floor(total.minZ); z <= MathHelper.floor(total.maxZ); z++) {
-                    for (int y = MathHelper.floor(total.minY); y <= MathHelper.floor(total.maxY); y++) {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        if (isAffected(pos)) {
-                            affectingPos.add(pos);
+            double baseStartWidth = getStartWidth();
+            double baseStartHeight = getStartHeight();
+            double baseEndWidth = getEndWidth();
+            double baseEndHeight = getEndHeight();
+            int count = MathHelper.ceil(length / SEGMENT_LENGTH);
+            for (int i = 0; i < count; i++) {
+                double startPos = SEGMENT_LENGTH * i;
+                double endPos = Math.min(length, SEGMENT_LENGTH * (i + 1));
+                Vector3d s = start.add(dir.scale(startPos));
+                Vector3d e = start.add(dir.scale(endPos));
+                double startWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * startPos / length;
+                double startHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * startPos / length;
+                double endWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * endPos / length;
+                double endHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * endPos / length;
+                AxisAlignedBB bounds = getMaxBounds(s, e, startWidth, startHeight, endWidth, endHeight);
+                for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
+                    for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.floor(bounds.maxZ); z++) {
+                        for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.floor(bounds.maxY); y++) {
+                            BlockPos pos = new BlockPos(x, y, z);
+                            if (isAffected(pos)) {
+                                affectingPos.add(pos);
+                            }
                         }
                     }
                 }
