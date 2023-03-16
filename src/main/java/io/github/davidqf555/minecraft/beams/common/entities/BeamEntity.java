@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
+import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamAffectEffect;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
@@ -35,6 +36,7 @@ import java.util.*;
 public class BeamEntity extends Entity {
 
     public static final double POKE = 0.1;
+    private static final double SEGMENT_LENGTH = 4;
     private static final EntityDataAccessor<Double> X = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Double> Y = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Double> Z = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
@@ -48,7 +50,8 @@ public class BeamEntity extends Entity {
     private final Map<BlockPos, BlockState> affecting;
     private double maxRange;
     private UUID shooter, parent;
-    private AABB bounds;
+    private AABB maxBounds;
+    private Set<BlockPos> affectingPos;
     private int lifespan;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
@@ -101,6 +104,36 @@ public class BeamEntity extends Entity {
         return factor;
     }
 
+    private static Vec3[] getVertices(Vec3 start, Vec3 end, double startWidth, double startHeight, double endWidth, double endHeight) {
+        Vec3[] vertices = new Vec3[8];
+        Vec3 center = end.subtract(start);
+        Vec3 perpY = center.cross(new Vec3(Vector3f.YP)).normalize();
+        if (perpY.lengthSqr() == 0) {
+            perpY = new Vec3(Vector3f.ZP);
+        }
+        Vec3 perp = center.cross(perpY).normalize();
+        vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
+        vertices[1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
+        vertices[2] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
+        vertices[3] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
+        vertices[4] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
+        vertices[5] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
+        vertices[6] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
+        vertices[7] = end.subtract(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
+        return vertices;
+    }
+
+    private static AABB getMaxBounds(Vec3 start, Vec3 end, double startWidth, double startHeight, double endWidth, double endHeight) {
+        Vec3[] vertices = getVertices(start, end, startWidth, startHeight, endWidth, endHeight);
+        double minX = Arrays.stream(vertices).mapToDouble(Vec3::x).min().getAsDouble();
+        double maxX = Arrays.stream(vertices).mapToDouble(Vec3::x).max().getAsDouble();
+        double minY = Arrays.stream(vertices).mapToDouble(Vec3::y).min().getAsDouble();
+        double maxY = Arrays.stream(vertices).mapToDouble(Vec3::y).max().getAsDouble();
+        double minZ = Arrays.stream(vertices).mapToDouble(Vec3::z).min().getAsDouble();
+        double maxZ = Arrays.stream(vertices).mapToDouble(Vec3::z).max().getAsDouble();
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
     public double getMaxRange() {
         return maxRange;
     }
@@ -108,7 +141,6 @@ public class BeamEntity extends Entity {
     public void setMaxRange(double maxRange) {
         this.maxRange = maxRange;
     }
-
 
     protected boolean isSignificantlyDifferent(Vec3 v1, Vec3 v2) {
         return v1.distanceToSqr(v2) >= 0.00001;
@@ -138,29 +170,21 @@ public class BeamEntity extends Entity {
                 }
                 Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
-                AABB bounds = getMaxBounds();
-                for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
-                    for (int z = Mth.floor(bounds.minZ); z <= Mth.floor(bounds.maxZ); z++) {
-                        for (int y = Mth.floor(bounds.minY); y <= Mth.floor(bounds.maxY); y++) {
-                            BlockPos pos = new BlockPos(x, y, z);
-                            if (isAffected(pos)) {
-                                modules.forEach((type, amt) -> {
-                                    if (amt > 0) {
-                                        type.onBlockTick(this, pos, amt);
-                                    }
-                                });
-                                if (isVisualColliding(pos)) {
-                                    collisions.put(pos, level.getBlockState(pos));
-                                    modules.forEach((type, amt) -> {
-                                        if (amt > 0) {
-                                            type.onCollisionTick(this, pos, amt);
-                                        }
-                                    });
-                                }
-                            }
+                getAffectingPositions().forEach(pos -> {
+                    modules.forEach((type, amt) -> {
+                        if (amt > 0) {
+                            type.onBlockTick(this, pos, amt);
                         }
+                    });
+                    if (isVisualColliding(pos)) {
+                        collisions.put(pos, level.getBlockState(pos));
+                        modules.forEach((type, amt) -> {
+                            if (amt > 0) {
+                                type.onCollisionTick(this, pos, amt);
+                            }
+                        });
                     }
-                }
+                });
                 Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
                 past.forEach((pos, state) -> {
                     if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
@@ -183,7 +207,7 @@ public class BeamEntity extends Entity {
                         ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
                     }
                 });
-                for (Entity entity : level.getEntities(this, bounds)) {
+                for (Entity entity : level.getEntities(this, getMaxBounds())) {
                     if (isAffected(entity)) {
                         modules.forEach((type, amt) -> {
                             if (amt > 0) {
@@ -342,7 +366,7 @@ public class BeamEntity extends Entity {
         manager.set(X, end.x());
         manager.set(Y, end.y());
         manager.set(Z, end.z());
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getStartWidth() {
@@ -351,7 +375,7 @@ public class BeamEntity extends Entity {
 
     public void setStartWidth(double width) {
         getEntityData().set(START_WIDTH, width);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getStartHeight() {
@@ -360,7 +384,7 @@ public class BeamEntity extends Entity {
 
     public void setStartHeight(double height) {
         getEntityData().set(START_HEIGHT, height);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getEndWidth() {
@@ -369,7 +393,7 @@ public class BeamEntity extends Entity {
 
     public void setEndWidth(double width) {
         getEntityData().set(END_WIDTH, width);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getEndHeight() {
@@ -378,13 +402,13 @@ public class BeamEntity extends Entity {
 
     public void setEndHeight(double height) {
         getEntityData().set(END_HEIGHT, height);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     @Override
     public void setPos(double x, double y, double z) {
         super.setPos(x, y, z);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public Map<BlockPos, BlockState> getAffecting() {
@@ -432,47 +456,53 @@ public class BeamEntity extends Entity {
         this.lifespan = lifespan;
     }
 
-    private Vec3[] getVertices() {
-        Vec3[] vertices = new Vec3[8];
-        Vec3 start = position();
-        Vec3 end = getEnd();
-        Vec3 center = end.subtract(start);
-        Vec3 perpY = center.cross(new Vec3(0, 1, 0)).normalize();
-        if (perpY.lengthSqr() == 0) {
-            perpY = new Vec3(0, 0, 1);
-        }
-        Vec3 perp = center.cross(perpY).normalize();
-        double startWidth = getStartWidth();
-        double startHeight = getStartHeight();
-        vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
-        vertices[1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        vertices[2] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
-        vertices[3] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        double endWidth = getEndWidth();
-        double endHeight = getEndHeight();
-        vertices[4] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
-        vertices[5] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
-        vertices[6] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
-        vertices[7] = end.subtract(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
-        return vertices;
-    }
-
     public AABB getMaxBounds() {
-        if (bounds == null) {
-            Vec3[] vertices = getVertices();
-            double minX = Arrays.stream(vertices).mapToDouble(Vec3::x).min().getAsDouble();
-            double maxX = Arrays.stream(vertices).mapToDouble(Vec3::x).max().getAsDouble();
-            double minY = Arrays.stream(vertices).mapToDouble(Vec3::y).min().getAsDouble();
-            double maxY = Arrays.stream(vertices).mapToDouble(Vec3::y).max().getAsDouble();
-            double minZ = Arrays.stream(vertices).mapToDouble(Vec3::z).min().getAsDouble();
-            double maxZ = Arrays.stream(vertices).mapToDouble(Vec3::z).max().getAsDouble();
-            bounds = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        if (maxBounds == null) {
+            maxBounds = getMaxBounds(position(), getEnd(), getStartWidth(), getStartHeight(), getEndWidth(), getEndHeight());
         }
-        return bounds;
+        return maxBounds;
     }
 
-    protected void refreshMaxBounds() {
-        bounds = null;
+    public Set<BlockPos> getAffectingPositions() {
+        if (affectingPos == null) {
+            Vec3 start = position();
+            Vec3 dir = getEnd().subtract(position());
+            double length = dir.length();
+            dir = dir.scale(1 / length);
+            affectingPos = new HashSet<>();
+            double baseStartWidth = getStartWidth();
+            double baseStartHeight = getStartHeight();
+            double baseEndWidth = getEndWidth();
+            double baseEndHeight = getEndHeight();
+            int count = Mth.ceil(length / SEGMENT_LENGTH);
+            for (int i = 0; i < count; i++) {
+                double startPos = SEGMENT_LENGTH * i;
+                double endPos = Math.min(length, SEGMENT_LENGTH * (i + 1));
+                Vec3 s = start.add(dir.scale(startPos));
+                Vec3 e = start.add(dir.scale(endPos));
+                double startWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * startPos / length;
+                double startHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * startPos / length;
+                double endWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * endPos / length;
+                double endHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * endPos / length;
+                AABB bounds = getMaxBounds(s, e, startWidth, startHeight, endWidth, endHeight);
+                for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
+                    for (int z = Mth.floor(bounds.minZ); z <= Mth.floor(bounds.maxZ); z++) {
+                        for (int y = Mth.floor(bounds.minY); y <= Mth.floor(bounds.maxY); y++) {
+                            BlockPos pos = new BlockPos(x, y, z);
+                            if (isAffected(pos)) {
+                                affectingPos.add(pos);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return affectingPos;
+    }
+
+    protected void refreshBounds() {
+        affectingPos = null;
+        maxBounds = null;
     }
 
     @Override

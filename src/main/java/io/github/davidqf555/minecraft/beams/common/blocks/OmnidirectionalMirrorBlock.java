@@ -1,8 +1,8 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.MirrorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalMirrorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.RedirectorTileEntity;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -33,6 +33,7 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
         return createTickerHelper(type, TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), AbstractProjectorTileEntity::tick);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getVisualShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         return VISUAL;
@@ -48,7 +49,7 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
     }
 
     @Override
-    public MirrorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public RedirectorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new OmnidirectionalMirrorTileEntity(pos, state);
     }
 

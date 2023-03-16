@@ -1,9 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import com.google.common.collect.ImmutableMap;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
-import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -15,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractProjectorBlock extends BaseEntityBlock {
 
@@ -26,10 +23,6 @@ public abstract class AbstractProjectorBlock extends BaseEntityBlock {
     public abstract boolean isActive(BlockState state);
 
     public abstract List<BeamEntity> shoot(Level world, BlockPos pos, BlockState state);
-
-    protected Map<ProjectorModuleType, Integer> getModules(Level world, BlockPos pos, BlockState state) {
-        return ImmutableMap.of();
-    }
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
