@@ -10,7 +10,7 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.UUID;
 
-public class OmnidirectionalMirrorTileEntity extends MirrorTileEntity {
+public class OmnidirectionalMirrorTileEntity extends RedirectorTileEntity {
 
     private UUID id;
     private Vector3d normal;

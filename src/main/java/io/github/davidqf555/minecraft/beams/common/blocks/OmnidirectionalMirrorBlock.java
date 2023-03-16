@@ -1,7 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.MirrorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalMirrorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.RedirectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntity;
@@ -38,7 +38,7 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
     }
 
     @Override
-    public MirrorTileEntity newBlockEntity(IBlockReader reader) {
+    public RedirectorTileEntity newBlockEntity(IBlockReader reader) {
         return new OmnidirectionalMirrorTileEntity();
     }
 

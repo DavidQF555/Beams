@@ -13,16 +13,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class MirrorTileEntity extends AbstractProjectorTileEntity {
+public class RedirectorTileEntity extends AbstractProjectorTileEntity {
 
     private final Set<UUID> hit;
 
-    protected MirrorTileEntity(TileEntityType<?> type) {
+    protected RedirectorTileEntity(TileEntityType<?> type) {
         super(type);
         hit = new HashSet<>();
     }
 
-    public MirrorTileEntity() {
+    public RedirectorTileEntity() {
         this(TileEntityRegistry.MIRROR.get());
     }
 
