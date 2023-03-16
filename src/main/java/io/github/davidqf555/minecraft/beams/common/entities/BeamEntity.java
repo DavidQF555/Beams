@@ -46,7 +46,8 @@ public class BeamEntity extends Entity {
     private final Map<BlockPos, BlockState> affecting;
     private double maxRange;
     private UUID shooter, parent;
-    private AxisAlignedBB bounds;
+    private AxisAlignedBB maxBounds;
+    private Set<BlockPos> affectingPos;
     private int lifespan;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
@@ -135,29 +136,21 @@ public class BeamEntity extends Entity {
                 }
                 Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
-                AxisAlignedBB bounds = getMaxBounds();
-                for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
-                    for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.floor(bounds.maxZ); z++) {
-                        for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.floor(bounds.maxY); y++) {
-                            BlockPos pos = new BlockPos(x, y, z);
-                            if (isAffected(pos)) {
-                                modules.forEach((type, amt) -> {
-                                    if (amt > 0) {
-                                        type.onBlockTick(this, pos, amt);
-                                    }
-                                });
-                                if (isVisualColliding(pos)) {
-                                    collisions.put(pos, level.getBlockState(pos));
-                                    modules.forEach((type, amt) -> {
-                                        if (amt > 0) {
-                                            type.onCollisionTick(this, pos, amt);
-                                        }
-                                    });
-                                }
-                            }
+                getAffectingPos().forEach(pos -> {
+                    modules.forEach((type, amt) -> {
+                        if (amt > 0) {
+                            type.onBlockTick(this, pos, amt);
                         }
+                    });
+                    if (isVisualColliding(pos)) {
+                        collisions.put(pos, level.getBlockState(pos));
+                        modules.forEach((type, amt) -> {
+                            if (amt > 0) {
+                                type.onCollisionTick(this, pos, amt);
+                            }
+                        });
                     }
-                }
+                });
                 Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
                 past.forEach((pos, state) -> {
                     if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
@@ -180,7 +173,7 @@ public class BeamEntity extends Entity {
                         ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
                     }
                 });
-                for (Entity entity : level.getEntities(this, bounds)) {
+                for (Entity entity : level.getEntities(this, getMaxBounds())) {
                     if (isAffected(entity)) {
                         modules.forEach((type, amt) -> {
                             if (amt > 0) {
@@ -341,7 +334,7 @@ public class BeamEntity extends Entity {
         manager.set(X, end.x());
         manager.set(Y, end.y());
         manager.set(Z, end.z());
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getStartWidth() {
@@ -350,7 +343,7 @@ public class BeamEntity extends Entity {
 
     public void setStartWidth(double width) {
         getEntityData().set(START_WIDTH, width);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getStartHeight() {
@@ -359,7 +352,7 @@ public class BeamEntity extends Entity {
 
     public void setStartHeight(double height) {
         getEntityData().set(START_HEIGHT, height);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getEndWidth() {
@@ -368,7 +361,7 @@ public class BeamEntity extends Entity {
 
     public void setEndWidth(double width) {
         getEntityData().set(END_WIDTH, width);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public double getEndHeight() {
@@ -377,13 +370,13 @@ public class BeamEntity extends Entity {
 
     public void setEndHeight(double height) {
         getEntityData().set(END_HEIGHT, height);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     @Override
     public void setPos(double x, double y, double z) {
         super.setPos(x, y, z);
-        refreshMaxBounds();
+        refreshBounds();
     }
 
     public Map<BlockPos, BlockState> getAffecting() {
@@ -457,7 +450,7 @@ public class BeamEntity extends Entity {
     }
 
     public AxisAlignedBB getMaxBounds() {
-        if (bounds == null) {
+        if (maxBounds == null) {
             Vector3d[] vertices = getVertices();
             double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
             double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
@@ -465,13 +458,32 @@ public class BeamEntity extends Entity {
             double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
             double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
             double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
-            bounds = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+            maxBounds = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
         }
-        return bounds;
+        return maxBounds;
     }
 
-    protected void refreshMaxBounds() {
-        bounds = null;
+    public Set<BlockPos> getAffectingPos() {
+        if (affectingPos == null) {
+            affectingPos = new HashSet<>();
+            AxisAlignedBB total = getMaxBounds();
+            for (int x = MathHelper.floor(total.minX); x <= MathHelper.floor(total.maxX); x++) {
+                for (int z = MathHelper.floor(total.minZ); z <= MathHelper.floor(total.maxZ); z++) {
+                    for (int y = MathHelper.floor(total.minY); y <= MathHelper.floor(total.maxY); y++) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (isAffected(pos)) {
+                            affectingPos.add(pos);
+                        }
+                    }
+                }
+            }
+        }
+        return affectingPos;
+    }
+
+    protected void refreshBounds() {
+        affectingPos = null;
+        maxBounds = null;
     }
 
     @Override
