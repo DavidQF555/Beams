@@ -101,6 +101,36 @@ public class BeamEntity extends Entity {
         return factor;
     }
 
+    private static Vector3d[] getVertices(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
+        Vector3d[] vertices = new Vector3d[8];
+        Vector3d center = end.subtract(start);
+        Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
+        if (perpY.lengthSqr() == 0) {
+            perpY = new Vector3d(Vector3f.ZP);
+        }
+        Vector3d perp = center.cross(perpY).normalize();
+        vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
+        vertices[1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
+        vertices[2] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
+        vertices[3] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
+        vertices[4] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
+        vertices[5] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
+        vertices[6] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
+        vertices[7] = end.subtract(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
+        return vertices;
+    }
+
+    private static AxisAlignedBB getMaxBounds(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
+        Vector3d[] vertices = getVertices(start, end, startWidth, startHeight, endWidth, endHeight);
+        double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
+        double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
+        double minY = Arrays.stream(vertices).mapToDouble(Vector3d::y).min().getAsDouble();
+        double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
+        double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
+        double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
+        return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
     public double getMaxRange() {
         return maxRange;
     }
@@ -423,36 +453,6 @@ public class BeamEntity extends Entity {
 
     public void setLifespan(int lifespan) {
         this.lifespan = lifespan;
-    }
-
-    private static Vector3d[] getVertices(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
-        Vector3d[] vertices = new Vector3d[8];
-        Vector3d center = end.subtract(start);
-        Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
-        if (perpY.lengthSqr() == 0) {
-            perpY = new Vector3d(Vector3f.ZP);
-        }
-        Vector3d perp = center.cross(perpY).normalize();
-        vertices[0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
-        vertices[1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        vertices[2] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
-        vertices[3] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        vertices[4] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
-        vertices[5] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
-        vertices[6] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
-        vertices[7] = end.subtract(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
-        return vertices;
-    }
-
-    private static AxisAlignedBB getMaxBounds(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
-        Vector3d[] vertices = getVertices(start, end, startWidth, startHeight, endWidth, endHeight);
-        double minX = Arrays.stream(vertices).mapToDouble(Vector3d::x).min().getAsDouble();
-        double maxX = Arrays.stream(vertices).mapToDouble(Vector3d::x).max().getAsDouble();
-        double minY = Arrays.stream(vertices).mapToDouble(Vector3d::y).min().getAsDouble();
-        double maxY = Arrays.stream(vertices).mapToDouble(Vector3d::y).max().getAsDouble();
-        double minZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).min().getAsDouble();
-        double maxZ = Arrays.stream(vertices).mapToDouble(Vector3d::z).max().getAsDouble();
-        return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     public AxisAlignedBB getMaxBounds() {

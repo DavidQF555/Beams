@@ -23,8 +23,8 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
     @Override
     public void render(T entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
         Vector3d dif = entityIn.getEnd().subtract(entityIn.position());
-        float length = MathHelper.sqrt(dif.x() * dif.x() + dif.y() * dif.y() + dif.z() * dif.z());
-        Vector3f vertex = new Vector3f(0, 0, length);
+        double length = dif.length();
+        Vector3f vertex = new Vector3f(0, 0, (float) length);
         float yaw = (float) (Math.PI / 2 - MathHelper.atan2(-dif.z(), dif.x()));//pi/2
         float pitch = (float) Math.asin(MathHelper.clamp(dif.y() / length, -1, 1));//
         matrixStackIn.pushPose();

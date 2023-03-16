@@ -23,6 +23,7 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
         super(properties);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getVisualShape(BlockState state, IBlockReader reader, BlockPos pos, ISelectionContext context) {
         return VISUAL;
