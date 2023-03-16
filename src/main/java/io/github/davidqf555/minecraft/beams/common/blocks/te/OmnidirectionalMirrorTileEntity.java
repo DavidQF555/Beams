@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-public class OmnidirectionalMirrorTileEntity extends MirrorTileEntity {
+public class OmnidirectionalMirrorTileEntity extends RedirectorTileEntity {
 
     private UUID id;
     private Vec3 normal;

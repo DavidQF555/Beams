@@ -23,7 +23,7 @@ public final class TileEntityRegistry {
 
     public static final RegistryObject<BlockEntityType<ContainerProjectorTileEntity>> BEAM_PROJECTOR = register("beam_projector", () -> BlockEntityType.Builder.of(ContainerProjectorTileEntity::new, BlockRegistry.PROJECTOR.get(), BlockRegistry.TILTED_PROJECTOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<OmnidirectionalProjectorTileEntity>> OMNIDIRECTIONAL_BEAM_PROJECTOR = register("omnidirectional_beam_projector", () -> BlockEntityType.Builder.of(OmnidirectionalProjectorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get()).build(null));
-    public static final RegistryObject<BlockEntityType<MirrorTileEntity>> MIRROR = register("mirror", () -> BlockEntityType.Builder.of(MirrorTileEntity::new, BlockRegistry.MIRROR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<RedirectorTileEntity>> MIRROR = register("mirror", () -> BlockEntityType.Builder.of(RedirectorTileEntity::new, BlockRegistry.MIRROR.get()).build(null));
     public static final RegistryObject<BlockEntityType<BeamSensorTileEntity>> BEAM_SENSOR = register("beam_sensor", () -> BlockEntityType.Builder.of(BeamSensorTileEntity::new, BlockRegistry.PHOTODETECTOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<OmnidirectionalMirrorTileEntity>> OMNIDIRECTIONAL_MIRROR = register("omnidirectional_mirror", () -> BlockEntityType.Builder.of(OmnidirectionalMirrorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_MIRROR.get()).build(null));
 

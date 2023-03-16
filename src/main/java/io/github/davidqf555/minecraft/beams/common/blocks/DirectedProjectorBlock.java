@@ -1,8 +1,10 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
+import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -10,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class DirectedProjectorBlock extends AbstractProjectorBlock {
 
@@ -31,6 +34,10 @@ public abstract class DirectedProjectorBlock extends AbstractProjectorBlock {
             return ImmutableList.of();
         }
         return ImmutableList.of(beam);
+    }
+
+    protected Map<ProjectorModuleType, Integer> getModules(Level world, BlockPos pos, BlockState state) {
+        return ImmutableMap.of();
     }
 
 }

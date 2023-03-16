@@ -54,11 +54,13 @@ public class BeamSensorBlock extends BaseEntityBlock implements IBeamAffectEffec
         return new BeamSensorTileEntity(pos, state);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean isSignalSource(BlockState state) {
         return state.getValue(TRIGGERED);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public int getSignal(BlockState state, BlockGetter reader, BlockPos pos, Direction direction) {
         return state.getValue(TRIGGERED) ? 15 : 0;
