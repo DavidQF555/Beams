@@ -43,4 +43,14 @@ public class FreezeModuleType extends ProjectorModuleType {
         }
     }
 
+    @Override
+    public boolean shouldTickBlocks() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldTickEntities() {
+        return true;
+    }
+
 }

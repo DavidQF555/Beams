@@ -21,4 +21,9 @@ public class ForceModuleType extends ProjectorModuleType {
         target.hurtMarked = true;
     }
 
+    @Override
+    public boolean shouldTickEntities() {
+        return true;
+    }
+
 }

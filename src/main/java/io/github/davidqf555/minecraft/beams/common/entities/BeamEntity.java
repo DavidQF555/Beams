@@ -29,6 +29,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeamEntity extends Entity {
 
@@ -165,52 +166,48 @@ public class BeamEntity extends Entity {
                 if (endBlock instanceof IBeamCollisionEffect) {
                     ((IBeamCollisionEffect) endBlock).onBeamCollisionTick(this, endPos, endState);
                 }
-                Map<BlockPos, BlockState> collisions = new HashMap<>();
                 Map<ProjectorModuleType, Integer> modules = getModules();
-                getAffectingPositions().forEach(pos -> {
-                    modules.forEach((type, amt) -> {
-                        if (amt > 0) {
-                            type.onBlockTick(this, pos, amt);
+                Set<Map.Entry<ProjectorModuleType, Integer>> blockModules = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickBlocks()).collect(Collectors.toSet());
+                if (!blockModules.isEmpty()) {
+                    Map<BlockPos, BlockState> collisions = new HashMap<>();
+                    getAffectingPositions().forEach(pos -> {
+                        blockModules.forEach(entry -> entry.getKey().onBlockTick(this, pos, entry.getValue()));
+                        if (isVisualColliding(pos)) {
+                            collisions.put(pos, level.getBlockState(pos));
+                            blockModules.forEach(entry -> entry.getKey().onCollisionTick(this, pos, entry.getValue()));
                         }
                     });
-                    if (isVisualColliding(pos)) {
-                        collisions.put(pos, level.getBlockState(pos));
-                        modules.forEach((type, amt) -> {
-                            if (amt > 0) {
-                                type.onCollisionTick(this, pos, amt);
+                    Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
+                    past.forEach((pos, state) -> {
+                        if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
+                            removeAffecting(pos);
+                            Block block = state.getBlock();
+                            if (block instanceof IBeamAffectEffect) {
+                                ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
                             }
-                        });
-                    }
-                });
-                Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
-                past.forEach((pos, state) -> {
-                    if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
-                        removeAffecting(pos);
+                        }
+                    });
+                    collisions.forEach((pos, state) -> {
                         Block block = state.getBlock();
-                        if (block instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
-                        }
-                    }
-                });
-                collisions.forEach((pos, state) -> {
-                    Block block = state.getBlock();
-                    if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
-                        addAffecting(pos, state);
-                        if (block instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) block).onBeamStartAffect(this, pos, state);
-                        }
-                    }
-                    if (block instanceof IBeamAffectEffect) {
-                        ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
-                    }
-                });
-                for (Entity entity : level.getEntities(this, getMaxBounds())) {
-                    if (isAffected(entity)) {
-                        modules.forEach((type, amt) -> {
-                            if (amt > 0) {
-                                type.onEntityTick(this, entity, amt);
+                        if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
+                            addAffecting(pos, state);
+                            if (block instanceof IBeamAffectEffect) {
+                                ((IBeamAffectEffect) block).onBeamStartAffect(this, pos, state);
                             }
-                        });
+                        }
+                        if (block instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
+                        }
+                    });
+                }
+                Set<Map.Entry<ProjectorModuleType, Integer>> entities = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickEntities()).collect(Collectors.toSet());
+                if (!entities.isEmpty()) {
+                    for (Entity entity : level.getEntities(this, getMaxBounds())) {
+                        if (isAffected(entity)) {
+                            entities.forEach(entry -> {
+                                entry.getKey().onEntityTick(this, entity, entry.getValue());
+                            });
+                        }
                     }
                 }
             }
