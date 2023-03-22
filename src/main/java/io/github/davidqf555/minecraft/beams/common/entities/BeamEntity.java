@@ -44,18 +44,16 @@ public class BeamEntity extends Entity {
     private static final DataParameter<Double> START_HEIGHT = EntityDataManager.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final DataParameter<Integer> COLOR = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
     private static final DataParameter<Integer> LAYERS = EntityDataManager.defineId(BeamEntity.class, DataSerializers.INT);
-    private final Map<ProjectorModuleType, Integer> modules;
-    private final Map<BlockPos, BlockState> affecting;
+    private final Map<ProjectorModuleType, Integer> modules = new HashMap<>();
+    private final Map<BlockPos, BlockState> affecting = new HashMap<>();
     private double maxRange;
     private UUID shooter, parent;
-    private AxisAlignedBB maxBounds;
-    private Set<BlockPos> affectingPos;
     private int lifespan;
+    private AxisAlignedBB maxBounds;
+    private boolean updateAffectingPositions = true;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, World world) {
         super(type, world);
-        modules = new HashMap<>();
-        affecting = new HashMap<>();
     }
 
     @Nullable
@@ -166,37 +164,44 @@ public class BeamEntity extends Entity {
                 if (endBlock instanceof IBeamCollisionEffect) {
                     ((IBeamCollisionEffect) endBlock).onBeamCollisionTick(this, endPos, endState);
                 }
+                if (updateAffectingPositions) {
+                    Set<BlockPos> past = affecting.keySet();
+                    Set<BlockPos> current = getAffectingPositions();
+                    past.forEach(pos -> {
+                        if (!current.contains(pos)) {
+                            BlockState state = affecting.get(pos);
+                            if (state.getBlock() instanceof IBeamAffectEffect) {
+                                ((IBeamAffectEffect) state.getBlock()).onBeamStopAffect(this, pos, state);
+                            }
+                        }
+                    });
+                    current.forEach(pos -> {
+                        if (!past.contains(pos)) {
+                            affecting.put(pos, null);
+                        }
+                    });
+                    updateAffectingPositions = false;
+                }
+                for (BlockPos pos : affecting.keySet()) {
+                    BlockState past = affecting.get(pos);
+                    BlockState state = level.getBlockState(pos);
+                    if (!state.equals(past)) {
+                        if (past != null && past.getBlock() instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) past.getBlock()).onBeamStopAffect(this, pos, past);
+                        }
+                        if (state.getBlock() instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) state.getBlock()).onBeamStartAffect(this, pos, state);
+                        }
+                        affecting.put(pos, state);
+                    }
+                }
                 Map<ProjectorModuleType, Integer> modules = getModules();
                 Set<Map.Entry<ProjectorModuleType, Integer>> blockModules = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickBlocks()).collect(Collectors.toSet());
                 if (!blockModules.isEmpty()) {
-                    Map<BlockPos, BlockState> collisions = new HashMap<>();
-                    getAffectingPositions().forEach(pos -> {
-                        blockModules.forEach(entry -> entry.getKey().onBlockTick(this, pos, entry.getValue()));
-                        if (isVisualColliding(pos)) {
-                            collisions.put(pos, level.getBlockState(pos));
-                            blockModules.forEach(entry -> entry.getKey().onCollisionTick(this, pos, entry.getValue()));
-                        }
-                    });
-                    Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
-                    past.forEach((pos, state) -> {
-                        if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
-                            removeAffecting(pos);
-                            Block block = state.getBlock();
-                            if (block instanceof IBeamAffectEffect) {
-                                ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
-                            }
-                        }
-                    });
-                    collisions.forEach((pos, state) -> {
-                        Block block = state.getBlock();
-                        if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
-                            addAffecting(pos, state);
-                            if (block instanceof IBeamAffectEffect) {
-                                ((IBeamAffectEffect) block).onBeamStartAffect(this, pos, state);
-                            }
-                        }
-                        if (block instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
+                    affecting.forEach((pos, state) -> {
+                        modules.forEach((type, amt) -> type.onBlockTick(this, pos, amt));
+                        if (isVisualColliding(pos, state)) {
+                            modules.forEach((type, amt) -> type.onCollisionTick(this, pos, amt));
                         }
                     });
                 }
@@ -223,7 +228,7 @@ public class BeamEntity extends Entity {
             if (endBlock instanceof IBeamCollisionEffect) {
                 ((IBeamCollisionEffect) endBlock).onBeamStopCollision(this, endPos, endState);
             }
-            getAffecting().forEach((pos, state) -> {
+            affecting.forEach((pos, state) -> {
                 Block block = state.getBlock();
                 if (block instanceof IBeamAffectEffect) {
                     ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
@@ -233,8 +238,8 @@ public class BeamEntity extends Entity {
         super.remove(keepData);
     }
 
-    protected boolean isVisualColliding(BlockPos pos) {
-        for (AxisAlignedBB bounds : level.getBlockState(pos).getVisualShape(level, pos, ISelectionContext.empty()).toAabbs()) {
+    protected boolean isVisualColliding(BlockPos pos, BlockState state) {
+        for (AxisAlignedBB bounds : state.getVisualShape(level, pos, ISelectionContext.empty()).toAabbs()) {
             if (isAffected(bounds.move(pos))) {
                 return true;
             }
@@ -407,16 +412,39 @@ public class BeamEntity extends Entity {
         refreshBounds();
     }
 
-    public Map<BlockPos, BlockState> getAffecting() {
-        return affecting;
-    }
-
-    public void addAffecting(BlockPos pos, BlockState state) {
-        getAffecting().put(pos, state);
-    }
-
-    public void removeAffecting(BlockPos pos) {
-        getAffecting().remove(pos);
+    private Set<BlockPos> getAffectingPositions() {
+        Vector3d start = position();
+        Vector3d dir = getEnd().subtract(position());
+        double length = dir.length();
+        dir = dir.scale(1 / length);
+        Set<BlockPos> affectingPos = new HashSet<>();
+        double baseStartWidth = getStartWidth();
+        double baseStartHeight = getStartHeight();
+        double baseEndWidth = getEndWidth();
+        double baseEndHeight = getEndHeight();
+        int count = MathHelper.ceil(length / SEGMENT_LENGTH);
+        for (int i = 0; i < count; i++) {
+            double startPos = SEGMENT_LENGTH * i;
+            double endPos = Math.min(length, SEGMENT_LENGTH * (i + 1));
+            Vector3d s = start.add(dir.scale(startPos));
+            Vector3d e = start.add(dir.scale(endPos));
+            double startWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * startPos / length;
+            double startHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * startPos / length;
+            double endWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * endPos / length;
+            double endHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * endPos / length;
+            AxisAlignedBB bounds = getMaxBounds(s, e, startWidth, startHeight, endWidth, endHeight);
+            for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
+                for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.floor(bounds.maxZ); z++) {
+                    for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.floor(bounds.maxY); y++) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (isAffected(pos)) {
+                            affectingPos.add(pos);
+                        }
+                    }
+                }
+            }
+        }
+        return affectingPos;
     }
 
     public int getColor() {
@@ -459,45 +487,8 @@ public class BeamEntity extends Entity {
         return maxBounds;
     }
 
-    public Set<BlockPos> getAffectingPositions() {
-        if (affectingPos == null) {
-            Vector3d start = position();
-            Vector3d dir = getEnd().subtract(position());
-            double length = dir.length();
-            dir = dir.scale(1 / length);
-            affectingPos = new HashSet<>();
-            double baseStartWidth = getStartWidth();
-            double baseStartHeight = getStartHeight();
-            double baseEndWidth = getEndWidth();
-            double baseEndHeight = getEndHeight();
-            int count = MathHelper.ceil(length / SEGMENT_LENGTH);
-            for (int i = 0; i < count; i++) {
-                double startPos = SEGMENT_LENGTH * i;
-                double endPos = Math.min(length, SEGMENT_LENGTH * (i + 1));
-                Vector3d s = start.add(dir.scale(startPos));
-                Vector3d e = start.add(dir.scale(endPos));
-                double startWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * startPos / length;
-                double startHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * startPos / length;
-                double endWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * endPos / length;
-                double endHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * endPos / length;
-                AxisAlignedBB bounds = getMaxBounds(s, e, startWidth, startHeight, endWidth, endHeight);
-                for (int x = MathHelper.floor(bounds.minX); x <= MathHelper.floor(bounds.maxX); x++) {
-                    for (int z = MathHelper.floor(bounds.minZ); z <= MathHelper.floor(bounds.maxZ); z++) {
-                        for (int y = MathHelper.floor(bounds.minY); y <= MathHelper.floor(bounds.maxY); y++) {
-                            BlockPos pos = new BlockPos(x, y, z);
-                            if (isAffected(pos)) {
-                                affectingPos.add(pos);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return affectingPos;
-    }
-
     protected void refreshBounds() {
-        affectingPos = null;
+        updateAffectingPositions = true;
         maxBounds = null;
     }
 
@@ -555,6 +546,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("MaxRange", Constants.NBT.TAG_DOUBLE)) {
             setMaxRange(tag.getDouble("MaxRange"));
         }
+        if (tag.contains("UpdateAffecting", Constants.NBT.TAG_BYTE)) {
+            updateAffectingPositions = tag.getBoolean("UpdateAffecting");
+        }
         if (tag.contains("Modules", Constants.NBT.TAG_COMPOUND)) {
             Map<ProjectorModuleType, Integer> modules = new HashMap<>();
             IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
@@ -570,7 +564,7 @@ public class BeamEntity extends Entity {
         if (tag.contains("Affecting", Constants.NBT.TAG_LIST)) {
             for (INBT nbt : tag.getList("Affecting", Constants.NBT.TAG_COMPOUND)) {
                 if (((CompoundNBT) nbt).contains("Pos", Constants.NBT.TAG_COMPOUND) && ((CompoundNBT) nbt).contains("State", Constants.NBT.TAG_COMPOUND)) {
-                    addAffecting(NBTUtil.readBlockPos(((CompoundNBT) nbt).getCompound("Pos")), NBTUtil.readBlockState(((CompoundNBT) nbt).getCompound("State")));
+                    affecting.put(NBTUtil.readBlockPos(((CompoundNBT) nbt).getCompound("Pos")), NBTUtil.readBlockState(((CompoundNBT) nbt).getCompound("State")));
                 }
             }
         }
@@ -590,6 +584,7 @@ public class BeamEntity extends Entity {
         tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
         tag.putDouble("MaxRange", getMaxRange());
+        tag.putBoolean("UpdateAffecting", updateAffectingPositions);
         UUID parent = getDirectParent();
         if (parent != null) {
             tag.putUUID("Parent", parent);
@@ -602,7 +597,7 @@ public class BeamEntity extends Entity {
         this.modules.forEach((type, amt) -> modules.putInt(type.getRegistryName().toString(), amt));
         tag.put("Modules", modules);
         ListNBT collisions = new ListNBT();
-        getAffecting().forEach((pos, state) -> {
+        affecting.forEach((pos, state) -> {
             CompoundNBT collision = new CompoundNBT();
             collision.put("Pos", NBTUtil.writeBlockPos(pos));
             collision.put("State", NBTUtil.writeBlockState(state));
