@@ -160,7 +160,7 @@ public class BeamEntity extends Entity {
                 if (isSignificantlyDifferent(original, end)) {
                     setEnd(end);
                 }
-                BlockPos endPos = new BlockPos(end);
+                BlockPos endPos = new BlockPos((int) end.x(), (int) end.y(), (int) end.z());
                 BlockState endState = level.getBlockState(endPos);
                 Block endBlock = endState.getBlock();
                 if (endBlock instanceof IBeamCollisionEffect) {
@@ -220,7 +220,8 @@ public class BeamEntity extends Entity {
 
     @Override
     public void remove(RemovalReason reason) {
-        BlockPos endPos = new BlockPos(getEnd());
+        Vec3 end = getEnd();
+        BlockPos endPos = new BlockPos((int) end.x(), (int) end.y(), (int) end.z());
         BlockState endState = level.getBlockState(endPos);
         Block endBlock = endState.getBlock();
         if (endBlock instanceof IBeamCollisionEffect) {
@@ -344,13 +345,13 @@ public class BeamEntity extends Entity {
         Vec3 before = getEnd();
         setEndRaw(end);
         if (!end.equals(before)) {
-            BlockPos beforePos = new BlockPos(before);
+            BlockPos beforePos = new BlockPos((int) before.x(), (int) before.y(), (int) before.z());
             BlockState beforeState = level.getBlockState(beforePos);
             Block beforeBlock = beforeState.getBlock();
             if (beforeBlock instanceof IBeamCollisionEffect) {
                 ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
             }
-            BlockPos afterPos = new BlockPos(end);
+            BlockPos afterPos = new BlockPos((int) end.x(), (int) end.y(), (int) end.z());
             BlockState afterState = level.getBlockState(afterPos);
             Block afterBlock = afterState.getBlock();
             if (afterBlock instanceof IBeamCollisionEffect) {

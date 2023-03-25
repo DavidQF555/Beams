@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.registries.DeferredRegister;
@@ -16,7 +17,7 @@ public final class ContainerRegistry {
     }
 
     private static <T extends AbstractContainerMenu> RegistryObject<MenuType<T>> register(String name, MenuType.MenuSupplier<T> factory) {
-        return TYPES.register(name, () -> new MenuType<>(factory));
+        return TYPES.register(name, () -> new MenuType<>(factory, FeatureFlags.DEFAULT_FLAGS));
     }
 
     public static final RegistryObject<MenuType<ProjectorContainer>> PROJECTOR = register("projector", ProjectorContainer::new);

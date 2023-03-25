@@ -2,7 +2,6 @@ package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -30,7 +29,7 @@ public class DamageModuleType extends ProjectorModuleType {
                     shooter = (LivingEntity) entity;
                 }
             }
-            target.hurt(DamageSource.indirectMobAttack(beam, shooter), damage.apply(amt));
+            target.hurt(beam.level.damageSources().mobProjectile(beam, shooter), damage.apply(amt));
         }
     }
 }
