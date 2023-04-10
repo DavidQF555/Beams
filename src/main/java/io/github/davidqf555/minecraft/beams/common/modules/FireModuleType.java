@@ -31,4 +31,14 @@ public class FireModuleType extends ProjectorModuleType {
             }
         }
     }
+
+    @Override
+    public boolean shouldTickEntities() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldTickBlocks() {
+        return true;
+    }
 }

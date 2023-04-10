@@ -24,4 +24,10 @@ public class MiningModuleType extends ProjectorModuleType {
             }
         }
     }
+
+    @Override
+    public boolean shouldTickBlocks() {
+        return true;
+    }
+
 }

@@ -32,6 +32,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeamEntity extends Entity {
 
@@ -46,18 +47,16 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Double> START_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
-    private final Map<ProjectorModuleType, Integer> modules;
-    private final Map<BlockPos, BlockState> affecting;
+    private final Map<ProjectorModuleType, Integer> modules = new HashMap<>();
+    private final Map<BlockPos, BlockState> affecting = new HashMap<>();
     private double maxRange;
     private UUID shooter, parent;
     private AABB maxBounds;
-    private Set<BlockPos> affectingPos;
     private int lifespan;
+    private boolean updateAffectingPositions = true;
 
     public BeamEntity(EntityType<? extends BeamEntity> type, Level world) {
         super(type, world);
-        modules = new HashMap<>();
-        affecting = new HashMap<>();
     }
 
     @Nullable
@@ -168,52 +167,55 @@ public class BeamEntity extends Entity {
                 if (endBlock instanceof IBeamCollisionEffect) {
                     ((IBeamCollisionEffect) endBlock).onBeamCollisionTick(this, endPos, endState);
                 }
-                Map<BlockPos, BlockState> collisions = new HashMap<>();
-                Map<ProjectorModuleType, Integer> modules = getModules();
-                getAffectingPositions().forEach(pos -> {
-                    modules.forEach((type, amt) -> {
-                        if (amt > 0) {
-                            type.onBlockTick(this, pos, amt);
+                if (updateAffectingPositions) {
+                    Set<BlockPos> past = affecting.keySet();
+                    Set<BlockPos> current = getAffectingPositions();
+                    past.forEach(pos -> {
+                        if (!current.contains(pos)) {
+                            BlockState state = affecting.get(pos);
+                            if (state.getBlock() instanceof IBeamAffectEffect) {
+                                ((IBeamAffectEffect) state.getBlock()).onBeamStopAffect(this, pos, state);
+                            }
                         }
                     });
-                    if (isVisualColliding(pos)) {
-                        collisions.put(pos, level.getBlockState(pos));
-                        modules.forEach((type, amt) -> {
-                            if (amt > 0) {
-                                type.onCollisionTick(this, pos, amt);
-                            }
-                        });
-                    }
-                });
-                Map<BlockPos, BlockState> past = new HashMap<>(getAffecting());
-                past.forEach((pos, state) -> {
-                    if (!collisions.containsKey(pos) || !state.equals(collisions.get(pos))) {
-                        removeAffecting(pos);
-                        Block block = state.getBlock();
-                        if (block instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
+                    current.forEach(pos -> {
+                        if (!past.contains(pos)) {
+                            affecting.put(pos, null);
                         }
-                    }
-                });
-                collisions.forEach((pos, state) -> {
-                    Block block = state.getBlock();
-                    if (!past.containsKey(pos) || !state.equals(past.get(pos))) {
-                        addAffecting(pos, state);
-                        if (block instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) block).onBeamStartAffect(this, pos, state);
+                    });
+                    updateAffectingPositions = false;
+                }
+                for (BlockPos pos : affecting.keySet()) {
+                    BlockState past = affecting.get(pos);
+                    BlockState state = level.getBlockState(pos);
+                    if (!state.equals(past)) {
+                        if (past != null && past.getBlock() instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) past.getBlock()).onBeamStopAffect(this, pos, past);
                         }
+                        if (state.getBlock() instanceof IBeamAffectEffect) {
+                            ((IBeamAffectEffect) state.getBlock()).onBeamStartAffect(this, pos, state);
+                        }
+                        affecting.put(pos, state);
                     }
-                    if (block instanceof IBeamAffectEffect) {
-                        ((IBeamAffectEffect) block).onBeamAffectTick(this, pos, state);
-                    }
-                });
-                for (Entity entity : level.getEntities(this, getMaxBounds())) {
-                    if (isAffected(entity)) {
-                        modules.forEach((type, amt) -> {
-                            if (amt > 0) {
-                                type.onEntityTick(this, entity, amt);
-                            }
-                        });
+                }
+                Map<ProjectorModuleType, Integer> modules = getModules();
+                Set<Map.Entry<ProjectorModuleType, Integer>> blockModules = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickBlocks()).collect(Collectors.toSet());
+                if (!blockModules.isEmpty()) {
+                    affecting.forEach((pos, state) -> {
+                        modules.forEach((type, amt) -> type.onBlockTick(this, pos, amt));
+                        if (isVisualColliding(pos, state)) {
+                            modules.forEach((type, amt) -> type.onCollisionTick(this, pos, amt));
+                        }
+                    });
+                }
+                Set<Map.Entry<ProjectorModuleType, Integer>> entities = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickEntities()).collect(Collectors.toSet());
+                if (!entities.isEmpty()) {
+                    for (Entity entity : level.getEntities(this, getMaxBounds())) {
+                        if (isAffected(entity)) {
+                            entities.forEach(entry -> {
+                                entry.getKey().onEntityTick(this, entity, entry.getValue());
+                            });
+                        }
                     }
                 }
             }
@@ -228,7 +230,7 @@ public class BeamEntity extends Entity {
         if (endBlock instanceof IBeamCollisionEffect) {
             ((IBeamCollisionEffect) endBlock).onBeamStopCollision(this, endPos, endState);
         }
-        getAffecting().forEach((pos, state) -> {
+        affecting.forEach((pos, state) -> {
             Block block = state.getBlock();
             if (block instanceof IBeamAffectEffect) {
                 ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
@@ -237,8 +239,8 @@ public class BeamEntity extends Entity {
         super.remove(reason);
     }
 
-    protected boolean isVisualColliding(BlockPos pos) {
-        for (AABB bounds : level.getBlockState(pos).getVisualShape(level, pos, CollisionContext.empty()).toAabbs()) {
+    protected boolean isVisualColliding(BlockPos pos, BlockState state) {
+        for (AABB bounds : state.getVisualShape(level, pos, CollisionContext.empty()).toAabbs()) {
             if (isAffected(bounds.move(pos))) {
                 return true;
             }
@@ -411,16 +413,39 @@ public class BeamEntity extends Entity {
         refreshBounds();
     }
 
-    public Map<BlockPos, BlockState> getAffecting() {
-        return affecting;
-    }
-
-    public void addAffecting(BlockPos pos, BlockState state) {
-        getAffecting().put(pos, state);
-    }
-
-    public void removeAffecting(BlockPos pos) {
-        getAffecting().remove(pos);
+    private Set<BlockPos> getAffectingPositions() {
+        Vec3 start = position();
+        Vec3 dir = getEnd().subtract(position());
+        double length = dir.length();
+        dir = dir.scale(1 / length);
+        Set<BlockPos> affectingPos = new HashSet<>();
+        double baseStartWidth = getStartWidth();
+        double baseStartHeight = getStartHeight();
+        double baseEndWidth = getEndWidth();
+        double baseEndHeight = getEndHeight();
+        int count = Mth.ceil(length / SEGMENT_LENGTH);
+        for (int i = 0; i < count; i++) {
+            double startPos = SEGMENT_LENGTH * i;
+            double endPos = Math.min(length, SEGMENT_LENGTH * (i + 1));
+            Vec3 s = start.add(dir.scale(startPos));
+            Vec3 e = start.add(dir.scale(endPos));
+            double startWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * startPos / length;
+            double startHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * startPos / length;
+            double endWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * endPos / length;
+            double endHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * endPos / length;
+            AABB bounds = getMaxBounds(s, e, startWidth, startHeight, endWidth, endHeight);
+            for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
+                for (int z = Mth.floor(bounds.minZ); z <= Mth.floor(bounds.maxZ); z++) {
+                    for (int y = Mth.floor(bounds.minY); y <= Mth.floor(bounds.maxY); y++) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (isAffected(pos)) {
+                            affectingPos.add(pos);
+                        }
+                    }
+                }
+            }
+        }
+        return affectingPos;
     }
 
     public int getColor() {
@@ -463,45 +488,8 @@ public class BeamEntity extends Entity {
         return maxBounds;
     }
 
-    public Set<BlockPos> getAffectingPositions() {
-        if (affectingPos == null) {
-            Vec3 start = position();
-            Vec3 dir = getEnd().subtract(position());
-            double length = dir.length();
-            dir = dir.scale(1 / length);
-            affectingPos = new HashSet<>();
-            double baseStartWidth = getStartWidth();
-            double baseStartHeight = getStartHeight();
-            double baseEndWidth = getEndWidth();
-            double baseEndHeight = getEndHeight();
-            int count = Mth.ceil(length / SEGMENT_LENGTH);
-            for (int i = 0; i < count; i++) {
-                double startPos = SEGMENT_LENGTH * i;
-                double endPos = Math.min(length, SEGMENT_LENGTH * (i + 1));
-                Vec3 s = start.add(dir.scale(startPos));
-                Vec3 e = start.add(dir.scale(endPos));
-                double startWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * startPos / length;
-                double startHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * startPos / length;
-                double endWidth = baseStartWidth + (baseEndWidth - baseStartWidth) * endPos / length;
-                double endHeight = baseStartHeight + (baseEndHeight - baseStartHeight) * endPos / length;
-                AABB bounds = getMaxBounds(s, e, startWidth, startHeight, endWidth, endHeight);
-                for (int x = Mth.floor(bounds.minX); x <= Mth.floor(bounds.maxX); x++) {
-                    for (int z = Mth.floor(bounds.minZ); z <= Mth.floor(bounds.maxZ); z++) {
-                        for (int y = Mth.floor(bounds.minY); y <= Mth.floor(bounds.maxY); y++) {
-                            BlockPos pos = new BlockPos(x, y, z);
-                            if (isAffected(pos)) {
-                                affectingPos.add(pos);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return affectingPos;
-    }
-
     protected void refreshBounds() {
-        affectingPos = null;
+        updateAffectingPositions = true;
         maxBounds = null;
     }
 
@@ -559,6 +547,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("MaxRange", Tag.TAG_DOUBLE)) {
             setMaxRange(tag.getDouble("MaxRange"));
         }
+        if (tag.contains("UpdateAffecting", Tag.TAG_BYTE)) {
+            updateAffectingPositions = tag.getBoolean("UpdateAffecting");
+        }
         if (tag.contains("Modules", Tag.TAG_COMPOUND)) {
             Map<ProjectorModuleType, Integer> modules = new HashMap<>();
             IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
@@ -574,7 +565,7 @@ public class BeamEntity extends Entity {
         if (tag.contains("Affecting", Tag.TAG_LIST)) {
             for (Tag nbt : tag.getList("Affecting", Tag.TAG_COMPOUND)) {
                 if (((CompoundTag) nbt).contains("Pos", Tag.TAG_COMPOUND) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
-                    addAffecting(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(((CompoundTag) nbt).getCompound("State")));
+                    affecting.put(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(((CompoundTag) nbt).getCompound("State")));
                 }
             }
         }
@@ -594,6 +585,7 @@ public class BeamEntity extends Entity {
         tag.putInt("Layers", getLayers());
         tag.putInt("Lifespan", getLifespan());
         tag.putDouble("MaxRange", getMaxRange());
+        tag.putBoolean("UpdateAffecting", updateAffectingPositions);
         UUID parent = getDirectParent();
         if (parent != null) {
             tag.putUUID("Parent", parent);
@@ -606,7 +598,7 @@ public class BeamEntity extends Entity {
         this.modules.forEach((type, amt) -> modules.putInt(type.getRegistryName().toString(), amt));
         tag.put("Modules", modules);
         ListTag collisions = new ListTag();
-        getAffecting().forEach((pos, state) -> {
+        affecting.forEach((pos, state) -> {
             CompoundTag collision = new CompoundTag();
             collision.put("Pos", NbtUtils.writeBlockPos(pos));
             collision.put("State", NbtUtils.writeBlockState(state));
