@@ -38,4 +38,9 @@ public class EnderModuleType extends ProjectorModuleType {
             }
         }
     }
+
+    @Override
+    public boolean shouldTickEntities() {
+        return true;
+    }
 }
