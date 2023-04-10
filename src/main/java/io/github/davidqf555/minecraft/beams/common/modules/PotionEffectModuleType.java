@@ -26,4 +26,8 @@ public class PotionEffectModuleType extends ProjectorModuleType {
         }
     }
 
+    @Override
+    public boolean shouldTickEntities() {
+        return true;
+    }
 }

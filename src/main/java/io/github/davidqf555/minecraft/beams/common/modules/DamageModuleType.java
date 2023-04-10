@@ -32,4 +32,10 @@ public class DamageModuleType extends ProjectorModuleType {
             target.hurt(beam.level.damageSources().mobProjectile(beam, shooter), damage.apply(amt));
         }
     }
+
+    @Override
+    public boolean shouldTickEntities() {
+        return true;
+    }
+
 }

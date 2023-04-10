@@ -29,4 +29,13 @@ public class ProjectorModuleType {
     public double getStartSizeFactor(int amt) {
         return 1;
     }
+
+    public boolean shouldTickBlocks() {
+        return false;
+    }
+
+    public boolean shouldTickEntities() {
+        return false;
+    }
+
 }
