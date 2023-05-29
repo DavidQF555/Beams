@@ -9,6 +9,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -72,12 +73,16 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
 
     @Override
     public void setItem(int index, ItemStack stack) {
+        setItemNoUpdate(index, stack);
+        markChanged();
+        setChanged();
+    }
+
+    protected void setItemNoUpdate(int index, ItemStack stack) {
         items.set(index, stack);
         if (stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
         }
-        markChanged();
-        setChanged();
     }
 
     @Override
@@ -97,7 +102,11 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
         if (custom != null) {
             tag.putString("CustomName", Component.Serializer.toJson(custom));
         }
-        ContainerHelper.saveAllItems(tag, items);
+        ListTag items = new ListTag();
+        for (int i = 0; i < getContainerSize(); i++) {
+            items.add(getItem(i).save(new CompoundTag()));
+        }
+        tag.put("Items", items);
     }
 
     @Override
@@ -106,7 +115,13 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
         if (tag.contains("CustomName", Tag.TAG_STRING)) {
             setCustomName(Component.Serializer.fromJson(tag.getString("CustomName")));
         }
-        ContainerHelper.loadAllItems(tag, items);
+        if (tag.contains("Items", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("Items", Tag.TAG_COMPOUND);
+            for (int i = 0; i < Math.min(tag.size(), getContainerSize()); i++) {
+                ItemStack stack = ItemStack.of(list.getCompound(i));
+                setItemNoUpdate(i, stack);
+            }
+        }
     }
 
     @Nullable
