@@ -31,6 +31,8 @@ public final class ItemRegistry {
     public static final RegistryObject<BlockItem> MIRROR = register("mirror", () -> new BlockItem(BlockRegistry.MIRROR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> PHOTODETECTOR = register("photodetector", () -> new BlockItem(BlockRegistry.PHOTODETECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> OMNIDIRECTIONAL_MIRROR = register("omnidirectional_mirror", () -> new BlockItem(BlockRegistry.OMNIDIRECTIONAL_MIRROR.get(), new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<BlockItem> TURRET = register("turret", () -> new BlockItem(BlockRegistry.TURRET.get(), new Item.Properties().tab(Beams.GROUP)));
+
     public static final RegistryObject<PortableProjectorItem> PORTABLE_PROJECTOR = register("portable_projector", () -> new PortableProjectorItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
     public static final RegistryObject<PointerItem> POINTER = register("projector_pointer", () -> new PointerItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
 

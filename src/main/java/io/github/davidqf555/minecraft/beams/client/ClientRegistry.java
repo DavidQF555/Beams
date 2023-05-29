@@ -22,7 +22,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public final class ClientRegistry {
 
     private static final ResourceLocation HOPPER = new ResourceLocation("textures/gui/container/hopper.png");
-    private static final ResourceLocation TURRET = new ResourceLocation(Beams.ID, "textures/gui/container/turret.png");
+    private static final ResourceLocation TURRET_MENU = new ResourceLocation(Beams.ID, "textures/gui/container/turret.png");
+    private static final ResourceLocation PROJECTOR = new ResourceLocation(Beams.ID, "textures/block/omnidirectional_projector.png");
+    private static final ResourceLocation TURRET = new ResourceLocation(Beams.ID, "textures/block/turret.png");
 
     private ClientRegistry() {
     }
@@ -30,15 +32,15 @@ public final class ClientRegistry {
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(EntityRegistry.BEAM.get(), BeamRenderer<BeamEntity>::new);
-        net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), OmnidirectionalProjectorTileEntityRenderer::new);
-        net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.TURRET.get(), OmnidirectionalProjectorTileEntityRenderer::new);
+        net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_BEAM_PROJECTOR.get(), context -> new OmnidirectionalProjectorTileEntityRenderer(context, PROJECTOR));
+        net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.TURRET.get(), context -> new OmnidirectionalProjectorTileEntityRenderer(context, TURRET));
         net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntityRenderer(TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), OmnidirectionalMirrorTileEntityRenderer::new);
         RenderTypeLookup.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_PROJECTOR.get(), RenderType.cutout());
         RenderTypeLookup.setRenderLayer(BlockRegistry.OMNIDIRECTIONAL_MIRROR.get(), RenderType.cutout());
         RenderTypeLookup.setRenderLayer(BlockRegistry.TURRET.get(), RenderType.cutout());
         event.enqueueWork(() -> {
             ScreenManager.<ProjectorContainer, SimpleContainerScreen<ProjectorContainer>>register(ContainerRegistry.PROJECTOR.get(), (container, player, name) -> new SimpleContainerScreen<>(HOPPER, container, player, name));
-            ScreenManager.<TurretContainer, SimpleContainerScreen<TurretContainer>>register(ContainerRegistry.TURRET.get(), (container, player, name) -> new SimpleContainerScreen<>(TURRET, container, player, name));
+            ScreenManager.<TurretContainer, SimpleContainerScreen<TurretContainer>>register(ContainerRegistry.TURRET.get(), (container, player, name) -> new SimpleContainerScreen<>(TURRET_MENU, container, player, name));
         });
     }
 
