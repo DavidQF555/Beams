@@ -1,0 +1,26 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "beams:blank_module"
+    },
+    {
+      "tag": "beds"
+    },
+    {
+      "item": "iron_sword"
+    },
+    {
+      "tag": "arrows"
+    },
+    {
+      "item": "bow"
+    },
+    {
+      "tag": "doors"
+    }
+  ],
+  "result": {
+    "item": "beams:player_targeting_module"
+  }
+}

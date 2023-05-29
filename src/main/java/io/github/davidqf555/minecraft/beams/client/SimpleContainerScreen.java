@@ -2,18 +2,19 @@ package io.github.davidqf555.minecraft.beams.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
-public class ProjectorScreen extends AbstractContainerScreen<ProjectorContainer> {
+public class SimpleContainerScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/container/hopper.png");
+    private final ResourceLocation texture;
 
-    public ProjectorScreen(ProjectorContainer container, Inventory inventory, Component name) {
+    public SimpleContainerScreen(ResourceLocation texture, T container, Inventory inventory, Component name) {
         super(container, inventory, name);
+        this.texture = texture;
         imageHeight = 133;
         inventoryLabelY = imageHeight - 94;
     }
@@ -27,7 +28,7 @@ public class ProjectorScreen extends AbstractContainerScreen<ProjectorContainer>
 
     @Override
     protected void renderBg(PoseStack stack, float partial, int mouseX, int mouseY) {
-        RenderSystem.setShaderTexture(0, TEXTURE);
+        RenderSystem.setShaderTexture(0, texture);
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         blit(stack, x, y, 0, 0, imageWidth, imageHeight);

@@ -26,5 +26,6 @@ public final class TileEntityRegistry {
     public static final RegistryObject<BlockEntityType<RedirectorTileEntity>> MIRROR = register("mirror", () -> BlockEntityType.Builder.of(RedirectorTileEntity::new, BlockRegistry.MIRROR.get()).build(null));
     public static final RegistryObject<BlockEntityType<BeamSensorTileEntity>> BEAM_SENSOR = register("beam_sensor", () -> BlockEntityType.Builder.of(BeamSensorTileEntity::new, BlockRegistry.PHOTODETECTOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<OmnidirectionalMirrorTileEntity>> OMNIDIRECTIONAL_MIRROR = register("omnidirectional_mirror", () -> BlockEntityType.Builder.of(OmnidirectionalMirrorTileEntity::new, BlockRegistry.OMNIDIRECTIONAL_MIRROR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<TurretTileEntity>> TURRET = register("turret", () -> BlockEntityType.Builder.of(TurretTileEntity::new, BlockRegistry.TURRET.get()).build(null));
 
 }

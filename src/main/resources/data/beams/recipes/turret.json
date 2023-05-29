@@ -1,0 +1,22 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "TGT",
+    "GPG",
+    "TGT"
+  ],
+  "key": {
+    "G": {
+      "item": "glass"
+    },
+    "P": {
+      "item": "beams:omnidirectional_projector"
+    },
+    "T": {
+      "item": "redstone_torch"
+    }
+  },
+  "result": {
+    "item": "beams:turret"
+  }
+}

@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
+import io.github.davidqf555.minecraft.beams.common.items.TurretContainer;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -21,6 +22,6 @@ public final class ContainerRegistry {
     }
 
     public static final RegistryObject<MenuType<ProjectorContainer>> PROJECTOR = register("projector", ProjectorContainer::new);
-
+    public static final RegistryObject<MenuType<TurretContainer>> TURRET = register("turret", TurretContainer::new);
 
 }

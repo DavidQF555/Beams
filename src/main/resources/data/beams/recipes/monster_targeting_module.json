@@ -1,0 +1,35 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "beams:blank_module"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "rotten_flesh"
+    }
+  ],
+  "result": {
+    "item": "beams:monster_targeting_module"
+  }
+}
