@@ -6,22 +6,37 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 public class ProjectorContainer extends AbstractContainerMenu {
 
-    private final Container projector;
+    protected final Container projector;
 
     public ProjectorContainer(int id, Inventory player) {
         this(id, player, new SimpleContainer(5));
     }
 
     public ProjectorContainer(int id, Inventory player, Container projector) {
-        super(ContainerRegistry.PROJECTOR.get(), id);
-        checkContainerSize(projector, 5);
+        this(ContainerRegistry.PROJECTOR.get(), id, player, projector);
+    }
+
+    protected ProjectorContainer(@Nullable MenuType<?> type, int id, Inventory player, Container projector) {
+        super(type, id);
+        checkContainerSize(projector, getExpectedSize());
         this.projector = projector;
         projector.startOpen(player.player);
+        initializeSlots(player);
+    }
+
+    protected int getExpectedSize() {
+        return 5;
+    }
+
+    protected void initializeSlots(Inventory player) {
         for (int x = 0; x < 5; x++) {
             addSlot(new ModuleSlot(x, 44 + x * 18, 20));
         }
@@ -69,9 +84,9 @@ public class ProjectorContainer extends AbstractContainerMenu {
         projector.stopOpen(player);
     }
 
-    private class ModuleSlot extends Slot {
+    protected class ModuleSlot extends Slot {
 
-        private ModuleSlot(int slot, int x, int y) {
+        protected ModuleSlot(int slot, int x, int y) {
             super(projector, slot, x, y);
         }
 
@@ -80,4 +95,5 @@ public class ProjectorContainer extends AbstractContainerMenu {
             return stack.getItem() instanceof ProjectorModuleItem;
         }
     }
+
 }
