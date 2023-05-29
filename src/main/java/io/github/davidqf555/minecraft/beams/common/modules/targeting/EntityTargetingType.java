@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.modules.targeting;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.te.TurretTileEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceContext;
@@ -27,7 +28,7 @@ public class EntityTargetingType implements TargetingModuleType {
         World world = te.getLevel();
         AxisAlignedBB bounds = AxisAlignedBB.ofSize(range * 2, range * 2, range * 2).move(te.getBlockPos());
         Vector3d center = Vector3d.atCenterOf(te.getBlockPos());
-        return world.getEntities((Entity) null, bounds, condition).stream()
+        return world.getEntities((Entity) null, bounds, entity -> condition.test(entity) && EntityPredicates.NO_CREATIVE_OR_SPECTATOR.test(entity)).stream()
                 .filter(entity -> entity.distanceToSqr(center) <= range * range)
                 .filter(entity -> canSee(world, center, entity))
                 .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(center)))

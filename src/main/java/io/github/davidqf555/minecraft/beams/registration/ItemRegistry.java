@@ -6,14 +6,12 @@ import io.github.davidqf555.minecraft.beams.common.items.PortableProjectorItem;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
 import io.github.davidqf555.minecraft.beams.common.items.TargetingModuleItem;
 import io.github.davidqf555.minecraft.beams.common.modules.*;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.BlockTagTargetingType;
 import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -50,8 +48,8 @@ public final class ItemRegistry {
     public static final RegistryObject<ProjectorModuleItem<ForceModuleType>> TRACTOR_MODULE = register("tractor_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.TRACTOR, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<FreezeModuleType>> FREEZE_MODULE = register("freeze_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.FREEZE, new Item.Properties().tab(Beams.GROUP)));
 
-    public static final RegistryObject<TargetingModuleItem> ORE_TARGETING_MODULE = register("ore_targeting_module", () -> new TargetingModuleItem(new BlockTagTargetingType(Tags.Blocks.ORES), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<TargetingModuleItem> MONSTER_TARGETING_MODULE = register("monster_targeting_module", () -> new TargetingModuleItem(new EntityTargetingType(entity -> entity.getClassification(false) == EntityClassification.MONSTER), new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<TargetingModuleItem> CREATURE_TARGETING_MODULE = register("creature_targeting_module", () -> new TargetingModuleItem(new EntityTargetingType(entity -> entity.getClassification(false) == EntityClassification.CREATURE), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<TargetingModuleItem> PLAYER_TARGETING_MODULE = register("player_targeting_module", () -> new TargetingModuleItem(new EntityTargetingType(entity -> entity instanceof PlayerEntity), new Item.Properties().tab(Beams.GROUP)));
 
     private ItemRegistry() {

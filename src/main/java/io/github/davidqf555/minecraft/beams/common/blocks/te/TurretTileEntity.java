@@ -24,7 +24,7 @@ public class TurretTileEntity extends OmnidirectionalProjectorTileEntity {
 
     private static final double START_DIST = 0.2;
     private static final double STOP_DIST = 0.5;
-    private static final float ANGULAR_SPEED = (float) (Math.PI / 10000);
+    private static final float ANGULAR_SPEED = (float) (Math.PI / 20);
     protected final NonNullList<ItemStack> targeting = NonNullList.withSize(3, ItemStack.EMPTY);
 
     protected TurretTileEntity(TileEntityType<?> type) {
@@ -75,8 +75,8 @@ public class TurretTileEntity extends OmnidirectionalProjectorTileEntity {
 
     private void rotateTowards(Vector3d direction) {
         Vector3d current = getDirection();
-        Vector3d comp = direction.cross(current.cross(direction));
-        setDirection(direction.scale(MathHelper.cos(ANGULAR_SPEED)).add(comp.scale(MathHelper.sin(ANGULAR_SPEED))));
+        Vector3d comp = current.cross(direction).cross(current);
+        setDirection(current.scale(MathHelper.cos(ANGULAR_SPEED)).add(comp.scale(MathHelper.sin(ANGULAR_SPEED))));
     }
 
     protected boolean shouldStart(Vector3d target) {
@@ -90,7 +90,8 @@ public class TurretTileEntity extends OmnidirectionalProjectorTileEntity {
     private double getBeamDistanceSqr(Vector3d target) {
         Vector3d current = getDirection();
         Vector3d expected = target.subtract(Vector3d.atCenterOf(getBlockPos()));
-        return current.scale(expected.lengthSqr() / current.dot(expected)).subtract(expected).lengthSqr();
+        double dot = current.dot(expected);
+        return dot <= 0 ? Double.POSITIVE_INFINITY : current.scale(expected.lengthSqr() / dot).subtract(expected).lengthSqr();
     }
 
     @Nullable
