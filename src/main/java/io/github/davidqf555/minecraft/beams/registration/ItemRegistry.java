@@ -4,7 +4,11 @@ import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.items.PointerItem;
 import io.github.davidqf555.minecraft.beams.common.items.PortableProjectorItem;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorModuleItem;
+import io.github.davidqf555.minecraft.beams.common.items.TargetingModuleItem;
 import io.github.davidqf555.minecraft.beams.common.modules.*;
+import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
@@ -27,6 +31,8 @@ public final class ItemRegistry {
     public static final RegistryObject<BlockItem> MIRROR = register("mirror", () -> new BlockItem(BlockRegistry.MIRROR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> PHOTODETECTOR = register("photodetector", () -> new BlockItem(BlockRegistry.PHOTODETECTOR.get(), new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<BlockItem> OMNIDIRECTIONAL_MIRROR = register("omnidirectional_mirror", () -> new BlockItem(BlockRegistry.OMNIDIRECTIONAL_MIRROR.get(), new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<BlockItem> TURRET = register("turret", () -> new BlockItem(BlockRegistry.TURRET.get(), new Item.Properties().tab(Beams.GROUP)));
+
     public static final RegistryObject<PortableProjectorItem> PORTABLE_PROJECTOR = register("portable_projector", () -> new PortableProjectorItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
     public static final RegistryObject<PointerItem> POINTER = register("projector_pointer", () -> new PointerItem(new Item.Properties().stacksTo(1).tab(Beams.GROUP)));
 
@@ -43,6 +49,10 @@ public final class ItemRegistry {
     public static final RegistryObject<ProjectorModuleItem<SizeModuleType>> SHRINK_MODULE = register("shrink_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.SHRINK, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<ForceModuleType>> TRACTOR_MODULE = register("tractor_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.TRACTOR, new Item.Properties().tab(Beams.GROUP)));
     public static final RegistryObject<ProjectorModuleItem<FreezeModuleType>> FREEZE_MODULE = register("freeze_module", () -> new ProjectorModuleItem<>(ProjectorModuleRegistry.FREEZE, new Item.Properties().tab(Beams.GROUP)));
+
+    public static final RegistryObject<TargetingModuleItem> MONSTER_TARGETING_MODULE = register("monster_targeting_module", () -> new TargetingModuleItem(new EntityTargetingType(entity -> entity.getClassification(false) == EntityClassification.MONSTER), new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<TargetingModuleItem> CREATURE_TARGETING_MODULE = register("creature_targeting_module", () -> new TargetingModuleItem(new EntityTargetingType(entity -> entity.getClassification(false) == EntityClassification.CREATURE), new Item.Properties().tab(Beams.GROUP)));
+    public static final RegistryObject<TargetingModuleItem> PLAYER_TARGETING_MODULE = register("player_targeting_module", () -> new TargetingModuleItem(new EntityTargetingType(entity -> entity instanceof PlayerEntity), new Item.Properties().tab(Beams.GROUP)));
 
     private ItemRegistry() {
     }

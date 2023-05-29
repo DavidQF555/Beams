@@ -1,0 +1,6 @@
+{
+  "parent": "beams:item/omnidirectional_projector",
+  "textures": {
+    "projector": "beams:block/turret"
+  }
+}

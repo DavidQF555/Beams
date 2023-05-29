@@ -1,7 +1,6 @@
 package io.github.davidqf555.minecraft.beams.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
@@ -13,11 +12,12 @@ import net.minecraft.util.math.vector.Vector3f;
 
 public class OmnidirectionalProjectorTileEntityRenderer extends TileEntityRenderer<OmnidirectionalProjectorTileEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(Beams.ID, "textures/block/omnidirectional_projector.png");
+    private final ResourceLocation texture;
     private final OmnidirectionalProjectorModel model;
 
-    public OmnidirectionalProjectorTileEntityRenderer(TileEntityRendererDispatcher dispatcher) {
+    public OmnidirectionalProjectorTileEntityRenderer(TileEntityRendererDispatcher dispatcher, ResourceLocation texture) {
         super(dispatcher);
+        this.texture = texture;
         model = new OmnidirectionalProjectorModel();
     }
 
@@ -35,7 +35,7 @@ public class OmnidirectionalProjectorTileEntityRenderer extends TileEntityRender
     }
 
     protected ResourceLocation getTexture() {
-        return TEXTURE;
+        return texture;
     }
 
 }
