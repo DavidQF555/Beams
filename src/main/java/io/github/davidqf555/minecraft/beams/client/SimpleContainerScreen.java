@@ -1,18 +1,19 @@
 package io.github.davidqf555.minecraft.beams.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
-public class ProjectorScreen extends ContainerScreen<ProjectorContainer> {
+public class SimpleContainerScreen<T extends Container> extends ContainerScreen<T> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/container/hopper.png");
+    private final ResourceLocation texture;
 
-    public ProjectorScreen(ProjectorContainer container, PlayerInventory inventory, ITextComponent name) {
+    public SimpleContainerScreen(ResourceLocation texture, T container, PlayerInventory inventory, ITextComponent name) {
         super(container, inventory, name);
+        this.texture = texture;
         imageHeight = 133;
         inventoryLabelY = imageHeight - 94;
     }
@@ -26,7 +27,7 @@ public class ProjectorScreen extends ContainerScreen<ProjectorContainer> {
 
     @Override
     protected void renderBg(MatrixStack stack, float partial, int mouseX, int mouseY) {
-        minecraft.getTextureManager().bind(TEXTURE);
+        minecraft.getTextureManager().bind(texture);
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         blit(stack, x, y, 0, 0, imageWidth, imageHeight);

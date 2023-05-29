@@ -6,22 +6,37 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 public class ProjectorContainer extends Container {
 
-    private final IInventory projector;
+    protected final IInventory projector;
 
     public ProjectorContainer(int id, PlayerInventory player) {
         this(id, player, new Inventory(5));
     }
 
     public ProjectorContainer(int id, PlayerInventory player, IInventory projector) {
-        super(ContainerRegistry.PROJECTOR.get(), id);
-        checkContainerSize(projector, 5);
+        this(ContainerRegistry.PROJECTOR.get(), id, player, projector);
+    }
+
+    protected ProjectorContainer(@Nullable ContainerType<?> type, int id, PlayerInventory player, IInventory projector) {
+        super(type, id);
+        checkContainerSize(projector, getExpectedSize());
         this.projector = projector;
         projector.startOpen(player.player);
+        initializeSlots(player);
+    }
+
+    protected int getExpectedSize() {
+        return 5;
+    }
+
+    protected void initializeSlots(PlayerInventory player) {
         for (int x = 0; x < 5; x++) {
             addSlot(new ModuleSlot(projector, x, 44 + x * 18, 20));
         }
@@ -69,9 +84,9 @@ public class ProjectorContainer extends Container {
         projector.stopOpen(player);
     }
 
-    private static class ModuleSlot extends Slot {
+    protected static class ModuleSlot extends Slot {
 
-        private ModuleSlot(IInventory inventory, int slot, int x, int y) {
+        protected ModuleSlot(IInventory inventory, int slot, int x, int y) {
             super(inventory, slot, x, y);
         }
 
@@ -80,4 +95,5 @@ public class ProjectorContainer extends Container {
             return stack.getItem() instanceof ProjectorModuleItem;
         }
     }
+
 }
