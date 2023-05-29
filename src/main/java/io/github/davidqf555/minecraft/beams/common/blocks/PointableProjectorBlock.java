@@ -31,7 +31,7 @@ public class PointableProjectorBlock extends OmnidirectionalProjectorBlock imple
     public void onPoint(World world, BlockPos pos, Vector3d target) {
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof OmnidirectionalProjectorTileEntity) {
-            Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
+            Vector3d dir = target.subtract(Vector3d.atCenterOf(pos));
             ((OmnidirectionalProjectorTileEntity) te).setDirection(dir);
             updateBeams(world, pos);
             te.setChanged();

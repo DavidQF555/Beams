@@ -20,7 +20,7 @@ public class OmnidirectionalProjectorTileEntity extends ContainerProjectorTileEn
     }
 
     public void setDirection(Vector3d direction) {
-        this.direction = direction;
+        this.direction = direction.normalize();
     }
 
     @Override
