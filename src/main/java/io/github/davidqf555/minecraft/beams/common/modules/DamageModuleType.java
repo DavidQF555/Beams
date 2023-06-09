@@ -20,16 +20,16 @@ public class DamageModuleType extends ProjectorModuleType {
 
     @Override
     public void onEntityTick(BeamEntity beam, Entity target, int amt) {
-        if (target instanceof LivingEntity && target.level.getGameTime() % period == 0) {
+        if (target instanceof LivingEntity && target.level().getGameTime() % period == 0) {
             LivingEntity shooter = null;
             UUID id = beam.getShooter();
             if (id != null) {
-                Entity entity = ((ServerLevel) beam.level).getEntity(id);
+                Entity entity = ((ServerLevel) beam.level()).getEntity(id);
                 if (entity instanceof LivingEntity) {
                     shooter = (LivingEntity) entity;
                 }
             }
-            target.hurt(beam.level.damageSources().mobProjectile(beam, shooter), damage.apply(amt));
+            target.hurt(beam.level().damageSources().mobProjectile(beam, shooter), damage.apply(amt));
         }
     }
 

@@ -80,17 +80,17 @@ public abstract class AbstractRedirectorBlock extends AbstractProjectorBlock imp
 
     @Override
     public void onBeamStartCollision(BeamEntity beam, BlockPos pos, BlockState state) {
-        BlockEntity te = beam.level.getBlockEntity(pos);
+        BlockEntity te = beam.level().getBlockEntity(pos);
         if (te instanceof RedirectorTileEntity && !((RedirectorTileEntity) te).getBeams().contains(beam.getUUID()) && beam.getParents().stream().noneMatch(parent -> ((RedirectorTileEntity) te).getHit().contains(parent)) && ((RedirectorTileEntity) te).addHit(beam.getUUID())) {
-            updateBeams(beam.level, pos);
+            updateBeams(beam.level(), pos);
         }
     }
 
     @Override
     public void onBeamStopCollision(BeamEntity beam, BlockPos pos, BlockState state) {
-        BlockEntity te = beam.level.getBlockEntity(pos);
+        BlockEntity te = beam.level().getBlockEntity(pos);
         if (te instanceof RedirectorTileEntity && ((RedirectorTileEntity) te).removeHit(beam.getUUID())) {
-            updateBeams(beam.level, pos);
+            updateBeams(beam.level(), pos);
         }
     }
 

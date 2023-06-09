@@ -17,10 +17,10 @@ public class MiningModuleType extends ProjectorModuleType {
 
     @Override
     public void onCollisionTick(BeamEntity beam, BlockPos pos, int amt) {
-        if (beam.level.getGameTime() % period == 0) {
-            float speed = beam.level.getBlockState(pos).getDestroySpeed(beam.level, pos);
+        if (beam.level().getGameTime() % period == 0) {
+            float speed = beam.level().getBlockState(pos).getDestroySpeed(beam.level(), pos);
             if (speed != -1 && speed <= strength.apply(amt)) {
-                beam.level.destroyBlock(pos, true);
+                beam.level().destroyBlock(pos, true);
             }
         }
     }

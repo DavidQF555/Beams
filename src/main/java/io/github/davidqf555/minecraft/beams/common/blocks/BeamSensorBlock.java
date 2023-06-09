@@ -32,18 +32,18 @@ public class BeamSensorBlock extends BaseEntityBlock implements IBeamAffectEffec
 
     @Override
     public void onBeamStartAffect(BeamEntity beam, BlockPos pos, BlockState state) {
-        BlockEntity te = beam.level.getBlockEntity(pos);
+        BlockEntity te = beam.level().getBlockEntity(pos);
         if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).addHit(beam.getUUID())) {
-            beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, true));
+            beam.level().setBlockAndUpdate(pos, state.setValue(TRIGGERED, true));
         }
     }
 
     @Override
     public void onBeamStopAffect(BeamEntity beam, BlockPos pos, BlockState state) {
-        BlockEntity te = beam.level.getBlockEntity(pos);
+        BlockEntity te = beam.level().getBlockEntity(pos);
         if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).removeHit(beam.getUUID())) {
             if (((BeamSensorTileEntity) te).getHit().isEmpty()) {
-                beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, false));
+                beam.level().setBlockAndUpdate(pos, state.setValue(TRIGGERED, false));
             }
         }
     }

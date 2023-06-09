@@ -146,6 +146,7 @@ public class BeamEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        Level level = level();
         if (level instanceof ServerLevel) {
             int lifespan = getLifespan();
             if (lifespan > 0 && tickCount >= lifespan) {
@@ -224,7 +225,7 @@ public class BeamEntity extends Entity {
     public void remove(RemovalReason reason) {
         Vec3 end = getEnd();
         BlockPos endPos = new BlockPos((int) end.x(), (int) end.y(), (int) end.z());
-        BlockState endState = level.getBlockState(endPos);
+        BlockState endState = level().getBlockState(endPos);
         Block endBlock = endState.getBlock();
         if (endBlock instanceof IBeamCollisionEffect) {
             ((IBeamCollisionEffect) endBlock).onBeamStopCollision(this, endPos, endState);
@@ -239,7 +240,7 @@ public class BeamEntity extends Entity {
     }
 
     protected boolean isVisualColliding(BlockPos pos, BlockState state) {
-        for (AABB bounds : state.getVisualShape(level, pos, CollisionContext.empty()).toAabbs()) {
+        for (AABB bounds : state.getVisualShape(level(), pos, CollisionContext.empty()).toAabbs()) {
             if (isAffected(bounds.move(pos))) {
                 return true;
             }
@@ -315,8 +316,8 @@ public class BeamEntity extends Entity {
         UUID direct = getDirectParent();
         if (direct != null) {
             parents.add(direct);
-            if (level instanceof ServerLevel) {
-                Entity parent = ((ServerLevel) level).getEntity(direct);
+            if (level() instanceof ServerLevel) {
+                Entity parent = ((ServerLevel) level()).getEntity(direct);
                 if (parent instanceof BeamEntity) {
                     parents.addAll(((BeamEntity) parent).getParents());
                 }
@@ -348,13 +349,13 @@ public class BeamEntity extends Entity {
         setEndRaw(end);
         if (!end.equals(before)) {
             BlockPos beforePos = new BlockPos((int) before.x(), (int) before.y(), (int) before.z());
-            BlockState beforeState = level.getBlockState(beforePos);
+            BlockState beforeState = level().getBlockState(beforePos);
             Block beforeBlock = beforeState.getBlock();
             if (beforeBlock instanceof IBeamCollisionEffect) {
                 ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
             }
             BlockPos afterPos = new BlockPos((int) end.x(), (int) end.y(), (int) end.z());
-            BlockState afterState = level.getBlockState(afterPos);
+            BlockState afterState = level().getBlockState(afterPos);
             Block afterBlock = afterState.getBlock();
             if (afterBlock instanceof IBeamCollisionEffect) {
                 ((IBeamCollisionEffect) afterBlock).onBeamStartCollision(this, afterPos, afterState);
@@ -564,7 +565,7 @@ public class BeamEntity extends Entity {
         if (tag.contains("Affecting", Tag.TAG_LIST)) {
             for (Tag nbt : tag.getList("Affecting", Tag.TAG_COMPOUND)) {
                 if (((CompoundTag) nbt).contains("Pos", Tag.TAG_COMPOUND) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
-                    affecting.put(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State")));
+                    affecting.put(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(level().holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State")));
                 }
             }
         }

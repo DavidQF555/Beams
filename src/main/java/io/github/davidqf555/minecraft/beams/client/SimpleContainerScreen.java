@@ -1,7 +1,6 @@
 package io.github.davidqf555.minecraft.beams.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,17 +19,16 @@ public class SimpleContainerScreen<T extends AbstractContainerMenu> extends Abst
     }
 
     @Override
-    public void render(PoseStack stack, int mouseX, int mouseY, float partial) {
-        renderBackground(stack);
-        super.render(stack, mouseX, mouseY, partial);
-        renderTooltip(stack, mouseX, mouseY);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partial) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partial);
+        renderTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
-    protected void renderBg(PoseStack stack, float partial, int mouseX, int mouseY) {
-        RenderSystem.setShaderTexture(0, texture);
+    protected void renderBg(GuiGraphics graphics, float partial, int mouseX, int mouseY) {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        blit(stack, x, y, 0, 0, imageWidth, imageHeight);
+        graphics.blit(texture, x, y, 0, 0, imageWidth, imageHeight);
     }
 }

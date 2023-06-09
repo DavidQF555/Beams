@@ -31,7 +31,16 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    private static final VoxelShape
+
+    public SimpleMirrorBlock(Properties properties) {
+        super(properties);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return createTickerHelper(type, TileEntityRegistry.MIRROR.get(), AbstractProjectorTileEntity::tick);
+    }    private static final VoxelShape
             TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
             BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
             OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
@@ -50,16 +59,6 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
             TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
             BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
             BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
-
-    public SimpleMirrorBlock(Properties properties) {
-        super(properties);
-    }
-
-    @Nullable
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return createTickerHelper(type, TileEntityRegistry.MIRROR.get(), AbstractProjectorTileEntity::tick);
-    }
 
     public Face getFace(BlockState state) {
         Half half = state.getValue(HALF);
@@ -187,5 +186,8 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         }
 
     }
+
+
+
 
 }

@@ -24,10 +24,10 @@ public class FireModuleType extends ProjectorModuleType {
 
     @Override
     public void onBlockTick(BeamEntity beam, BlockPos pos, int amt) {
-        if (beam.level.isEmptyBlock(pos)) {
+        if (beam.level().isEmptyBlock(pos)) {
             BlockState fire = Blocks.FIRE.defaultBlockState();
-            if (((FireBlock) Blocks.FIRE).canSurvive(fire, beam.level, pos)) {
-                beam.level.setBlockAndUpdate(pos, fire);
+            if (((FireBlock) Blocks.FIRE).canSurvive(fire, beam.level(), pos)) {
+                beam.level().setBlockAndUpdate(pos, fire);
             }
         }
     }

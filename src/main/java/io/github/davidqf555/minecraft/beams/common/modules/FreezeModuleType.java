@@ -36,14 +36,14 @@ public class FreezeModuleType extends ProjectorModuleType {
 
     @Override
     public void onBlockTick(BeamEntity beam, BlockPos pos, int amt) {
-        if (beam.level.isEmptyBlock(pos)) {
+        if (beam.level().isEmptyBlock(pos)) {
             BlockState snow = Blocks.SNOW.defaultBlockState();
-            if (snow.canSurvive(beam.level, pos)) {
-                beam.level.setBlockAndUpdate(pos, snow);
+            if (snow.canSurvive(beam.level(), pos)) {
+                beam.level().setBlockAndUpdate(pos, snow);
             }
-        } else if (beam.level.getFluidState(pos).getType().equals(Fluids.WATER)) {
-            beam.level.setBlockAndUpdate(pos, Blocks.FROSTED_ICE.defaultBlockState());
-            beam.level.scheduleTick(pos, Blocks.FROSTED_ICE, Mth.nextInt(beam.level.getRandom(), 60, 120));
+        } else if (beam.level().getFluidState(pos).getType().equals(Fluids.WATER)) {
+            beam.level().setBlockAndUpdate(pos, Blocks.FROSTED_ICE.defaultBlockState());
+            beam.level().scheduleTick(pos, Blocks.FROSTED_ICE, Mth.nextInt(beam.level().getRandom(), 60, 120));
         }
     }
 
