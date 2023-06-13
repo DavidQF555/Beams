@@ -1,6 +1,0 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "beams:item/monster_targeting_module"
-  }
-}
