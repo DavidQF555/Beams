@@ -33,7 +33,7 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
     private static final String PLAYER_NAME = "item." + Beams.ID + ".player_targeting_module.player_name";
 
     public PlayerTargetingModuleItem(Properties properties) {
-        super(null, properties);
+        super(properties);
     }
 
     @Override

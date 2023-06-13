@@ -4,17 +4,12 @@ import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingMo
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public class TargetingModuleItem extends Item {
+public abstract class TargetingModuleItem extends Item {
 
-    private final TargetingModuleType type;
-
-    public TargetingModuleItem(TargetingModuleType type, Properties properties) {
+    public TargetingModuleItem(Properties properties) {
         super(properties);
-        this.type = type;
     }
 
-    public TargetingModuleType getType(ItemStack stack) {
-        return type;
-    }
+    public abstract TargetingModuleType getType(ItemStack stack);
 
 }
