@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingModuleType;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 public class TargetingModuleItem extends Item {
 
@@ -12,7 +13,7 @@ public class TargetingModuleItem extends Item {
         this.type = type;
     }
 
-    public TargetingModuleType getType() {
+    public TargetingModuleType getType(ItemStack stack) {
         return type;
     }
 

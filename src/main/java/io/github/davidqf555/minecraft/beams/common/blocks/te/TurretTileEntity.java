@@ -45,7 +45,7 @@ public class TurretTileEntity extends OmnidirectionalProjectorTileEntity {
                 for (ItemStack stack : targeting) {
                     Item item = stack.getItem();
                     if (!stack.isEmpty() && item instanceof TargetingModuleItem) {
-                        Vector3d target = ((TargetingModuleItem) item).getType().tick(this, ServerConfigs.INSTANCE.projectorMaxRange.get());
+                        Vector3d target = ((TargetingModuleItem) item).getType(stack).tick(this, ServerConfigs.INSTANCE.projectorMaxRange.get());
                         if (target != null) {
                             hasTarget = true;
                             BlockPos pos = getBlockPos();
