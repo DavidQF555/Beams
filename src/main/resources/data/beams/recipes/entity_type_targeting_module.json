@@ -1,0 +1,23 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "beams:blank_module"
+    },
+    {
+      "item": "rotten_flesh"
+    },
+    {
+      "item": "string"
+    },
+    {
+      "item": "bone"
+    },
+    {
+      "tag": "wool"
+    }
+  ],
+  "result": {
+    "item": "beams:entity_type_targeting_module"
+  }
+}
