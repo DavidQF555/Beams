@@ -1,6 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.modules.targeting;
 
 import io.github.davidqf555.minecraft.beams.common.blocks.te.TurretTileEntity;
+import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.level.ClipContext;
@@ -28,7 +29,7 @@ public class EntityTargetingType implements TargetingModuleType {
         Level world = te.getLevel();
         AABB bounds = AABB.ofSize(Vec3.atLowerCornerOf(te.getBlockPos()), range * 2, range * 2, range * 2);
         Vec3 center = Vec3.atCenterOf(te.getBlockPos());
-        return world.getEntities((Entity) null, bounds, entity -> condition.test(entity) && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity)).stream()
+        return world.getEntities((Entity) null, bounds, condition.and(EntitySelector.NO_CREATIVE_OR_SPECTATOR).and(entity -> !(entity instanceof BeamEntity))).stream()
                 .filter(entity -> entity.distanceToSqr(center) <= range * range)
                 .filter(entity -> canSee(world, center, entity))
                 .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(center)))
