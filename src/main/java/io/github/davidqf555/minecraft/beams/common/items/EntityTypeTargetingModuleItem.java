@@ -13,7 +13,10 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -40,12 +43,12 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
 
     @Override
     public TargetingModuleType getType(ItemStack stack) {
-        Predicate<Entity> condition = EntityPredicates.NO_CREATIVE_OR_SPECTATOR;
+        Predicate<Entity> condition;
         Set<EntityType<?>> targets = getMarkedTypes(stack);
         if (isWhitelist(stack)) {
-            condition = condition.and(entity -> targets.contains(entity.getType()));
+            condition = entity -> targets.contains(entity.getType());
         } else {
-            condition = condition.and(entity -> !targets.contains(entity.getType()));
+            condition = entity -> !targets.contains(entity.getType());
         }
         return new EntityTargetingType(condition);
     }

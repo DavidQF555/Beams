@@ -13,7 +13,6 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -38,7 +37,7 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
 
     @Override
     public TargetingModuleType getType(ItemStack stack) {
-        Predicate<Entity> condition = EntityPredicates.NO_CREATIVE_OR_SPECTATOR.and(entity -> entity instanceof PlayerEntity);
+        Predicate<Entity> condition = entity -> entity instanceof PlayerEntity;
         Set<UUID> targets = getMarkedPlayers(stack).keySet();
         if (isWhitelist(stack)) {
             condition = condition.and(entity -> targets.contains(entity.getUUID()));
