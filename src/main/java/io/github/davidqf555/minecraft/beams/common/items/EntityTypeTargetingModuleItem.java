@@ -56,7 +56,7 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
     @Override
     public ActionResultType interactLivingEntity(ItemStack stack, PlayerEntity player, LivingEntity entity, Hand hand) {
         if (!entity.level.isClientSide() && !getMarkedTypes(stack).contains(entity.getType())) {
-            if (player.isCrouching()) {
+            if (player.isShiftKeyDown()) {
                 removeMarkedType(stack, entity.getType());
             } else {
                 addMarkedType(stack, entity.getType());

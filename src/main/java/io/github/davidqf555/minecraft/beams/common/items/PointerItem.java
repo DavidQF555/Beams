@@ -45,7 +45,7 @@ public class PointerItem extends Item {
     @Override
     public ActionResultType useOn(ItemUseContext context) {
         PlayerEntity player = context.getPlayer();
-        if (player != null && player.isCrouching()) {
+        if (player != null && player.isShiftKeyDown()) {
             World world = context.getLevel();
             BlockPos pos = context.getClickedPos();
             Block block = world.getBlockState(pos).getBlock();
@@ -75,7 +75,7 @@ public class PointerItem extends Item {
 
     @Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        if (!player.isCrouching()) {
+        if (!player.isShiftKeyDown()) {
             ItemStack stack = player.getItemInHand(hand);
             Map<UUID, BlockPos> connections = getConnected(stack);
             if (!connections.isEmpty()) {

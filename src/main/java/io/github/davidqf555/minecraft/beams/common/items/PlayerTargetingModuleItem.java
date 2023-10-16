@@ -50,7 +50,7 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
     @Override
     public ActionResultType interactLivingEntity(ItemStack stack, PlayerEntity player, LivingEntity entity, Hand hand) {
         if (!entity.level.isClientSide() && entity instanceof PlayerEntity && !getMarkedPlayers(stack).containsKey(entity.getUUID())) {
-            if (player.isCrouching()) {
+            if (player.isShiftKeyDown()) {
                 removeMarkedPlayer(stack, entity.getUUID());
             } else {
                 addMarkedPlayer(stack, (PlayerEntity) entity);

@@ -53,7 +53,7 @@ public class PortableProjectorItem extends ShootableItem {
     @Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (player.isCrouching()) {
+        if (player.isShiftKeyDown()) {
             if (world.isClientSide()) {
                 return ActionResult.success(stack);
             }
