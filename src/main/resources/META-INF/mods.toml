@@ -4,6 +4,7 @@ license = "GPLv3"
 [[mods]]
 modId = "beams"
 version = "${file.jarVersion}"
+updateJSONURL = "https://raw.githubusercontent.com/DavidQF555/Beams/update/update.json"
 displayName = "Beams"
 logoFile = "logo.png"
 authors = "DavidQF555"
