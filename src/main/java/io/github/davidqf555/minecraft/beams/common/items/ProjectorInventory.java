@@ -41,10 +41,11 @@ public class ProjectorInventory extends Inventory implements INamedContainerProv
     public static Map<ProjectorModuleType, Integer> getModuleTypes(IInventory inventory) {
         Map<ProjectorModuleType, Integer> types = new HashMap<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
-            Item item = inventory.getItem(i).getItem();
+            ItemStack stack = inventory.getItem(i);
+            Item item = stack.getItem();
             if (item instanceof ProjectorModuleItem) {
                 ProjectorModuleType type = ((ProjectorModuleItem<?>) item).getType();
-                types.put(type, types.getOrDefault(type, 0) + 1);
+                types.put(type, types.getOrDefault(type, 0) + stack.getCount());
             }
         }
         return types;
@@ -59,6 +60,11 @@ public class ProjectorInventory extends Inventory implements INamedContainerProv
     @Override
     public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
         return new ProjectorContainer(id, inventory, this);
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return 1;
     }
 
     public static class Provider implements ICapabilitySerializable<INBT> {
