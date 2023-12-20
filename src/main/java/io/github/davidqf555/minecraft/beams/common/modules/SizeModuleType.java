@@ -17,7 +17,7 @@ public class SizeModuleType extends ProjectorModuleType {
     }
 
     @Override
-    public double getEndSizeFactor(int amt) {
+    public double getGrowthRate(int amt) {
         return end.apply(amt);
     }
 
