@@ -4,7 +4,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '5.+'
 }
 
-version = '1.19.4-1.14.0'
+version = '1.19.4-1.14.1'
 group = 'io.github.davidqf555.minecraft.beams'
 archivesBaseName = 'beams'
 
