@@ -3,6 +3,7 @@ package io.github.davidqf555.minecraft.beams.common.entities;
 import com.mojang.math.Vector3f;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamAffectEffect;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -49,6 +51,7 @@ public class BeamEntity extends Entity {
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules = new HashMap<>();
     private final Map<BlockPos, BlockState> affecting = new HashMap<>();
+    private BlockPos projector;
     private double maxRange;
     private UUID shooter, parent;
     private AABB maxBounds;
@@ -60,26 +63,25 @@ public class BeamEntity extends Entity {
     }
 
     @Nullable
-    public static <T extends BeamEntity> T shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight, @Nullable UUID parent) {
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, Level world, Vec3 start, Vec3 dir, double range, Map<ProjectorModuleType, Integer> modules, double baseWidth, double baseHeight, @Nullable UUID parent, @Nullable BlockPos projector) {
         T beam = type.create(world);
         if (beam != null) {
             beam.setDirectParent(parent);
             Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation().add(dir.scale(POKE));
-            double endSizeFactor = getEndSizeFactor(modules);
-            baseMaxWidth *= endSizeFactor;
-            baseMaxHeight *= endSizeFactor;
-            double startSizeFactor = getStartSizeFactor(modules);
-            baseStartWidth *= startSizeFactor;
-            baseStartHeight *= startSizeFactor;
+            double startFactor = getStartSizeFactor(modules);
+            double startWidth = baseWidth * startFactor;
+            double startHeight = baseHeight * startFactor;
             beam.setPos(start.x(), start.y(), start.z());
-            beam.setEnd(end);
+            beam.setEnd(end, true, false);
             beam.setModules(modules);
-            beam.setStartWidth(baseStartWidth);
-            beam.setStartHeight(baseStartHeight);
-            double distFactor = end.subtract(start).length() / range;
-            beam.setEndWidth(baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor);
-            beam.setEndHeight(baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+            beam.setStartWidth(startWidth);
+            beam.setStartHeight(startHeight);
+            double growthRate = getGrowthRate(modules);
+            double length = end.subtract(start).length();
+            beam.setEndWidth(startWidth + growthRate * length);
+            beam.setEndHeight(startHeight + growthRate * length);
             beam.setMaxRange(range);
+            beam.setProjectorPos(projector);
             beam.initializeModules();
             world.addFreshEntity(beam);
             return beam;
@@ -87,12 +89,12 @@ public class BeamEntity extends Entity {
         return null;
     }
 
-    private static double getEndSizeFactor(Map<ProjectorModuleType, Integer> modules) {
-        double factor = 1;
+    private static double getGrowthRate(Map<ProjectorModuleType, Integer> modules) {
+        double rate = 0;
         for (ProjectorModuleType type : modules.keySet()) {
-            factor *= type.getEndSizeFactor(modules.get(type));
+            rate += type.getGrowthRate(modules.get(type));
         }
-        return factor;
+        return rate;
     }
 
     private static double getStartSizeFactor(Map<ProjectorModuleType, Integer> modules) {
@@ -149,73 +151,86 @@ public class BeamEntity extends Entity {
     public void tick() {
         super.tick();
         if (level instanceof ServerLevel) {
+            BlockPos projector = getProjectorPos();
             int lifespan = getLifespan();
-            if (lifespan > 0 && tickCount >= lifespan) {
-                remove(RemovalReason.DISCARDED);
+            if (lifespan > 0) {
+                if (tickCount >= lifespan) {
+                    discard();
+                    return;
+                }
+            } else if (projector == null) {
+                discard();
+                return;
             } else {
-                Vec3 start = position();
-                Vec3 original = getEnd();
-                Vec3 dir = original.subtract(start).normalize();
-                BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
-                Vec3 end = trace.getLocation().add(dir.scale(POKE));
-                if (isSignificantlyDifferent(original, end)) {
-                    setEnd(end);
+                BlockEntity te = level.getBlockEntity(projector);
+                if (!(te instanceof AbstractProjectorTileEntity) || !((AbstractProjectorTileEntity) te).getBeams().contains(getUUID())) {
+                    discard();
+                    return;
                 }
-                BlockPos endPos = new BlockPos(end);
-                BlockState endState = level.getBlockState(endPos);
-                Block endBlock = endState.getBlock();
-                if (endBlock instanceof IBeamCollisionEffect) {
-                    ((IBeamCollisionEffect) endBlock).onBeamCollisionTick(this, endPos, endState);
-                }
-                if (updateAffectingPositions) {
-                    Set<BlockPos> past = affecting.keySet();
-                    Set<BlockPos> current = getAffectingPositions();
-                    past.forEach(pos -> {
-                        if (!current.contains(pos)) {
-                            BlockState state = affecting.get(pos);
-                            if (state.getBlock() instanceof IBeamAffectEffect) {
-                                ((IBeamAffectEffect) state.getBlock()).onBeamStopAffect(this, pos, state);
-                            }
-                        }
-                    });
-                    current.forEach(pos -> {
-                        if (!past.contains(pos)) {
-                            affecting.put(pos, null);
-                        }
-                    });
-                    updateAffectingPositions = false;
-                }
-                for (BlockPos pos : affecting.keySet()) {
-                    BlockState past = affecting.get(pos);
-                    BlockState state = level.getBlockState(pos);
-                    if (!state.equals(past)) {
-                        if (past != null && past.getBlock() instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) past.getBlock()).onBeamStopAffect(this, pos, past);
-                        }
+            }
+            Vec3 start = position();
+            Vec3 original = getEnd();
+            Vec3 dir = original.subtract(start).normalize();
+            BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
+            Vec3 end = trace.getLocation().add(dir.scale(POKE));
+            if (isSignificantlyDifferent(original, end)) {
+                setEnd(end, true, true);
+                original = end;
+            }
+            BlockPos endPos = new BlockPos(original);
+            BlockState endState = level.getBlockState(endPos);
+            Block endBlock = endState.getBlock();
+            if (endBlock instanceof IBeamCollisionEffect) {
+                ((IBeamCollisionEffect) endBlock).onBeamCollisionTick(this, endPos, endState);
+            }
+            if (updateAffectingPositions) {
+                Set<BlockPos> past = affecting.keySet();
+                Set<BlockPos> current = getAffectingPositions();
+                past.forEach(pos -> {
+                    if (!current.contains(pos)) {
+                        BlockState state = affecting.get(pos);
                         if (state.getBlock() instanceof IBeamAffectEffect) {
-                            ((IBeamAffectEffect) state.getBlock()).onBeamStartAffect(this, pos, state);
+                            ((IBeamAffectEffect) state.getBlock()).onBeamStopAffect(this, pos, state);
                         }
-                        affecting.put(pos, state);
                     }
+                });
+                current.forEach(pos -> {
+                    if (!past.contains(pos)) {
+                        affecting.put(pos, null);
+                    }
+                });
+                updateAffectingPositions = false;
+            }
+            for (BlockPos pos : affecting.keySet()) {
+                BlockState past = affecting.get(pos);
+                BlockState state = level.getBlockState(pos);
+                if (!state.equals(past)) {
+                    if (past != null && past.getBlock() instanceof IBeamAffectEffect) {
+                        ((IBeamAffectEffect) past.getBlock()).onBeamStopAffect(this, pos, past);
+                    }
+                    if (state.getBlock() instanceof IBeamAffectEffect) {
+                        ((IBeamAffectEffect) state.getBlock()).onBeamStartAffect(this, pos, state);
+                    }
+                    affecting.put(pos, state);
                 }
-                Map<ProjectorModuleType, Integer> modules = getModules();
-                Set<Map.Entry<ProjectorModuleType, Integer>> blockModules = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickBlocks()).collect(Collectors.toSet());
-                if (!blockModules.isEmpty()) {
-                    affecting.forEach((pos, state) -> {
-                        modules.forEach((type, amt) -> type.onBlockTick(this, pos, amt));
-                        if (isVisualColliding(pos, state)) {
-                            modules.forEach((type, amt) -> type.onCollisionTick(this, pos, amt));
-                        }
-                    });
-                }
-                Set<Map.Entry<ProjectorModuleType, Integer>> entities = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickEntities()).collect(Collectors.toSet());
-                if (!entities.isEmpty()) {
-                    for (Entity entity : level.getEntities(this, getMaxBounds())) {
-                        if (isAffected(entity)) {
-                            entities.forEach(entry -> {
-                                entry.getKey().onEntityTick(this, entity, entry.getValue());
-                            });
-                        }
+            }
+            Map<ProjectorModuleType, Integer> modules = getModules();
+            Set<Map.Entry<ProjectorModuleType, Integer>> blockModules = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickBlocks()).collect(Collectors.toSet());
+            if (!blockModules.isEmpty()) {
+                affecting.forEach((pos, state) -> {
+                    modules.forEach((type, amt) -> type.onBlockTick(this, pos, amt));
+                    if (isVisualColliding(pos, state)) {
+                        modules.forEach((type, amt) -> type.onCollisionTick(this, pos, amt));
+                    }
+                });
+            }
+            Set<Map.Entry<ProjectorModuleType, Integer>> entities = modules.entrySet().stream().filter(entry -> entry.getValue() > 0 && entry.getKey().shouldTickEntities()).collect(Collectors.toSet());
+            if (!entities.isEmpty()) {
+                for (Entity entity : level.getEntities(this, getMaxBounds())) {
+                    if (isAffected(entity)) {
+                        entities.forEach(entry -> {
+                            entry.getKey().onEntityTick(this, entity, entry.getValue());
+                        });
                     }
                 }
             }
@@ -326,6 +341,15 @@ public class BeamEntity extends Entity {
         return parents;
     }
 
+    @Nullable
+    public BlockPos getProjectorPos() {
+        return projector;
+    }
+
+    public void setProjectorPos(@Nullable BlockPos projector) {
+        this.projector = projector;
+    }
+
     public Map<ProjectorModuleType, Integer> getModules() {
         return modules;
     }
@@ -344,21 +368,29 @@ public class BeamEntity extends Entity {
         return new Vec3(manager.get(X), manager.get(Y), manager.get(Z));
     }
 
-    public void setEnd(Vec3 end) {
+    public void setEnd(Vec3 end, boolean start, boolean stop) {
         Vec3 before = getEnd();
-        setEndRaw(end);
         if (!end.equals(before)) {
-            BlockPos beforePos = new BlockPos(before);
-            BlockState beforeState = level.getBlockState(beforePos);
-            Block beforeBlock = beforeState.getBlock();
-            if (beforeBlock instanceof IBeamCollisionEffect) {
-                ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
+            setEndRaw(end);
+            if (stop) {
+                BlockPos beforePos = new BlockPos(before);
+                BlockState beforeState = level.getBlockState(beforePos);
+                Block beforeBlock = beforeState.getBlock();
+                if (beforeBlock instanceof IBeamCollisionEffect) {
+                    ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
+                }
             }
-            BlockPos afterPos = new BlockPos(end);
-            BlockState afterState = level.getBlockState(afterPos);
-            Block afterBlock = afterState.getBlock();
-            if (afterBlock instanceof IBeamCollisionEffect) {
-                ((IBeamCollisionEffect) afterBlock).onBeamStartCollision(this, afterPos, afterState);
+            double length = end.subtract(position()).length();
+            double growthRate = getGrowthRate(getModules());
+            setEndWidth(getStartWidth() + growthRate * length);
+            setEndHeight(getStartHeight() + growthRate * length);
+            if (start) {
+                BlockPos afterPos = new BlockPos(end);
+                BlockState afterState = level.getBlockState(afterPos);
+                Block afterBlock = afterState.getBlock();
+                if (afterBlock instanceof IBeamCollisionEffect) {
+                    ((IBeamCollisionEffect) afterBlock).onBeamStartCollision(this, afterPos, afterState);
+                }
             }
         }
     }
@@ -517,6 +549,9 @@ public class BeamEntity extends Entity {
         if (tag.contains("EndX", Tag.TAG_DOUBLE) && tag.contains("EndY", Tag.TAG_DOUBLE) && tag.contains("EndZ", Tag.TAG_DOUBLE)) {
             setEndRaw(new Vec3(tag.getDouble("EndX"), tag.getDouble("EndY"), tag.getDouble("EndZ")));
         }
+        if (tag.contains("ProjectorX", Tag.TAG_INT) && tag.contains("ProjectorY", Tag.TAG_INT) && tag.contains("ProjectorZ", Tag.TAG_INT)) {
+            setProjectorPos(new BlockPos(tag.getInt("ProjectorX"), tag.getInt("ProjectorY"), tag.getInt("ProjectorZ")));
+        }
         if (tag.contains("StartWidth", Tag.TAG_DOUBLE)) {
             setStartWidth(tag.getDouble("StartWidth"));
         }
@@ -593,6 +628,12 @@ public class BeamEntity extends Entity {
         UUID shooter = getShooter();
         if (shooter != null) {
             tag.putUUID("Shooter", shooter);
+        }
+        BlockPos projector = getProjectorPos();
+        if (projector != null) {
+            tag.putInt("ProjectorX", projector.getX());
+            tag.putInt("ProjectorY", projector.getY());
+            tag.putInt("ProjectorZ", projector.getZ());
         }
         CompoundTag modules = new CompoundTag();
         IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();

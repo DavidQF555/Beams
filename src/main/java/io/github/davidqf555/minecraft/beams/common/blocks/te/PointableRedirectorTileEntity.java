@@ -11,18 +11,18 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-public class OmnidirectionalMirrorTileEntity extends RedirectorTileEntity {
+public class PointableRedirectorTileEntity extends RedirectorTileEntity {
 
     private UUID id;
     private Vec3 normal;
 
-    protected OmnidirectionalMirrorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    protected PointableRedirectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         normal = new Vec3(1, 0, 0);
         id = Mth.createInsecureUUID();
     }
 
-    public OmnidirectionalMirrorTileEntity(BlockPos pos, BlockState state) {
+    public PointableRedirectorTileEntity(BlockPos pos, BlockState state) {
         this(TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), pos, state);
     }
 
