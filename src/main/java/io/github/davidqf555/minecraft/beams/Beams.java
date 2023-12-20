@@ -25,6 +25,7 @@ public class Beams {
         ItemRegistry.ITEMS.register(bus);
         ProjectorModuleRegistry.TYPES.register(bus);
         ContainerRegistry.TYPES.register(bus);
+        EntityDataSerializerRegistry.ENTRIES.register(bus);
     }
 
 }
