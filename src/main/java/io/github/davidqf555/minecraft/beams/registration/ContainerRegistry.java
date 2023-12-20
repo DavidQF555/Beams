@@ -13,14 +13,14 @@ public final class ContainerRegistry {
 
     public static final DeferredRegister<ContainerType<?>> TYPES = DeferredRegister.create(ForgeRegistries.CONTAINERS, Beams.ID);
 
+    public static final RegistryObject<ContainerType<ProjectorContainer>> PROJECTOR = register("projector", ProjectorContainer::new);
+    public static final RegistryObject<ContainerType<TurretContainer>> TURRET = register("turret", TurretContainer::new);
+
     private ContainerRegistry() {
     }
 
     private static <T extends Container> RegistryObject<ContainerType<T>> register(String name, ContainerType.IFactory<T> factory) {
         return TYPES.register(name, () -> new ContainerType<>(factory));
     }
-
-    public static final RegistryObject<ContainerType<ProjectorContainer>> PROJECTOR = register("projector", ProjectorContainer::new);
-    public static final RegistryObject<ContainerType<TurretContainer>> TURRET = register("turret", TurretContainer::new);
 
 }

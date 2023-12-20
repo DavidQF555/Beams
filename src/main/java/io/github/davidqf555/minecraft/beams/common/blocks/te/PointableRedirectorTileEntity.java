@@ -10,18 +10,18 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.UUID;
 
-public class OmnidirectionalMirrorTileEntity extends RedirectorTileEntity {
+public class PointableRedirectorTileEntity extends RedirectorTileEntity {
 
     private UUID id;
     private Vector3d normal;
 
-    protected OmnidirectionalMirrorTileEntity(TileEntityType<?> type) {
+    protected PointableRedirectorTileEntity(TileEntityType<?> type) {
         super(type);
         normal = new Vector3d(1, 0, 0);
         id = MathHelper.createInsecureUUID();
     }
 
-    public OmnidirectionalMirrorTileEntity() {
+    public PointableRedirectorTileEntity() {
         this(TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get());
     }
 

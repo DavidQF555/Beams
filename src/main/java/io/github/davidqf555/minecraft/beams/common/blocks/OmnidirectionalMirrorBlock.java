@@ -1,6 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
-import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalMirrorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.PointableRedirectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.RedirectorTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -32,23 +32,23 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
     @Override
     protected Vector3d getFaceNormal(World world, BlockPos pos, BlockState state) {
         TileEntity te = world.getBlockEntity(pos);
-        if (te instanceof OmnidirectionalMirrorTileEntity) {
-            return ((OmnidirectionalMirrorTileEntity) te).getNormal();
+        if (te instanceof PointableRedirectorTileEntity) {
+            return ((PointableRedirectorTileEntity) te).getNormal();
         }
         return new Vector3d(1, 0, 0);
     }
 
     @Override
     public RedirectorTileEntity newBlockEntity(IBlockReader reader) {
-        return new OmnidirectionalMirrorTileEntity();
+        return new PointableRedirectorTileEntity();
     }
 
     @Nullable
     @Override
     public UUID getConnectionID(World world, BlockPos pos) {
         TileEntity te = world.getBlockEntity(pos);
-        if (te instanceof OmnidirectionalMirrorTileEntity) {
-            return ((OmnidirectionalMirrorTileEntity) te).getUUID();
+        if (te instanceof PointableRedirectorTileEntity) {
+            return ((PointableRedirectorTileEntity) te).getUUID();
         }
         return null;
     }
@@ -56,9 +56,9 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
     @Override
     public void onPoint(World world, BlockPos pos, Vector3d target) {
         TileEntity te = world.getBlockEntity(pos);
-        if (te instanceof OmnidirectionalMirrorTileEntity) {
+        if (te instanceof PointableRedirectorTileEntity) {
             Vector3d dir = target.subtract(Vector3d.atCenterOf(pos)).normalize();
-            ((OmnidirectionalMirrorTileEntity) te).setNormal(dir);
+            ((PointableRedirectorTileEntity) te).setNormal(dir);
             updateBeams(world, pos);
             te.setChanged();
         }
