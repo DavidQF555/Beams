@@ -1,4 +1,4 @@
-package io.github.davidqf555.minecraft.beams.registration;
+package io.github.davidqf555.minecraft.beams.common.events;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;

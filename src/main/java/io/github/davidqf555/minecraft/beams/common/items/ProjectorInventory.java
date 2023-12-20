@@ -39,10 +39,11 @@ public class ProjectorInventory extends SimpleContainer implements MenuProvider 
     public static Map<ProjectorModuleType, Integer> getModuleTypes(Container inventory) {
         Map<ProjectorModuleType, Integer> types = new HashMap<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
-            Item item = inventory.getItem(i).getItem();
+            ItemStack stack = inventory.getItem(i);
+            Item item = stack.getItem();
             if (item instanceof ProjectorModuleItem) {
                 ProjectorModuleType type = ((ProjectorModuleItem<?>) item).getType();
-                types.put(type, types.getOrDefault(type, 0) + 1);
+                types.put(type, types.getOrDefault(type, 0) + stack.getCount());
             }
         }
         return types;
@@ -57,6 +58,11 @@ public class ProjectorInventory extends SimpleContainer implements MenuProvider 
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ProjectorContainer(id, inventory, this);
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return 1;
     }
 
     public static class Provider implements ICapabilitySerializable<ListTag> {

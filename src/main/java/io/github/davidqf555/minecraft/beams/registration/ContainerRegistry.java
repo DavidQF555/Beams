@@ -14,15 +14,14 @@ public final class ContainerRegistry {
 
     public static final DeferredRegister<MenuType<?>> TYPES = DeferredRegister.create(Registries.MENU, Beams.ID);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<ProjectorContainer>> PROJECTOR = register("projector", ProjectorContainer::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<TurretContainer>> TURRET = register("turret", TurretContainer::new);
+
     private ContainerRegistry() {
     }
 
     private static <T extends AbstractContainerMenu> DeferredHolder<MenuType<?>, MenuType<T>> register(String name, MenuType.MenuSupplier<T> factory) {
         return TYPES.register(name, () -> new MenuType<>(factory, FeatureFlags.DEFAULT_FLAGS));
     }
-
-    public static final DeferredHolder<MenuType<?>, MenuType<ProjectorContainer>> PROJECTOR = register("projector", ProjectorContainer::new);
-    public static final DeferredHolder<MenuType<?>, MenuType<TurretContainer>> TURRET = register("turret", TurretContainer::new);
-
 
 }

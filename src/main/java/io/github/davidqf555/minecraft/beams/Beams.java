@@ -26,6 +26,7 @@ public class Beams {
         ProjectorModuleRegistry.TYPES.register(bus);
         ContainerRegistry.TYPES.register(bus);
         CreativeModeTabRegistry.TABS.register(bus);
+        EntityDataSerializerRegistry.ENTRIES.register(bus);
     }
 
 }

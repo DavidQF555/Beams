@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public final class ProjectorModuleRegistry {
 
     public static final DeferredRegister<ProjectorModuleType> TYPES = DeferredRegister.create(ResourceKey.createRegistryKey(new ResourceLocation(Beams.ID, "module_type")), Beams.ID);
+
     public static final Map<DyeColor, DeferredHolder<ProjectorModuleType, ColorModuleType>> COLORS = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName(), () -> new ColorModuleType(color.getFireworkColor()))));
     public static final DeferredHolder<ProjectorModuleType, PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(MobEffects.BLINDNESS, amt -> amt * 30, amt -> 0));
     public static final DeferredHolder<ProjectorModuleType, FireModuleType> HOT = register("hot", () -> new FireModuleType(amt -> amt * 2));
@@ -31,8 +32,8 @@ public final class ProjectorModuleRegistry {
     public static final DeferredHolder<ProjectorModuleType, ForceModuleType> FORCE = register("force", () -> new ForceModuleType(amt -> amt * 0.05));
     public static final DeferredHolder<ProjectorModuleType, MiningModuleType> MINING = register("mining", () -> new MiningModuleType(20, amt -> amt * 2f));
     public static final DeferredHolder<ProjectorModuleType, LayersModuleType> LAYERS = register("layers", () -> new LayersModuleType(amt -> amt));
-    public static final DeferredHolder<ProjectorModuleType, SizeModuleType> GROWTH = register("growth", () -> new SizeModuleType(amt -> 1.0, amt -> amt * 2 + 1.0));
-    public static final DeferredHolder<ProjectorModuleType, SizeModuleType> SHRINK = register("shrink", () -> new SizeModuleType(amt -> Math.pow(0.75, amt), amt -> Math.pow(0.75, amt)));
+    public static final DeferredHolder<ProjectorModuleType, SizeModuleType> GROWTH = register("growth", () -> new SizeModuleType(amt -> 1.0, amt -> amt * 0.025));
+    public static final DeferredHolder<ProjectorModuleType, SizeModuleType> SHRINK = register("shrink", () -> new SizeModuleType(amt -> Math.pow(0.75, amt), amt -> 0.0));
     public static final DeferredHolder<ProjectorModuleType, ForceModuleType> TRACTOR = register("tractor", () -> new ForceModuleType(amt -> amt * -0.025));
     public static final DeferredHolder<ProjectorModuleType, FreezeModuleType> FREEZE = register("freeze", () -> new FreezeModuleType(amt -> amt, amt -> amt * 20, amt -> amt));
 
