@@ -53,7 +53,7 @@ public class PortableProjectorItem extends ProjectileWeaponItem {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (player.isCrouching()) {
+        if (player.isShiftKeyDown()) {
             if (world.isClientSide()) {
                 return InteractionResultHolder.success(stack);
             }
