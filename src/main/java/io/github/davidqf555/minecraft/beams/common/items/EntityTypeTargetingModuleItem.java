@@ -4,6 +4,7 @@ import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
 import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingModuleType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -20,7 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -90,7 +90,7 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
             tag.getList("Types", Tag.TAG_STRING).stream()
                     .map(Tag::getAsString)
                     .map(ResourceLocation::new)
-                    .map(ForgeRegistries.ENTITY_TYPES::getValue)
+                    .map(BuiltInRegistries.ENTITY_TYPE::get)
                     .forEach(types::add);
         }
         return types;
@@ -105,14 +105,14 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
             list = new ListTag();
             tag.put("Types", list);
         }
-        list.add(StringTag.valueOf(ForgeRegistries.ENTITY_TYPES.getKey(type).toString()));
+        list.add(StringTag.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString()));
     }
 
     public void removeMarkedType(ItemStack stack, EntityType<?> type) {
         CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
         if (tag.contains("Types", Tag.TAG_LIST)) {
             ListTag list = tag.getList("Types", Tag.TAG_STRING);
-            list.removeIf(nbt -> nbt.getAsString().equals(ForgeRegistries.ENTITY_TYPES.getKey(type).toString()));
+            list.removeIf(nbt -> nbt.getAsString().equals(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString()));
         }
     }
 

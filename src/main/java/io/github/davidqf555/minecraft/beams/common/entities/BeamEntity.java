@@ -5,6 +5,7 @@ import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -26,7 +27,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -552,10 +552,10 @@ public class BeamEntity extends Entity {
         }
         if (tag.contains("Modules", Tag.TAG_COMPOUND)) {
             Map<ProjectorModuleType, Integer> modules = new HashMap<>();
-            IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
+            Registry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
             CompoundTag map = tag.getCompound("Modules");
             for (String key : map.getAllKeys()) {
-                ProjectorModuleType type = registry.getValue(new ResourceLocation(key));
+                ProjectorModuleType type = registry.get(new ResourceLocation(key));
                 if (type != null && map.contains(key, Tag.TAG_INT)) {
                     modules.put(type, map.getInt(key));
                 }
@@ -595,7 +595,7 @@ public class BeamEntity extends Entity {
             tag.putUUID("Shooter", shooter);
         }
         CompoundTag modules = new CompoundTag();
-        IForgeRegistry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
+        Registry<ProjectorModuleType> registry = ProjectorModuleRegistry.getRegistry();
         this.modules.forEach((type, amt) -> modules.putInt(registry.getKey(type).toString(), amt));
         tag.put("Modules", modules);
         ListTag collisions = new ListTag();

@@ -2,11 +2,11 @@ package io.github.davidqf555.minecraft.beams;
 
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.registration.*;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod("beams")
 public class Beams {
@@ -25,6 +25,7 @@ public class Beams {
         ItemRegistry.ITEMS.register(bus);
         ProjectorModuleRegistry.TYPES.register(bus);
         ContainerRegistry.TYPES.register(bus);
+        CreativeModeTabRegistry.TABS.register(bus);
     }
 
 }

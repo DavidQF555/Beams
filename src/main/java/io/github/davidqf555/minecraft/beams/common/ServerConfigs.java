@@ -1,23 +1,23 @@
 package io.github.davidqf555.minecraft.beams.common;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ServerConfigs {
 
     public static final ServerConfigs INSTANCE;
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec SPEC;
 
     static {
-        Pair<ServerConfigs, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ServerConfigs::new);
+        Pair<ServerConfigs, ModConfigSpec> pair = new ModConfigSpec.Builder().configure(ServerConfigs::new);
         INSTANCE = pair.getLeft();
         SPEC = pair.getRight();
     }
 
-    public final ForgeConfigSpec.DoubleValue projectorMaxRange, defaultBeamSize, pointerRange;
-    public final ForgeConfigSpec.IntValue portableProjectorMaxRange;
+    public final ModConfigSpec.DoubleValue projectorMaxRange, defaultBeamSize, pointerRange;
+    public final ModConfigSpec.IntValue portableProjectorMaxRange;
 
-    public ServerConfigs(ForgeConfigSpec.Builder builder) {
+    public ServerConfigs(ModConfigSpec.Builder builder) {
         builder.push("Server config for Beams mod");
         defaultBeamSize = builder.comment("This is the the default width/height in blocks of beams projected from projectors. ")
                 .defineInRange("beamSize", 0.5, 0, Double.MAX_VALUE);

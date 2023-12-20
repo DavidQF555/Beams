@@ -20,7 +20,7 @@ public class SimpleContainerScreen<T extends AbstractContainerMenu> extends Abst
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partial) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partial);
         super.render(graphics, mouseX, mouseY, partial);
         renderTooltip(graphics, mouseX, mouseY);
     }
