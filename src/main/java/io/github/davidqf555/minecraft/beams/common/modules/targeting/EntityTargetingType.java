@@ -10,6 +10,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -38,7 +39,7 @@ public class EntityTargetingType implements TargetingModuleType {
     }
 
     private boolean canSee(Level world, Vec3 start, Entity entity) {
-        BlockHitResult result = world.clip(new ClipContext(start, entity.getEyePosition(1), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
+        BlockHitResult result = world.clip(new ClipContext(start, entity.getEyePosition(1), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
         return result.getType() == HitResult.Type.MISS;
     }
 

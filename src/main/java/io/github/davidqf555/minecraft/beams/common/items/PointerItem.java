@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -90,7 +91,7 @@ public class PointerItem extends Item {
                 EntityHitResult entity = ProjectileUtil.getEntityHitResult(world, player, start, end, AABB.ofSize(start, range * 2, range * 2, range * 2), check -> true);
                 Vec3 target;
                 if (entity == null) {
-                    target = world.clip(new ClipContext(start, end, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation();
+                    target = world.clip(new ClipContext(start, end, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty())).getLocation();
                 } else {
                     target = entity.getEntity().getEyePosition(1);
                 }

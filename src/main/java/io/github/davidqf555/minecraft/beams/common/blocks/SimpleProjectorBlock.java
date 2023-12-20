@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -17,9 +18,15 @@ import javax.annotation.Nullable;
 public class SimpleProjectorBlock extends ContainerProjectorBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
+    public static final MapCodec<SimpleProjectorBlock> CODEC = simpleCodec(SimpleProjectorBlock::new);
 
     public SimpleProjectorBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends SimpleProjectorBlock> codec() {
+        return CODEC;
     }
 
     @Override

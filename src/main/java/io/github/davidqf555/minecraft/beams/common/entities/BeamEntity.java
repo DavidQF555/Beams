@@ -62,7 +62,7 @@ public class BeamEntity extends Entity {
         T beam = type.create(world);
         if (beam != null) {
             beam.setDirectParent(parent);
-            Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation().add(dir.scale(POKE));
+            Vec3 end = world.clip(new ClipContext(start, start.add(dir.scale(range)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty())).getLocation().add(dir.scale(POKE));
             double endSizeFactor = getEndSizeFactor(modules);
             baseMaxWidth *= endSizeFactor;
             baseMaxHeight *= endSizeFactor;
@@ -155,7 +155,7 @@ public class BeamEntity extends Entity {
                 Vec3 start = position();
                 Vec3 original = getEnd();
                 Vec3 dir = original.subtract(start).normalize();
-                BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null));
+                BlockHitResult trace = level.clip(new ClipContext(start, start.add(dir.scale(maxRange)), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
                 Vec3 end = trace.getLocation().add(dir.scale(POKE));
                 if (isSignificantlyDifferent(original, end)) {
                     setEnd(end);

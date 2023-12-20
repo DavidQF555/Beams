@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.PointableProjectorTileEntity;
@@ -17,8 +18,15 @@ import java.util.UUID;
 
 public class PointableProjectorBlock extends OmnidirectionalProjectorBlock implements IPointable {
 
+    public static final MapCodec<PointableProjectorBlock> CODEC = simpleCodec(PointableProjectorBlock::new);
+
     public PointableProjectorBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends PointableProjectorBlock> codec() {
+        return CODEC;
     }
 
     @Nullable
