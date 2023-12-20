@@ -3,7 +3,7 @@ package io.github.davidqf555.minecraft.beams.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.blocks.te.OmnidirectionalMirrorTileEntity;
+import io.github.davidqf555.minecraft.beams.common.blocks.te.PointableRedirectorTileEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-public class OmnidirectionalMirrorTileEntityRenderer implements BlockEntityRenderer<OmnidirectionalMirrorTileEntity> {
+public class OmnidirectionalMirrorTileEntityRenderer implements BlockEntityRenderer<PointableRedirectorTileEntity> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(Beams.ID, "textures/block/omnidirectional_mirror.png");
     private final OmnidirectionalMirrorModel model;
@@ -21,7 +21,7 @@ public class OmnidirectionalMirrorTileEntityRenderer implements BlockEntityRende
     }
 
     @Override
-    public void render(OmnidirectionalMirrorTileEntity p_225616_1_, float p_225616_2_, PoseStack p_225616_3_, MultiBufferSource p_225616_4_, int p_225616_5_, int p_225616_6_) {
+    public void render(PointableRedirectorTileEntity p_225616_1_, float p_225616_2_, PoseStack p_225616_3_, MultiBufferSource p_225616_4_, int p_225616_5_, int p_225616_6_) {
         Vec3 dir = p_225616_1_.getNormal();
         double yRot = Mth.atan2(dir.x(), dir.z());
         double xRot = Mth.atan2(dir.y(), Mth.sqrt((float) (dir.x() * dir.x() + dir.z() * dir.z()))) + Math.PI;
