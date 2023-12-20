@@ -72,7 +72,7 @@ public class BeamEntity extends Entity {
             baseStartWidth *= startSizeFactor;
             baseStartHeight *= startSizeFactor;
             beam.setPos(start.x(), start.y(), start.z());
-            beam.setEnd(end);
+            beam.setEnd(end, true, false);
             beam.setModules(modules);
             beam.setStartWidth(baseStartWidth);
             beam.setStartHeight(baseStartHeight);
@@ -173,9 +173,10 @@ public class BeamEntity extends Entity {
             BlockRayTraceResult trace = level.clip(new RayTraceContext(start, start.add(dir.scale(maxRange)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null));
             Vector3d end = trace.getLocation().add(dir.scale(POKE));
             if (isSignificantlyDifferent(original, end)) {
-                setEnd(end);
+                setEnd(end, true, true);
+                original = end;
             }
-            BlockPos endPos = new BlockPos(end);
+            BlockPos endPos = new BlockPos(original);
             BlockState endState = level.getBlockState(endPos);
             Block endBlock = endState.getBlock();
             if (endBlock instanceof IBeamCollisionEffect) {
@@ -368,21 +369,33 @@ public class BeamEntity extends Entity {
         return new Vector3d(manager.get(X), manager.get(Y), manager.get(Z));
     }
 
-    public void setEnd(Vector3d end) {
+    public void setEnd(Vector3d end, boolean start, boolean stop) {
         Vector3d before = getEnd();
-        setEndRaw(end);
         if (!end.equals(before)) {
-            BlockPos beforePos = new BlockPos(before);
-            BlockState beforeState = level.getBlockState(beforePos);
-            Block beforeBlock = beforeState.getBlock();
-            if (beforeBlock instanceof IBeamCollisionEffect) {
-                ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
+            double length = before.subtract(position()).length();
+            setEndRaw(end);
+            if (stop) {
+                BlockPos beforePos = new BlockPos(before);
+                BlockState beforeState = level.getBlockState(beforePos);
+                Block beforeBlock = beforeState.getBlock();
+                if (beforeBlock instanceof IBeamCollisionEffect) {
+                    ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
+                }
             }
-            BlockPos afterPos = new BlockPos(end);
-            BlockState afterState = level.getBlockState(afterPos);
-            Block afterBlock = afterState.getBlock();
-            if (afterBlock instanceof IBeamCollisionEffect) {
-                ((IBeamCollisionEffect) afterBlock).onBeamStartCollision(this, afterPos, afterState);
+            double widthRate = (getEndWidth() - getStartWidth()) / length;
+            double heightRate = (getEndHeight() - getStartHeight()) / length;
+            double newLength = end.subtract(position()).length();
+            double endWidth = getStartWidth() + widthRate * newLength;
+            double endHeight = getStartHeight() + heightRate * newLength;
+            setEndWidth(endWidth);
+            setEndHeight(endHeight);
+            if (start) {
+                BlockPos afterPos = new BlockPos(end);
+                BlockState afterState = level.getBlockState(afterPos);
+                Block afterBlock = afterState.getBlock();
+                if (afterBlock instanceof IBeamCollisionEffect) {
+                    ((IBeamCollisionEffect) afterBlock).onBeamStartCollision(this, afterPos, afterState);
+                }
             }
         }
     }
