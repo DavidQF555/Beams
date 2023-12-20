@@ -60,25 +60,23 @@ public class BeamEntity extends Entity {
     }
 
     @Nullable
-    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double baseStartWidth, double baseStartHeight, double baseMaxWidth, double baseMaxHeight, @Nullable UUID parent, @Nullable BlockPos projector) {
+    public static <T extends BeamEntity> T shoot(EntityType<T> type, World world, Vector3d start, Vector3d dir, double range, Map<ProjectorModuleType, Integer> modules, double baseWidth, double baseHeight, @Nullable UUID parent, @Nullable BlockPos projector) {
         T beam = type.create(world);
         if (beam != null) {
             beam.setDirectParent(parent);
             Vector3d end = world.clip(new RayTraceContext(start, start.add(dir.scale(range)), RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null)).getLocation().add(dir.scale(POKE));
-            double endSizeFactor = getEndSizeFactor(modules);
-            baseMaxWidth *= endSizeFactor;
-            baseMaxHeight *= endSizeFactor;
-            double startSizeFactor = getStartSizeFactor(modules);
-            baseStartWidth *= startSizeFactor;
-            baseStartHeight *= startSizeFactor;
+            double startFactor = getStartSizeFactor(modules);
+            double startWidth = baseWidth * startFactor;
+            double startHeight = baseHeight * startFactor;
             beam.setPos(start.x(), start.y(), start.z());
             beam.setEnd(end, true, false);
             beam.setModules(modules);
-            beam.setStartWidth(baseStartWidth);
-            beam.setStartHeight(baseStartHeight);
-            double distFactor = end.subtract(start).length() / range;
-            beam.setEndWidth(baseStartWidth + (baseMaxWidth - baseStartWidth) * distFactor);
-            beam.setEndHeight(baseStartHeight + (baseMaxHeight - baseStartHeight) * distFactor);
+            beam.setStartWidth(startWidth);
+            beam.setStartHeight(startHeight);
+            double growthRate = getGrowthRate(modules);
+            double length = end.subtract(start).length();
+            beam.setEndWidth(startWidth + growthRate * length);
+            beam.setEndHeight(startHeight + growthRate * length);
             beam.setMaxRange(range);
             beam.setProjectorPos(projector);
             beam.initializeModules();
@@ -88,12 +86,12 @@ public class BeamEntity extends Entity {
         return null;
     }
 
-    private static double getEndSizeFactor(Map<ProjectorModuleType, Integer> modules) {
-        double factor = 1;
+    private static double getGrowthRate(Map<ProjectorModuleType, Integer> modules) {
+        double rate = 0;
         for (ProjectorModuleType type : modules.keySet()) {
-            factor *= type.getEndSizeFactor(modules.get(type));
+            rate += type.getGrowthRate(modules.get(type));
         }
-        return factor;
+        return rate;
     }
 
     private static double getStartSizeFactor(Map<ProjectorModuleType, Integer> modules) {
@@ -372,7 +370,6 @@ public class BeamEntity extends Entity {
     public void setEnd(Vector3d end, boolean start, boolean stop) {
         Vector3d before = getEnd();
         if (!end.equals(before)) {
-            double length = before.subtract(position()).length();
             setEndRaw(end);
             if (stop) {
                 BlockPos beforePos = new BlockPos(before);
@@ -382,13 +379,10 @@ public class BeamEntity extends Entity {
                     ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
                 }
             }
-            double widthRate = (getEndWidth() - getStartWidth()) / length;
-            double heightRate = (getEndHeight() - getStartHeight()) / length;
-            double newLength = end.subtract(position()).length();
-            double endWidth = getStartWidth() + widthRate * newLength;
-            double endHeight = getStartHeight() + heightRate * newLength;
-            setEndWidth(endWidth);
-            setEndHeight(endHeight);
+            double length = end.subtract(position()).length();
+            double growthRate = getGrowthRate(getModules());
+            setEndWidth(getStartWidth() + growthRate * length);
+            setEndHeight(getStartHeight() + growthRate * length);
             if (start) {
                 BlockPos afterPos = new BlockPos(end);
                 BlockState afterState = level.getBlockState(afterPos);

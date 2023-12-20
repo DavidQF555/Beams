@@ -23,8 +23,8 @@ public class ProjectorModuleType extends ForgeRegistryEntry<ProjectorModuleType>
 
     }
 
-    public double getEndSizeFactor(int amt) {
-        return 1;
+    public double getGrowthRate(int amt) {
+        return 0;
     }
 
     public double getStartSizeFactor(int amt) {

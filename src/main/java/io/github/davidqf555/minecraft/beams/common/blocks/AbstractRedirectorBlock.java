@@ -44,7 +44,7 @@ public abstract class AbstractRedirectorBlock extends AbstractProjectorBlock imp
                 double height = beam.getEndHeight() * getRedirectHeightFactor();
                 double maxLength = beam.getMaxRange() - length;
                 Vector3d redirectStart = end.subtract(original.scale(BeamEntity.POKE)).add(getOffset(world, pos, dir));
-                BeamEntity redirect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, redirectStart, dir, maxLength, getRedirectedModules(dir, beam.getModules()), width, height, width, height, beam.getUUID(), pos);
+                BeamEntity redirect = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, redirectStart, dir, maxLength, getRedirectedModules(dir, beam.getModules()), width, height, beam.getUUID(), pos);
                 if (redirect != null) {
                     beams.add(redirect);
                 }
