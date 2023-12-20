@@ -7,7 +7,6 @@ import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +24,7 @@ import java.util.function.Predicate;
 
 public class PortableProjectorItem extends ProjectileWeaponItem {
 
-    private final static Component INSTRUCTIONS = new TranslatableComponent("item." + Beams.ID + ".portable_projector.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
+    private final static Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".portable_projector.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
 
     public PortableProjectorItem(Properties properties) {
         super(properties);
