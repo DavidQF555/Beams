@@ -29,7 +29,7 @@ public abstract class DirectedProjectorBlock extends AbstractProjectorBlock {
         Vector3d dir = getBeamDirection(world, pos, state);
         Vector3d start = Vector3d.atLowerCornerOf(pos).add(getStartOffset(world, pos, state));
         double size = ServerConfigs.INSTANCE.defaultBeamSize.get();
-        BeamEntity beam = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModules(world, pos, state), size, size, size, size, null);
+        BeamEntity beam = BeamEntity.shoot(EntityRegistry.BEAM.get(), world, start, dir, ServerConfigs.INSTANCE.projectorMaxRange.get(), getModules(world, pos, state), size, size, size, size, null, pos);
         if (beam == null) {
             return ImmutableList.of();
         }
