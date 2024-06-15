@@ -30,11 +30,8 @@ do
     esac
 done
 
-APP_HOME=$( cd "${APP_HOME:-./}" && pwd -P ) || exit
-
 APP_BASE_NAME=${0##*/}
-
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+APP_HOME=$( cd "${APP_HOME:-./}" && pwd -P ) || exit
 
 MAX_FD=maximum
 
@@ -118,6 +115,9 @@ if "$cygwin" || "$msys" ; then
         set -- "$@" "$arg"
     done
 fi
+
+
+DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 
 set -- \
         "-Dorg.gradle.appname=$APP_BASE_NAME" \
