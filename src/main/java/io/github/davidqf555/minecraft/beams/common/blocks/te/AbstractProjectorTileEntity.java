@@ -3,6 +3,7 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 import io.github.davidqf555.minecraft.beams.common.blocks.AbstractProjectorBlock;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -85,8 +86,8 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         ListTag beams = new ListTag();
         for (UUID beam : getBeams()) {
             beams.add(NbtUtils.createUUID(beam));
@@ -96,8 +97,8 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         if (tag.contains("Beams", Tag.TAG_LIST)) {
             for (Tag nbt : tag.getList("Beams", Tag.TAG_INT_ARRAY)) {
                 addBeam(NbtUtils.loadUUID(nbt));
@@ -115,9 +116,9 @@ public abstract class AbstractProjectorTileEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
-        saveAdditional(tag);
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        CompoundTag tag = super.getUpdateTag(provider);
+        saveAdditional(tag, provider);
         return tag;
     }
 

@@ -2,11 +2,11 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorContainer;
-import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -96,29 +96,29 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         Component custom = getCustomName();
         if (custom != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(custom));
+            tag.putString("CustomName", Component.Serializer.toJson(custom, provider));
         }
         ListTag items = new ListTag();
         for (int i = 0; i < getContainerSize(); i++) {
-            items.add(getItem(i).save(new CompoundTag()));
+            items.add(getItem(i).save(provider));
         }
         tag.put("Items", items);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         if (tag.contains("CustomName", Tag.TAG_STRING)) {
-            setCustomName(Component.Serializer.fromJson(tag.getString("CustomName")));
+            setCustomName(Component.Serializer.fromJson(tag.getString("CustomName"), provider));
         }
         if (tag.contains("Items", Tag.TAG_LIST)) {
             ListTag list = tag.getList("Items", Tag.TAG_COMPOUND);
             for (int i = 0; i < Math.min(tag.size(), getContainerSize()); i++) {
-                ItemStack stack = ItemStack.of(list.getCompound(i));
+                ItemStack stack = ItemStack.parseOptional(provider, list.getCompound(i));
                 setItemNoUpdate(i, stack);
             }
         }
@@ -161,7 +161,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     }
 
     public Map<ProjectorModuleType, Integer> getModules() {
-        return ProjectorInventory.getModuleTypes(this);
+        return ProjectorModuleType.getModuleTypes(items);
     }
 
 }

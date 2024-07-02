@@ -161,9 +161,8 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType path) {
+    protected boolean isPathfindable(BlockState state, PathComputationType path) {
         return false;
     }
 

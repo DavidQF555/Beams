@@ -4,6 +4,7 @@ import io.github.davidqf555.minecraft.beams.common.blocks.IBeamAffectEffect;
 import io.github.davidqf555.minecraft.beams.common.blocks.IBeamCollisionEffect;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
+import io.github.davidqf555.minecraft.beams.registration.EntityDataSerializerRegistry;
 import io.github.davidqf555.minecraft.beams.registration.ProjectorModuleRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -38,13 +39,13 @@ public class BeamEntity extends Entity {
 
     public static final double POKE = 0.1;
     private static final double SEGMENT_LENGTH = 4;
-    private static final EntityDataAccessor<Double> X = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final EntityDataAccessor<Double> Y = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final EntityDataAccessor<Double> Z = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final EntityDataAccessor<Double> END_WIDTH = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final EntityDataAccessor<Double> END_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final EntityDataAccessor<Double> START_WIDTH = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
-    private static final EntityDataAccessor<Double> START_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, DoubleSerializer.INSTANCE);
+    private static final EntityDataAccessor<Double> X = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
+    private static final EntityDataAccessor<Double> Y = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
+    private static final EntityDataAccessor<Double> Z = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
+    private static final EntityDataAccessor<Double> END_WIDTH = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
+    private static final EntityDataAccessor<Double> END_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
+    private static final EntityDataAccessor<Double> START_WIDTH = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
+    private static final EntityDataAccessor<Double> START_HEIGHT = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializerRegistry.DOUBLE);
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LAYERS = SynchedEntityData.defineId(BeamEntity.class, EntityDataSerializers.INT);
     private final Map<ProjectorModuleType, Integer> modules = new HashMap<>();
@@ -526,17 +527,17 @@ public class BeamEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        SynchedEntityData manager = getEntityData();
-        manager.define(X, 0.0);
-        manager.define(Y, 0.0);
-        manager.define(Z, 0.0);
-        manager.define(START_WIDTH, 1.0);
-        manager.define(START_HEIGHT, 1.0);
-        manager.define(END_WIDTH, 1.0);
-        manager.define(END_HEIGHT, 1.0);
-        manager.define(COLOR, 0x40FFFFFF);
-        manager.define(LAYERS, 1);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder
+                .define(X, 0.0)
+                .define(Y, 0.0)
+                .define(Z, 0.0)
+                .define(START_WIDTH, 1.0)
+                .define(START_HEIGHT, 1.0)
+                .define(END_WIDTH, 1.0)
+                .define(END_HEIGHT, 1.0)
+                .define(COLOR, 0x40FFFFFF)
+                .define(LAYERS, 1);
     }
 
     @Override
@@ -599,8 +600,9 @@ public class BeamEntity extends Entity {
         }
         if (tag.contains("Affecting", Tag.TAG_LIST)) {
             for (Tag nbt : tag.getList("Affecting", Tag.TAG_COMPOUND)) {
-                if (((CompoundTag) nbt).contains("Pos", Tag.TAG_COMPOUND) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
-                    affecting.put(NbtUtils.readBlockPos(((CompoundTag) nbt).getCompound("Pos")), NbtUtils.readBlockState(level().holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State")));
+                if (((CompoundTag) nbt).contains("Pos", Tag.TAG_INT_ARRAY) && ((CompoundTag) nbt).contains("State", Tag.TAG_COMPOUND)) {
+                    NbtUtils.readBlockPos((CompoundTag) nbt, "Pos")
+                            .ifPresent(pos -> affecting.put(pos, NbtUtils.readBlockState(level().holderLookup(Registries.BLOCK), ((CompoundTag) nbt).getCompound("State"))));
                 }
             }
         }

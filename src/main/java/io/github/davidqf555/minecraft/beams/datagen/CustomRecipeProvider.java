@@ -1,6 +1,7 @@
 package io.github.davidqf555.minecraft.beams.datagen;
 
 import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -9,10 +10,12 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 
+import java.util.concurrent.CompletableFuture;
+
 public class CustomRecipeProvider extends RecipeProvider {
 
-    public CustomRecipeProvider(PackOutput generatorIn) {
-        super(generatorIn);
+    public CustomRecipeProvider(PackOutput generatorIn, CompletableFuture<HolderLookup.Provider> provider) {
+        super(generatorIn, provider);
     }
 
     @Override
