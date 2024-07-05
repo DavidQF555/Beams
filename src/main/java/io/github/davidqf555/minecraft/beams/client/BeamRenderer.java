@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.util.ColorHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
@@ -85,6 +86,11 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
             builder.vertex(matrix4f, -sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
         }
         matrixStackIn.popPose();
+    }
+
+    @Override
+    protected int getBlockLightLevel(T entity, BlockPos pos) {
+        return 15;
     }
 
     @Override
