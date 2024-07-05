@@ -1,8 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingModuleType;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -11,7 +9,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
@@ -21,14 +18,14 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-public class PlayerTargetingModuleItem extends TargetingModuleItem {
+public class PlayerTargetingModuleItem extends WhitelistTargetingModule {
 
-    private final static ITextComponent BLACKLIST = new TranslationTextComponent("item." + Beams.ID + ".player_targeting_module.blacklist").withStyle(TextFormatting.GREEN),
-            WHITELIST = new TranslationTextComponent("item." + Beams.ID + ".player_targeting_module.whitelist").withStyle(TextFormatting.RED),
-            INSTRUCTIONS = new TranslationTextComponent("item." + Beams.ID + ".player_targeting_module.instructions").withStyle(TextFormatting.ITALIC).withStyle(TextFormatting.DARK_PURPLE);
+    private static final ITextComponent INSTRUCTIONS = new TranslationTextComponent("item." + Beams.ID + ".player_targeting_module.instructions").withStyle(TextFormatting.ITALIC).withStyle(TextFormatting.DARK_PURPLE);
     private static final String PLAYER_NAME = "item." + Beams.ID + ".player_targeting_module.player_name";
 
     public PlayerTargetingModuleItem(Properties properties) {
@@ -36,15 +33,8 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
     }
 
     @Override
-    public TargetingModuleType getType(ItemStack stack) {
-        Predicate<Entity> condition = entity -> entity instanceof PlayerEntity;
-        Set<UUID> targets = getMarkedPlayers(stack).keySet();
-        if (isWhitelist(stack)) {
-            condition = condition.and(entity -> targets.contains(entity.getUUID()));
-        } else {
-            condition = condition.and(entity -> !targets.contains(entity.getUUID()));
-        }
-        return new EntityTargetingType(condition);
+    protected boolean shouldTargetWhitelist(ItemStack stack, Entity entity) {
+        return getMarkedPlayers(stack).containsKey(entity.getUUID());
     }
 
     @Override
@@ -61,19 +51,8 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
     }
 
     @Override
-    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!world.isClientSide()) {
-            setWhitelist(stack, !isWhitelist(stack));
-            return ActionResult.success(stack);
-        }
-        return ActionResult.pass(stack);
-    }
-
-
-    @Override
     public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> text, ITooltipFlag flag) {
-        text.add(isWhitelist(stack) ? WHITELIST : BLACKLIST);
+        super.appendHoverText(stack, world, text, flag);
         for (ITextComponent name : getMarkedPlayers(stack).values()) {
             text.add(new TranslationTextComponent(PLAYER_NAME, name).withStyle(TextFormatting.BLUE));
         }
@@ -114,18 +93,6 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
             ListNBT list = tag.getList("Players", Constants.NBT.TAG_COMPOUND);
             list.removeIf(nbt -> ((CompoundNBT) nbt).contains("UUID", Constants.NBT.TAG_INT_ARRAY) && ((CompoundNBT) nbt).getUUID("UUID").equals(player));
         }
-    }
-
-    public void setWhitelist(ItemStack stack, boolean whitelist) {
-        stack.getOrCreateTagElement(Beams.ID).putBoolean("Whitelist", whitelist);
-    }
-
-    public boolean isWhitelist(ItemStack stack) {
-        CompoundNBT tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Whitelist", Constants.NBT.TAG_BYTE)) {
-            return tag.getBoolean("Whitelist");
-        }
-        return false;
     }
 
 }
