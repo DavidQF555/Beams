@@ -3,10 +3,10 @@ package io.github.davidqf555.minecraft.beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.registration.*;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod("beams")
 public class Beams {
@@ -14,8 +14,9 @@ public class Beams {
     public static final String ID = "beams";
 
     public Beams() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfigs.SPEC);
-        addRegistries(FMLJavaModLoadingContext.get().getModEventBus());
+        ModContainer container = ModLoadingContext.get().getActiveContainer();
+        container.registerConfig(ModConfig.Type.SERVER, ServerConfigs.SPEC);
+        addRegistries(container.getEventBus());
     }
 
     private void addRegistries(IEventBus bus) {
@@ -27,6 +28,7 @@ public class Beams {
         ContainerRegistry.TYPES.register(bus);
         CreativeModeTabRegistry.TABS.register(bus);
         EntityDataSerializerRegistry.ENTRIES.register(bus);
+        DataComponentTypeRegistry.TYPES.register(bus);
     }
 
 }

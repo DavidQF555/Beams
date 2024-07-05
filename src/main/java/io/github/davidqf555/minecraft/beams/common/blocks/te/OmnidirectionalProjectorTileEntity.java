@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -30,16 +31,16 @@ public class OmnidirectionalProjectorTileEntity extends ContainerProjectorTileEn
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         tag.putDouble("DirectionX", direction.x());
         tag.putDouble("DirectionY", direction.y());
         tag.putDouble("DirectionZ", direction.z());
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         if (tag.contains("DirectionX", Tag.TAG_DOUBLE) && tag.contains("DirectionY", Tag.TAG_DOUBLE) && tag.contains("DirectionZ", Tag.TAG_DOUBLE)) {
             setDirection(new Vec3(tag.getDouble("DirectionX"), tag.getDouble("DirectionY"), tag.getDouble("DirectionZ")));
         }

@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.PointableRedirectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.RedirectorTileEntity;
@@ -22,9 +23,15 @@ import java.util.UUID;
 public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements IPointable {
 
     private static final VoxelShape VISUAL = Block.box(4, 4, 4, 12, 12, 12);
+    public static final MapCodec<OmnidirectionalMirrorBlock> CODEC = simpleCodec(OmnidirectionalMirrorBlock::new);
 
     public OmnidirectionalMirrorBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends OmnidirectionalMirrorBlock> codec() {
+        return CODEC;
     }
 
     @Nullable
@@ -33,7 +40,6 @@ public class OmnidirectionalMirrorBlock extends AbstractMirrorBlock implements I
         return createTickerHelper(type, TileEntityRegistry.OMNIDIRECTIONAL_MIRROR.get(), AbstractProjectorTileEntity::tick);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getVisualShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         return VISUAL;

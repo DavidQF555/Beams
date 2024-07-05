@@ -1,131 +1,88 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingModuleType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
-public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
+public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem {
 
-    private final static Component BLACKLIST = Component.translatable("item." + Beams.ID + ".entity_type_targeting_module.blacklist").withStyle(ChatFormatting.GREEN),
-            WHITELIST = Component.translatable("item." + Beams.ID + ".entity_type_targeting_module.whitelist").withStyle(ChatFormatting.RED),
-            INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
+    public static final DataComponentType<Set<ResourceKey<EntityType<?>>>> MARKED = DataComponentType.<Set<ResourceKey<EntityType<?>>>>builder().persistent(ResourceKey.codec(Registries.ENTITY_TYPE).listOf().xmap(Set::copyOf, List::copyOf)).build();
     private static final String TYPE_NAME = "item." + Beams.ID + ".entity_type_targeting_module.type_name";
+    private final static Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
 
     public EntityTypeTargetingModuleItem(Properties properties) {
-        super(properties);
+        super(properties.component(MARKED, new HashSet<>()));
     }
 
     @Override
-    public TargetingModuleType getType(ItemStack stack) {
-        Predicate<Entity> condition;
-        Set<EntityType<?>> targets = getMarkedTypes(stack);
-        if (isWhitelist(stack)) {
-            condition = entity -> targets.contains(entity.getType());
-        } else {
-            condition = entity -> !targets.contains(entity.getType());
-        }
-        return new EntityTargetingType(condition);
+    protected boolean shouldTargetWhitelist(ItemStack stack, Entity entity) {
+        return BuiltInRegistries.ENTITY_TYPE.getResourceKey(entity.getType()).map(getMarkedTypes(stack)::contains).orElse(false);
     }
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!entity.level().isClientSide() && !getMarkedTypes(stack).contains(entity.getType())) {
-            if (player.isShiftKeyDown()) {
-                removeMarkedType(stack, entity.getType());
-            } else {
-                addMarkedType(stack, entity.getType());
+        if (!entity.level().isClientSide()) {
+            ResourceKey<EntityType<?>> type = BuiltInRegistries.ENTITY_TYPE.getResourceKey(entity.getType()).orElse(null);
+            if (type != null && !getMarkedTypes(stack).contains(type)) {
+                if (player.isShiftKeyDown()) {
+                    removeMarkedType(stack, type);
+                } else {
+                    addMarkedType(stack, type);
+                }
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!world.isClientSide()) {
-            setWhitelist(stack, !isWhitelist(stack));
-            return InteractionResultHolder.success(stack);
-        }
-        return InteractionResultHolder.pass(stack);
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> text, TooltipFlag flag) {
-        text.add(isWhitelist(stack) ? WHITELIST : BLACKLIST);
-        for (EntityType<?> type : getMarkedTypes(stack)) {
-            text.add(Component.translatable(TYPE_NAME, type.getDescription()).withStyle(ChatFormatting.BLUE));
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> text, TooltipFlag flag) {
+        super.appendHoverText(stack, context, text, flag);
+        for (ResourceKey<EntityType<?>> key : getMarkedTypes(stack)) {
+            Component name = BuiltInRegistries.ENTITY_TYPE.getOptional(key).map(EntityType::getDescription).orElseGet(Component::empty);
+            text.add(Component.translatable(TYPE_NAME, name).withStyle(ChatFormatting.BLUE));
         }
         text.add(INSTRUCTIONS);
     }
 
-    public Set<EntityType<?>> getMarkedTypes(ItemStack stack) {
-        Set<EntityType<?>> types = new HashSet<>();
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Types", Tag.TAG_LIST)) {
-            tag.getList("Types", Tag.TAG_STRING).stream()
-                    .map(Tag::getAsString)
-                    .map(ResourceLocation::new)
-                    .map(BuiltInRegistries.ENTITY_TYPE::get)
-                    .forEach(types::add);
+    public Set<ResourceKey<EntityType<?>>> getMarkedTypes(ItemStack stack) {
+        Set<ResourceKey<EntityType<?>>> marked = stack.get(MARKED);
+        if (marked == null) {
+            return Set.of();
         }
-        return types;
+        return marked;
     }
 
-    public void addMarkedType(ItemStack stack, EntityType<?> type) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        ListTag list;
-        if (tag.contains("Types", Tag.TAG_LIST)) {
-            list = tag.getList("Types", Tag.TAG_STRING);
-        } else {
-            list = new ListTag();
-            tag.put("Types", list);
+    public void addMarkedType(ItemStack stack, ResourceKey<EntityType<?>> type) {
+        Set<ResourceKey<EntityType<?>>> marked = stack.get(MARKED);
+        if (marked == null) {
+            marked = new HashSet<>();
+            stack.set(MARKED, marked);
         }
-        list.add(StringTag.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString()));
+        marked.add(type);
     }
 
-    public void removeMarkedType(ItemStack stack, EntityType<?> type) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Types", Tag.TAG_LIST)) {
-            ListTag list = tag.getList("Types", Tag.TAG_STRING);
-            list.removeIf(nbt -> nbt.getAsString().equals(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString()));
+    public void removeMarkedType(ItemStack stack, ResourceKey<EntityType<?>> type) {
+        Set<ResourceKey<EntityType<?>>> marked = stack.get(MARKED);
+        if (marked != null) {
+            marked.remove(type);
         }
-    }
-
-    public void setWhitelist(ItemStack stack, boolean whitelist) {
-        stack.getOrCreateTagElement(Beams.ID).putBoolean("Whitelist", whitelist);
-    }
-
-    public boolean isWhitelist(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Whitelist", Tag.TAG_BYTE)) {
-            return tag.getBoolean("Whitelist");
-        }
-        return false;
     }
 
 }

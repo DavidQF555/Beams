@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -40,16 +41,16 @@ public class BeamSensorTileEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         ListTag hit = new ListTag();
         this.hit.forEach(id -> hit.add(NbtUtils.createUUID(id)));
         tag.put("Hit", hit);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         if (tag.contains("Hit", Tag.TAG_LIST)) {
             for (Tag nbt : tag.getList("Hit", Tag.TAG_INT_ARRAY)) {
                 addHit(NbtUtils.loadUUID(nbt));

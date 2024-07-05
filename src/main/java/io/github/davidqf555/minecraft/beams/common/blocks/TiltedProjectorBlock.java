@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,12 +26,36 @@ public class TiltedProjectorBlock extends ContainerProjectorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final MapCodec<TiltedProjectorBlock> CODEC = simpleCodec(TiltedProjectorBlock::new);
+    private static final VoxelShape
+            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
+            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
+            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
+            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
+            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
+            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
+            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
+            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
+            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
+            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
+            TOP_PX = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
+            TOP_NX = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
+            BOT_PX = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
+            BOT_NX = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
+            TOP_PZ = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
+            TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
+            BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
+            BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
 
     public TiltedProjectorBlock(Properties properties) {
         super(properties);
     }
 
-    @SuppressWarnings("deprecation")
+    @Override
+    protected MapCodec<? extends TiltedProjectorBlock> codec() {
+        return CODEC;
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         Half half = state.getValue(HALF);
@@ -61,25 +86,7 @@ public class TiltedProjectorBlock extends ContainerProjectorBlock {
                 return BOT_NZ;
             }
         }
-    }    private static final VoxelShape
-            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
-            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
-            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
-            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
-            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
-            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
-            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
-            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
-            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
-            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
-            TOP_PX = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
-            TOP_NX = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
-            BOT_PX = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
-            BOT_NX = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
-            TOP_PZ = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
-            TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
-            BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
-            BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
+    }
 
     @Override
     public Vec3 getStartOffset(Level world, BlockPos pos, BlockState state) {
@@ -110,7 +117,6 @@ public class TiltedProjectorBlock extends ContainerProjectorBlock {
         return prev.setValue(FACING, context.getHorizontalDirection()).setValue(HALF, dir != Direction.DOWN && (dir == Direction.UP || context.getClickLocation().y - pos.getY() <= 0.5) ? Half.BOTTOM : Half.TOP);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
@@ -122,13 +128,9 @@ public class TiltedProjectorBlock extends ContainerProjectorBlock {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType path) {
+    public boolean isPathfindable(BlockState state, PathComputationType path) {
         return false;
     }
-
-
-
 
 }

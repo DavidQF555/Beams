@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DyeColor;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
@@ -19,10 +19,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@Mod.EventBusSubscriber(modid = Beams.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Beams.ID, bus = EventBusSubscriber.Bus.MOD)
 public final class ProjectorModuleRegistry {
 
-    public static final DeferredRegister<ProjectorModuleType> TYPES = DeferredRegister.create(ResourceKey.createRegistryKey(new ResourceLocation(Beams.ID, "module_type")), Beams.ID);
+    public static final DeferredRegister<ProjectorModuleType> TYPES = DeferredRegister.create(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Beams.ID, "module_type")), Beams.ID);
 
     public static final Map<DyeColor, DeferredHolder<ProjectorModuleType, ColorModuleType>> COLORS = Arrays.stream(DyeColor.values()).collect(Collectors.toMap(color -> color, color -> register(color.getSerializedName(), () -> new ColorModuleType(color.getFireworkColor()))));
     public static final DeferredHolder<ProjectorModuleType, PotionEffectModuleType> BRIGHT = register("bright", () -> new PotionEffectModuleType(MobEffects.BLINDNESS, amt -> amt * 30, amt -> 0));
@@ -52,7 +52,7 @@ public final class ProjectorModuleRegistry {
 
     @SubscribeEvent
     public static void onNewRegistry(NewRegistryEvent event) {
-        registry = event.create(new RegistryBuilder<ProjectorModuleType>(ResourceKey.createRegistryKey(new ResourceLocation(Beams.ID, "module_type"))));
+        registry = event.create(new RegistryBuilder<ProjectorModuleType>(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Beams.ID, "module_type"))));
     }
 
 }

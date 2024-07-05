@@ -1,6 +1,7 @@
 package io.github.davidqf555.minecraft.beams.common.modules;
 
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -10,10 +11,10 @@ import java.util.function.Function;
 
 public class PotionEffectModuleType extends ProjectorModuleType {
 
-    private final MobEffect effect;
+    private final Holder<MobEffect> effect;
     private final Function<Integer, Integer> amp, duration;
 
-    public PotionEffectModuleType(MobEffect effect, Function<Integer, Integer> duration, Function<Integer, Integer> amp) {
+    public PotionEffectModuleType(Holder<MobEffect> effect, Function<Integer, Integer> duration, Function<Integer, Integer> amp) {
         this.effect = effect;
         this.amp = amp;
         this.duration = duration;

@@ -2,11 +2,12 @@ package io.github.davidqf555.minecraft.beams.common.events;
 
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.items.ProjectorInventory;
+import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@Mod.EventBusSubscriber(modid = Beams.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Beams.ID, bus = EventBusSubscriber.Bus.MOD)
 public final class CapabilityRegistry {
 
     private CapabilityRegistry() {
@@ -14,6 +15,7 @@ public final class CapabilityRegistry {
 
     @SubscribeEvent
     public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(ProjectorInventory.class);
+        event.registerItem(ProjectorInventory.CAPABILITY, (stack, context) -> new ProjectorInventory(), ItemRegistry.PORTABLE_PROJECTOR.get());
     }
+
 }

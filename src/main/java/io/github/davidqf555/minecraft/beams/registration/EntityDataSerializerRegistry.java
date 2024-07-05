@@ -1,7 +1,7 @@
 package io.github.davidqf555.minecraft.beams.registration;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.entities.DoubleSerializer;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -13,7 +13,11 @@ public final class EntityDataSerializerRegistry {
 
     public static final DeferredRegister<EntityDataSerializer<?>> ENTRIES = DeferredRegister.create(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS, Beams.ID);
 
-    public static final DeferredHolder<EntityDataSerializer<?>, DoubleSerializer> DOUBLE = register("double", () -> DoubleSerializer.INSTANCE);
+    public static final EntityDataSerializer<Double> DOUBLE = EntityDataSerializer.forValueType(ByteBufCodecs.DOUBLE);
+
+    static {
+        register("double", () -> DOUBLE);
+    }
 
     private EntityDataSerializerRegistry() {
     }

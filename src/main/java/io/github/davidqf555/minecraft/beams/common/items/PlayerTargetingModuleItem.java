@@ -1,57 +1,46 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingModuleType;
+import io.github.davidqf555.minecraft.beams.client.ClientHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-public class PlayerTargetingModuleItem extends TargetingModuleItem {
+public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
 
-    private final static Component BLACKLIST = Component.translatable("item." + Beams.ID + ".player_targeting_module.blacklist").withStyle(ChatFormatting.GREEN),
-            WHITELIST = Component.translatable("item." + Beams.ID + ".player_targeting_module.whitelist").withStyle(ChatFormatting.RED),
-            INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".player_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
+    public static final DataComponentType<Set<UUID>> MARKED = DataComponentType.<Set<UUID>>builder().persistent(UUIDUtil.CODEC_SET).build();
     private static final String PLAYER_NAME = "item." + Beams.ID + ".player_targeting_module.player_name";
+    private static final Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".player_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
 
     public PlayerTargetingModuleItem(Properties properties) {
-        super(properties);
+        super(properties.component(MARKED, new HashSet<>()));
     }
 
     @Override
-    public TargetingModuleType getType(ItemStack stack) {
-        Predicate<Entity> condition = entity -> entity instanceof Player;
-        Set<UUID> targets = getMarkedPlayers(stack).keySet();
-        if (isWhitelist(stack)) {
-            condition = condition.and(entity -> targets.contains(entity.getUUID()));
-        } else {
-            condition = condition.and(entity -> !targets.contains(entity.getUUID()));
-        }
-        return new EntityTargetingType(condition);
+    protected boolean shouldTargetWhitelist(ItemStack stack, Entity entity) {
+        return getMarkedPlayers(stack).contains(entity.getUUID());
     }
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!entity.level().isClientSide() && entity instanceof Player && !getMarkedPlayers(stack).containsKey(entity.getUUID())) {
+        if (!entity.level().isClientSide() && entity instanceof Player && !getMarkedPlayers(stack).contains(entity.getUUID())) {
             if (player.isShiftKeyDown()) {
                 removeMarkedPlayer(stack, entity.getUUID());
             } else {
-                addMarkedPlayer(stack, (Player) entity);
+                addMarkedPlayer(stack, entity.getUUID());
             }
             return InteractionResult.SUCCESS;
         }
@@ -59,71 +48,37 @@ public class PlayerTargetingModuleItem extends TargetingModuleItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!world.isClientSide()) {
-            setWhitelist(stack, !isWhitelist(stack));
-            return InteractionResultHolder.success(stack);
-        }
-        return InteractionResultHolder.pass(stack);
-    }
-
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> text, TooltipFlag flag) {
-        text.add(isWhitelist(stack) ? WHITELIST : BLACKLIST);
-        for (Component name : getMarkedPlayers(stack).values()) {
-            text.add(Component.translatable(PLAYER_NAME, name).withStyle(ChatFormatting.BLUE));
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> text, TooltipFlag flag) {
+        super.appendHoverText(stack, context, text, flag);
+        for (UUID id : getMarkedPlayers(stack)) {
+            Component name = ClientHelper.getDisplayName(id);
+            text.add(Component.translatable(PLAYER_NAME, name == null ? Component.empty() : name).withStyle(ChatFormatting.BLUE));
         }
         text.add(INSTRUCTIONS);
     }
 
-    public Map<UUID, Component> getMarkedPlayers(ItemStack stack) {
-        Map<UUID, Component> players = new HashMap<>();
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Players", Tag.TAG_LIST)) {
-            for (Tag nbt : tag.getList("Players", Tag.TAG_COMPOUND)) {
-                if (((CompoundTag) nbt).contains("UUID", Tag.TAG_INT_ARRAY) && ((CompoundTag) nbt).contains("Name", Tag.TAG_STRING)) {
-                    players.put(((CompoundTag) nbt).getUUID("UUID"), Component.Serializer.fromJson(((CompoundTag) nbt).getString("Name")));
-                }
-            }
+    public Set<UUID> getMarkedPlayers(ItemStack stack) {
+        Set<UUID> marked = stack.get(MARKED);
+        if (marked == null) {
+            return Set.of();
         }
-        return players;
+        return marked;
     }
 
-    public void addMarkedPlayer(ItemStack stack, Player player) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        ListTag list;
-        if (tag.contains("Players", Tag.TAG_LIST)) {
-            list = tag.getList("Players", Tag.TAG_COMPOUND);
-        } else {
-            list = new ListTag();
-            tag.put("Players", list);
+    public void addMarkedPlayer(ItemStack stack, UUID player) {
+        Set<UUID> marked = stack.get(MARKED);
+        if (marked == null) {
+            marked = new HashSet<>();
+            stack.set(MARKED, marked);
         }
-        CompoundTag val = new CompoundTag();
-        val.putUUID("UUID", player.getUUID());
-        val.putString("Name", Component.Serializer.toJson(player.getDisplayName()));
-        list.add(val);
+        marked.add(player);
     }
 
     public void removeMarkedPlayer(ItemStack stack, UUID player) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Players", Tag.TAG_LIST)) {
-            ListTag list = tag.getList("Players", Tag.TAG_COMPOUND);
-            list.removeIf(nbt -> ((CompoundTag) nbt).contains("UUID", Tag.TAG_INT_ARRAY) && ((CompoundTag) nbt).getUUID("UUID").equals(player));
+        Set<UUID> marked = stack.get(MARKED);
+        if (marked != null) {
+            marked.remove(player);
         }
-    }
-
-    public void setWhitelist(ItemStack stack, boolean whitelist) {
-        stack.getOrCreateTagElement(Beams.ID).putBoolean("Whitelist", whitelist);
-    }
-
-    public boolean isWhitelist(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Whitelist", Tag.TAG_BYTE)) {
-            return tag.getBoolean("Whitelist");
-        }
-        return false;
     }
 
 }

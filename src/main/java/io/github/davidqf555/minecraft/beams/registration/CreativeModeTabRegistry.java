@@ -13,7 +13,7 @@ public final class CreativeModeTabRegistry {
 
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Beams.ID);
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = register("main", CreativeModeTab.builder().icon(() -> ItemRegistry.PROJECTOR.get().getDefaultInstance()).title(Component.translatable(Util.makeDescriptionId("itemGroup", new ResourceLocation(Beams.ID, "main")))));
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = register("main", CreativeModeTab.builder().icon(() -> ItemRegistry.PROJECTOR.get().getDefaultInstance()).title(Component.translatable(Util.makeDescriptionId("itemGroup", ResourceLocation.fromNamespaceAndPath(Beams.ID, "main")))));
 
     private CreativeModeTabRegistry() {
     }

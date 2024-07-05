@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.TurretTileEntity;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
@@ -19,10 +20,16 @@ import javax.annotation.Nullable;
 public class BeamTurretBlock extends OmnidirectionalProjectorBlock {
 
     public static final BooleanProperty IN_RANGE = BlockStateProperties.ENABLED;
+    public static final MapCodec<BeamTurretBlock> CODEC = simpleCodec(BeamTurretBlock::new);
 
     public BeamTurretBlock(Properties properties) {
         super(properties);
         registerDefaultState(getStateDefinition().any().setValue(TRIGGERED, false).setValue(IN_RANGE, false));
+    }
+
+    @Override
+    protected MapCodec<? extends BeamTurretBlock> codec() {
+        return CODEC;
     }
 
     @Nullable

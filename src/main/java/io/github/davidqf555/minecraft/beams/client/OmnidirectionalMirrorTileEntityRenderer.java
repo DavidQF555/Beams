@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class OmnidirectionalMirrorTileEntityRenderer implements BlockEntityRenderer<PointableRedirectorTileEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(Beams.ID, "textures/block/omnidirectional_mirror.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Beams.ID, "textures/block/omnidirectional_mirror.png");
     private final OmnidirectionalMirrorModel model;
 
     public OmnidirectionalMirrorTileEntityRenderer(BlockEntityRendererProvider.Context dispatcher) {
@@ -29,7 +29,7 @@ public class OmnidirectionalMirrorTileEntityRenderer implements BlockEntityRende
         p_225616_3_.translate(0.5, 0.5, 0.5);
         p_225616_3_.mulPose(Axis.YP.rotation((float) yRot));
         p_225616_3_.mulPose(Axis.XN.rotation((float) xRot));
-        model.renderToBuffer(p_225616_3_, p_225616_4_.getBuffer(model.renderType(getTexture())), p_225616_5_, p_225616_6_, 1, 1, 1, 1);
+        model.renderToBuffer(p_225616_3_, p_225616_4_.getBuffer(model.renderType(getTexture())), p_225616_5_, p_225616_6_);
         p_225616_3_.popPose();
     }
 

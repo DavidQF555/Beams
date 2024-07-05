@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.BeamSensorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.entities.BeamEntity;
 import net.minecraft.core.BlockPos;
@@ -19,10 +20,16 @@ import javax.annotation.Nullable;
 public class BeamSensorBlock extends BaseEntityBlock implements IBeamAffectEffect {
 
     public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
+    public static final MapCodec<BeamSensorBlock> CODEC = simpleCodec(BeamSensorBlock::new);
 
     public BeamSensorBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(TRIGGERED, false));
+    }
+
+    @Override
+    protected MapCodec<? extends BeamSensorBlock> codec() {
+        return CODEC;
     }
 
     @Override

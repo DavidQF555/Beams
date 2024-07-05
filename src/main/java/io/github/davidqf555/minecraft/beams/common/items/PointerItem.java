@@ -1,13 +1,14 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
+import com.mojang.serialization.Codec;
 import io.github.davidqf555.minecraft.beams.Beams;
 import io.github.davidqf555.minecraft.beams.common.ServerConfigs;
 import io.github.davidqf555.minecraft.beams.common.blocks.IPointable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -26,32 +27,54 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class PointerItem extends Item {
 
-    private static final Component CONNECTED = Component.translatable(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_connected"))).withStyle(ChatFormatting.GREEN);
-    private static final Component DISCONNECTED = Component.translatable(Util.makeDescriptionId("message", new ResourceLocation(Beams.ID, "pointer_disconnected"))).withStyle(ChatFormatting.RED);
-    private static final String POSITION = Util.makeDescriptionId("text", new ResourceLocation(Beams.ID, "position"));
+    private static final Component CONNECTED = Component.translatable(Util.makeDescriptionId("message", ResourceLocation.fromNamespaceAndPath(Beams.ID, "pointer_connected"))).withStyle(ChatFormatting.GREEN);
+    private static final Component DISCONNECTED = Component.translatable(Util.makeDescriptionId("message", ResourceLocation.fromNamespaceAndPath(Beams.ID, "pointer_disconnected"))).withStyle(ChatFormatting.RED);
+    private static final String POSITION = Util.makeDescriptionId("text", ResourceLocation.fromNamespaceAndPath(Beams.ID, "position"));
+    private static final Codec<Map<UUID, BlockPos>> CODEC = CompoundTag.CODEC.xmap(tag -> {
+        Map<UUID, BlockPos> map = new HashMap<>();
+        for (String key : tag.getAllKeys()) {
+            if (tag.contains(key, Tag.TAG_INT_ARRAY)) {
+                int[] val = tag.getIntArray(key);
+                if (val.length != 3) {
+                    continue;
+                }
+                UUID id;
+                try {
+                    id = UUID.fromString(key);
+                } catch (IllegalArgumentException exception) {
+                    continue;
+                }
+                map.put(id, new BlockPos(val[0], val[1], val[2]));
+            }
+        }
+        return map;
+    }, map -> {
+        CompoundTag tag = new CompoundTag();
+        map.forEach((id, pos) -> tag.putIntArray(id.toString(), new int[]{pos.getX(), pos.getY(), pos.getZ()}));
+        return tag;
+    });
+    public static final DataComponentType<Map<UUID, BlockPos>> CONNECTED_LOC = DataComponentType.<Map<UUID, BlockPos>>builder().persistent(CODEC).build();
 
     public PointerItem(Properties properties) {
-        super(properties);
+        super(properties.component(CONNECTED_LOC, new HashMap<>()));
     }
 
-
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> text, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> text, TooltipFlag flag) {
         getConnected(stack).values().stream().map(pos -> Component.translatable(POSITION, pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.GREEN)).forEach(text::add);
     }
 
     @Override
-
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
-        if (player != null && player.isShiftKeyDown()) {
-            Level world = context.getLevel();
+        Level world = context.getLevel();
+        if (!world.isClientSide() && player != null && player.isShiftKeyDown()) {
             BlockPos pos = context.getClickedPos();
             Block block = world.getBlockState(pos).getBlock();
             if (block instanceof IPointable) {
@@ -61,14 +84,10 @@ public class PointerItem extends Item {
                     Map<UUID, BlockPos> connections = getConnected(stack);
                     if (connections.containsKey(id)) {
                         connections.remove(id);
-                        if (world.isClientSide()) {
                             player.sendSystemMessage(DISCONNECTED);
-                        }
                     } else {
                         connections.put(id, pos);
-                        if (world.isClientSide()) {
                             player.sendSystemMessage(CONNECTED);
-                        }
                     }
                     setConnected(stack, connections);
                 }
@@ -90,7 +109,7 @@ public class PointerItem extends Item {
                 EntityHitResult entity = ProjectileUtil.getEntityHitResult(world, player, start, end, AABB.ofSize(start, range * 2, range * 2, range * 2), check -> true);
                 Vec3 target;
                 if (entity == null) {
-                    target = world.clip(new ClipContext(start, end, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null)).getLocation();
+                    target = world.clip(new ClipContext(start, end, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty())).getLocation();
                 } else {
                     target = entity.getEntity().getEyePosition(1);
                 }
@@ -111,32 +130,16 @@ public class PointerItem extends Item {
     }
 
     public Map<UUID, BlockPos> getConnected(ItemStack stack) {
-        Map<UUID, BlockPos> connections = new HashMap<>();
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Connections", Tag.TAG_COMPOUND)) {
-            CompoundTag map = tag.getCompound("Connections");
-            for (String key : map.getAllKeys()) {
-                UUID id;
-                try {
-                    id = UUID.fromString(key);
-                } catch (IllegalArgumentException exception) {
-                    continue;
-                }
-                if (map.contains(key, Tag.TAG_INT_ARRAY)) {
-                    int[] arr = map.getIntArray(key);
-                    if (arr.length >= 3) {
-                        connections.put(id, new BlockPos(arr[0], arr[1], arr[2]));
-                    }
-                }
-            }
+        Map<UUID, BlockPos> connections = stack.get(CONNECTED_LOC);
+        if (connections == null) {
+            connections = new HashMap<>();
+            stack.set(CONNECTED_LOC, connections);
         }
         return connections;
     }
 
     public void setConnected(ItemStack stack, Map<UUID, BlockPos> connections) {
-        CompoundTag tag = new CompoundTag();
-        connections.forEach((id, pos) -> tag.put(id.toString(), new IntArrayTag(new int[]{pos.getX(), pos.getY(), pos.getZ()})));
-        stack.getOrCreateTagElement(Beams.ID).put("Connections", tag);
+        stack.set(CONNECTED_LOC, connections);
     }
 
 }

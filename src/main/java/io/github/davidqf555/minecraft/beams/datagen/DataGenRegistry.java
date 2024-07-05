@@ -3,10 +3,10 @@ package io.github.davidqf555.minecraft.beams.datagen;
 import io.github.davidqf555.minecraft.beams.Beams;
 import net.minecraft.data.DataGenerator;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-@Mod.EventBusSubscriber(modid = Beams.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Beams.ID, bus = EventBusSubscriber.Bus.MOD)
 public final class DataGenRegistry {
 
     private DataGenRegistry() {

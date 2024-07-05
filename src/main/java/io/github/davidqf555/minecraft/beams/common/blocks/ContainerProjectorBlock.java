@@ -1,12 +1,13 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.ContainerProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -28,6 +29,9 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
     }
 
     @Override
+    protected abstract MapCodec<? extends ContainerProjectorBlock> codec();
+
+    @Override
     public ContainerProjectorTileEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new ContainerProjectorTileEntity(pos, state);
     }
@@ -38,9 +42,8 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
         return createTickerHelper(type, TileEntityRegistry.BEAM_PROJECTOR.get(), AbstractProjectorTileEntity::tick);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult clip) {
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult clip) {
         if (world.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
@@ -66,7 +69,7 @@ public abstract class ContainerProjectorBlock extends RedstoneActivatedProjector
 
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
-        if (stack.hasCustomHoverName()) {
+        if (stack.has(DataComponents.CUSTOM_NAME)) {
             BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ContainerProjectorTileEntity) {
                 ((ContainerProjectorTileEntity) te).setCustomName(stack.getHoverName());

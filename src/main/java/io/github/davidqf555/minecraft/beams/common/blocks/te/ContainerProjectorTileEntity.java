@@ -7,9 +7,9 @@ import io.github.davidqf555.minecraft.beams.common.modules.ProjectorModuleType;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -96,32 +96,22 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         Component custom = getCustomName();
         if (custom != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(custom));
+            tag.putString("CustomName", Component.Serializer.toJson(custom, provider));
         }
-        ListTag items = new ListTag();
-        for (int i = 0; i < getContainerSize(); i++) {
-            items.add(getItem(i).save(new CompoundTag()));
-        }
-        tag.put("Items", items);
+        ContainerHelper.saveAllItems(tag, items, provider);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         if (tag.contains("CustomName", Tag.TAG_STRING)) {
-            setCustomName(Component.Serializer.fromJson(tag.getString("CustomName")));
+            setCustomName(Component.Serializer.fromJson(tag.getString("CustomName"), provider));
         }
-        if (tag.contains("Items", Tag.TAG_LIST)) {
-            ListTag list = tag.getList("Items", Tag.TAG_COMPOUND);
-            for (int i = 0; i < Math.min(tag.size(), getContainerSize()); i++) {
-                ItemStack stack = ItemStack.of(list.getCompound(i));
-                setItemNoUpdate(i, stack);
-            }
-        }
+        ContainerHelper.loadAllItems(tag, items, provider);
     }
 
     @Nullable
@@ -152,7 +142,7 @@ public class ContainerProjectorTileEntity extends AbstractProjectorTileEntity im
     }
 
     protected Component getDefaultName() {
-        return Component.translatable(Util.makeDescriptionId("container", new ResourceLocation(Beams.ID, "projector")));
+        return Component.translatable(Util.makeDescriptionId("container", ResourceLocation.fromNamespaceAndPath(Beams.ID, "projector")));
     }
 
     @Override

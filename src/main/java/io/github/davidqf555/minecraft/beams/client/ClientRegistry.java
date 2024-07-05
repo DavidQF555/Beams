@@ -8,28 +8,25 @@ import io.github.davidqf555.minecraft.beams.registration.ContainerRegistry;
 import io.github.davidqf555.minecraft.beams.registration.EntityRegistry;
 import io.github.davidqf555.minecraft.beams.registration.ItemRegistry;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
-import net.minecraft.client.color.item.ItemColors;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.item.DyeColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-@Mod.EventBusSubscriber(modid = Beams.ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Beams.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientRegistry {
 
-    public static final ModelLayerLocation OMNIDIRECTIONAL_PROJECTOR = new ModelLayerLocation(new ResourceLocation(Beams.ID, "omnidirectional_projector"), "projector");
-    public static final ModelLayerLocation OMNIDIRECTIONAL_MIRROR = new ModelLayerLocation(new ResourceLocation(Beams.ID, "omnidirectional_mirror"), "mirror");
-    private static final ResourceLocation HOPPER = new ResourceLocation("textures/gui/container/hopper.png");
-    private static final ResourceLocation TURRET_MENU = new ResourceLocation(Beams.ID, "textures/gui/container/turret.png");
-    private static final ResourceLocation PROJECTOR = new ResourceLocation(Beams.ID, "textures/block/omnidirectional_projector.png");
-    private static final ResourceLocation TURRET = new ResourceLocation(Beams.ID, "textures/block/turret.png");
+    public static final ModelLayerLocation OMNIDIRECTIONAL_PROJECTOR = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Beams.ID, "omnidirectional_projector"), "projector");
+    public static final ModelLayerLocation OMNIDIRECTIONAL_MIRROR = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Beams.ID, "omnidirectional_mirror"), "mirror");
+    private static final ResourceLocation HOPPER = ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "textures/gui/container/hopper.png");
+    private static final ResourceLocation TURRET_MENU = ResourceLocation.fromNamespaceAndPath(Beams.ID, "textures/gui/container/turret.png");
+    private static final ResourceLocation PROJECTOR = ResourceLocation.fromNamespaceAndPath(Beams.ID, "textures/block/omnidirectional_projector.png");
+    private static final ResourceLocation TURRET = ResourceLocation.fromNamespaceAndPath(Beams.ID, "textures/block/turret.png");
 
     private ClientRegistry() {
     }
@@ -49,20 +46,16 @@ public final class ClientRegistry {
     }
 
     @SubscribeEvent
-    public static void onFMLClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            MenuScreens.<ProjectorContainer, SimpleContainerScreen<ProjectorContainer>>register(ContainerRegistry.PROJECTOR.get(), (container, player, name) -> new SimpleContainerScreen<>(HOPPER, container, player, name));
-            MenuScreens.<TurretContainer, SimpleContainerScreen<TurretContainer>>register(ContainerRegistry.TURRET.get(), (container, player, name) -> new SimpleContainerScreen<>(TURRET_MENU, container, player, name));
-        });
+    public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+        event.<ProjectorContainer, SimpleContainerScreen<ProjectorContainer>>register(ContainerRegistry.PROJECTOR.get(), (container, player, name) -> new SimpleContainerScreen<>(HOPPER, container, player, name));
+        event.<TurretContainer, SimpleContainerScreen<TurretContainer>>register(ContainerRegistry.TURRET.get(), (container, player, name) -> new SimpleContainerScreen<>(TURRET_MENU, container, player, name));
     }
 
     @SubscribeEvent
     public static void onItemColorHandler(RegisterColorHandlersEvent.Item event) {
-        ItemColors colors = event.getItemColors();
         for (DyeColor dye : ItemRegistry.COLOR_MODULES.keySet()) {
-            float[] diffuse = dye.getTextureDiffuseColors();
-            int color = FastColor.ARGB32.color(0xFF, (int) (diffuse[0] * 255), (int) (diffuse[1] * 255), (int) (diffuse[2] * 255));
-            colors.register(new SimpleItemColor(((stack, layer) -> {
+            int color = dye.getTextureDiffuseColor();
+            event.register(new SimpleItemColor(((stack, layer) -> {
                 if (layer == 1) {
                     return color;
                 }

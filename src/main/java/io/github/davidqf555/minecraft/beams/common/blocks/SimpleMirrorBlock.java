@@ -1,5 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.blocks;
 
+import com.mojang.serialization.MapCodec;
 import io.github.davidqf555.minecraft.beams.common.blocks.te.AbstractProjectorTileEntity;
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
@@ -31,9 +32,34 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final MapCodec<SimpleMirrorBlock> CODEC = simpleCodec(SimpleMirrorBlock::new);
+    private static final VoxelShape
+            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
+            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
+            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
+            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
+            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
+            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
+            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
+            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
+            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
+            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
+            TOP_PX = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
+            TOP_NX = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
+            BOT_PX = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
+            BOT_NX = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
+            TOP_PZ = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
+            TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
+            BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
+            BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
 
     public SimpleMirrorBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends SimpleMirrorBlock> codec() {
+        return CODEC;
     }
 
     @Nullable
@@ -73,27 +99,6 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         }
     }
 
-    private static final VoxelShape
-            TOP_SLAB = Block.box(0, 8, 0, 16, 16, 16),
-            BOT_SLAB = Block.box(0, 0, 0, 16, 8, 16),
-            OCTET_TOP_PP = Block.box(8, 8, 8, 16, 16, 16),
-            OCTET_TOP_PN = Block.box(8, 8, 0, 16, 16, 8),
-            OCTET_TOP_NP = Block.box(0, 8, 8, 8, 16, 16),
-            OCTET_TOP_NN = Block.box(0, 8, 0, 8, 16, 8),
-            OCTET_BOT_PP = Block.box(8, 0, 8, 16, 8, 16),
-            OCTET_BOT_PN = Block.box(8, 0, 0, 16, 8, 8),
-            OCTET_BOT_NP = Block.box(0, 0, 8, 8, 8, 16),
-            OCTET_BOT_NN = Block.box(0, 0, 0, 8, 8, 8),
-            TOP_PX = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_PN),
-            TOP_NX = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_NP),
-            BOT_PX = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_PN),
-            BOT_NX = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_NP),
-            TOP_PZ = Shapes.or(TOP_SLAB, OCTET_BOT_PP, OCTET_BOT_NP),
-            TOP_NZ = Shapes.or(TOP_SLAB, OCTET_BOT_NN, OCTET_BOT_PN),
-            BOT_PZ = Shapes.or(BOT_SLAB, OCTET_TOP_PP, OCTET_TOP_NP),
-            BOT_NZ = Shapes.or(BOT_SLAB, OCTET_TOP_NN, OCTET_TOP_PN);
-
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         Half half = state.getValue(HALF);
@@ -143,7 +148,6 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         return prev.setValue(FACING, context.getHorizontalDirection()).setValue(HALF, dir != Direction.DOWN && (dir == Direction.UP || context.getClickLocation().y - pos.getY() <= 0.5) ? Half.BOTTOM : Half.TOP);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
@@ -155,9 +159,8 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType path) {
+    public boolean isPathfindable(BlockState state, PathComputationType path) {
         return false;
     }
 
@@ -188,8 +191,5 @@ public class SimpleMirrorBlock extends AbstractMirrorBlock {
         }
 
     }
-
-
-
 
 }

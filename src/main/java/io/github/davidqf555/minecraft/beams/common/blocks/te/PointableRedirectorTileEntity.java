@@ -2,6 +2,7 @@ package io.github.davidqf555.minecraft.beams.common.blocks.te;
 
 import io.github.davidqf555.minecraft.beams.registration.TileEntityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.Mth;
@@ -39,8 +40,8 @@ public class PointableRedirectorTileEntity extends RedirectorTileEntity {
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         Vec3 direction = getNormal();
         tag.putDouble("NormalX", direction.x());
         tag.putDouble("NormalY", direction.y());
@@ -49,8 +50,8 @@ public class PointableRedirectorTileEntity extends RedirectorTileEntity {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         if (tag.contains("NormalX", Tag.TAG_DOUBLE) && tag.contains("NormalY", Tag.TAG_DOUBLE) && tag.contains("NormalZ", Tag.TAG_DOUBLE)) {
             setNormal(new Vec3(tag.getDouble("NormalX"), tag.getDouble("NormalY"), tag.getDouble("NormalZ")));
         }

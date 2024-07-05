@@ -19,7 +19,7 @@ public class CustomItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        ResourceLocation color = new ResourceLocation(Beams.ID, "item/color_module");
+        ResourceLocation color = ResourceLocation.fromNamespaceAndPath(Beams.ID, "item/color_module");
         for (DeferredHolder<Item, ProjectorModuleItem<ColorModuleType>> module : ItemRegistry.COLOR_MODULES.values()) {
             withExistingParent(module.getId().getPath(), color);
         }
