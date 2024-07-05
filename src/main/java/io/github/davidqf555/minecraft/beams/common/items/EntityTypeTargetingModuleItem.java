@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class EntityTypeTargetingModuleItem extends WhitelistTargetingModule {
+public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem {
 
     private static final ITextComponent INSTRUCTIONS = new TranslationTextComponent("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(TextFormatting.ITALIC).withStyle(TextFormatting.DARK_PURPLE);
     private static final String TYPE_NAME = "item." + Beams.ID + ".entity_type_targeting_module.type_name";
@@ -42,7 +42,7 @@ public class EntityTypeTargetingModuleItem extends WhitelistTargetingModule {
 
     @Override
     public ActionResultType interactLivingEntity(ItemStack stack, PlayerEntity player, LivingEntity entity, Hand hand) {
-        if (!entity.level.isClientSide() && !getMarkedTypes(stack).contains(entity.getType())) {
+        if (!entity.level.isClientSide()) {
             if (player.isShiftKeyDown()) {
                 removeMarkedType(stack, entity.getType());
             } else {

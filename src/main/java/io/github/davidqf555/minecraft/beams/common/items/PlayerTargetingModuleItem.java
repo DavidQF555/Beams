@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlayerTargetingModuleItem extends WhitelistTargetingModule {
+public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
 
     private static final ITextComponent INSTRUCTIONS = new TranslationTextComponent("item." + Beams.ID + ".player_targeting_module.instructions").withStyle(TextFormatting.ITALIC).withStyle(TextFormatting.DARK_PURPLE);
     private static final String PLAYER_NAME = "item." + Beams.ID + ".player_targeting_module.player_name";
@@ -39,7 +39,7 @@ public class PlayerTargetingModuleItem extends WhitelistTargetingModule {
 
     @Override
     public ActionResultType interactLivingEntity(ItemStack stack, PlayerEntity player, LivingEntity entity, Hand hand) {
-        if (!entity.level.isClientSide() && entity instanceof PlayerEntity && !getMarkedPlayers(stack).containsKey(entity.getUUID())) {
+        if (!entity.level.isClientSide() && entity instanceof PlayerEntity) {
             if (player.isShiftKeyDown()) {
                 removeMarkedPlayer(stack, entity.getUUID());
             } else {

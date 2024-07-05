@@ -20,12 +20,12 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Predicate;
 
-public abstract class WhitelistTargetingModule extends TargetingModuleItem {
+public abstract class WhitelistTargetingModuleItem extends TargetingModuleItem {
 
     private static final ITextComponent BLACKLIST = new TranslationTextComponent("item." + Beams.ID + ".whitelist_targeting_module.blacklist").withStyle(TextFormatting.GREEN);
     private static final ITextComponent WHITELIST = new TranslationTextComponent("item." + Beams.ID + ".whitelist_targeting_module.whitelist").withStyle(TextFormatting.RED);
 
-    public WhitelistTargetingModule(Properties properties) {
+    public WhitelistTargetingModuleItem(Properties properties) {
         super(properties);
     }
 
