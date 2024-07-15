@@ -9,9 +9,6 @@ public interface IBeamAffectEffect {
     default void onBeamAffectTick(BeamEntity beam, BlockPos pos, BlockState state) {
     }
 
-    default void onBeamStartAffect(BeamEntity beam, BlockPos pos, BlockState state) {
-    }
-
     default void onBeamStopAffect(BeamEntity beam, BlockPos pos, BlockState state) {
     }
 

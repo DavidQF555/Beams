@@ -31,9 +31,9 @@ public class BeamSensorBlock extends ContainerBlock implements IBeamAffectEffect
     }
 
     @Override
-    public void onBeamStartAffect(BeamEntity beam, BlockPos pos, BlockState state) {
+    public void onBeamAffectTick(BeamEntity beam, BlockPos pos, BlockState state) {
         TileEntity te = beam.level.getBlockEntity(pos);
-        if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).addHit(beam.getUUID())) {
+        if (te instanceof BeamSensorTileEntity && ((BeamSensorTileEntity) te).addHit(beam.getUUID()) && !state.getValue(TRIGGERED)) {
             beam.level.setBlockAndUpdate(pos, state.setValue(TRIGGERED, true));
         }
     }

@@ -51,17 +51,17 @@ public class Cuboid {
 
     // TODO
     public boolean isColliding(AxisAlignedBB bounds) {
-        return false;
+        return true;
     }
 
     public AxisAlignedBB getBounds() {
         if (bounds == null) {
             double minX = Double.MAX_VALUE;
-            double maxX = Double.MIN_VALUE;
+            double maxX = -Double.MAX_VALUE;
             double minY = Double.MAX_VALUE;
-            double maxY = Double.MIN_VALUE;
+            double maxY = -Double.MAX_VALUE;
             double minZ = Double.MAX_VALUE;
-            double maxZ = Double.MIN_VALUE;
+            double maxZ = -Double.MAX_VALUE;
             for (ConvexQuadrilateral3D[] arr : sides) {
                 for (ConvexQuadrilateral3D plane : arr) {
                     for (Vector3d[] vertices : plane.vertices) {
@@ -75,14 +75,14 @@ public class Cuboid {
                             if (vertex.y() > maxY) {
                                 maxY = vertex.y();
                             }
-                            if (vertex.y() < maxY) {
-                                maxY = vertex.y();
+                            if (vertex.y() < minY) {
+                                minY = vertex.y();
                             }
                             if (vertex.z() > maxZ) {
                                 maxZ = vertex.z();
                             }
-                            if (vertex.z() < maxZ) {
-                                maxZ = vertex.z();
+                            if (vertex.z() < minZ) {
+                                minZ = vertex.z();
                             }
                         }
                     }
@@ -102,7 +102,7 @@ public class Cuboid {
 
     private ConvexPolygon2D[] calculateSlices() {
         AxisAlignedBB bounds = getBounds();
-        ConvexPolygon2D[] slices = new ConvexPolygon2D[MathHelper.ceil(bounds.maxY) - MathHelper.floor(bounds.minY) + 1];
+        ConvexPolygon2D[] slices = new ConvexPolygon2D[MathHelper.floor(bounds.maxY) - MathHelper.floor(bounds.minY) + 1];
         double[] heights = Arrays.stream(vertices).flatMap(Arrays::stream).mapToDouble(Vector3d::y).sorted().distinct().toArray();
         int index = 0;
         for (int i = 0; i < slices.length; i++) {
@@ -203,7 +203,7 @@ public class Cuboid {
                         points.add(new Point2D(v1.x, z));
                     } else {
                         double x = v1.x + (v2.x - v1.x) * (y - v1.y) / (v2.y - v1.y);
-                        double z = v1.z + (v2.z - v1.z) * (x - v1.z) / (v2.x - v1.x);
+                        double z = v1.z + (v2.z - v1.z) * (x - v1.x) / (v2.x - v1.x);
                         points.add(new Point2D(x, z));
                     }
                 }
@@ -286,7 +286,7 @@ public class Cuboid {
                 // for extra security in case of floating point calculation issues
                 boolean found = false;
                 double min = Double.MAX_VALUE;
-                double max = Double.MIN_VALUE;
+                double max = -Double.MAX_VALUE;
                 for (LineSegment2D line : lines) {
                     for (double val : crit) {
                         if (line.within(val)) {
