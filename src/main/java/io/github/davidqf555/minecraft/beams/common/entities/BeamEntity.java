@@ -262,6 +262,7 @@ public class BeamEntity extends Entity {
     public void setEnd(Vector3d end, boolean start, boolean stop) {
         Vector3d before = getEnd();
         if (!end.equals(before)) {
+            Cuboid shape = getShape();
             setEndRaw(end);
             if (stop) {
                 BlockPos beforePos = new BlockPos(before);
@@ -270,6 +271,13 @@ public class BeamEntity extends Entity {
                 if (beforeBlock instanceof IBeamCollisionEffect) {
                     ((IBeamCollisionEffect) beforeBlock).onBeamStopCollision(this, beforePos, beforeState);
                 }
+                shape.doBlockEffect(pos -> {
+                    BlockState state = level.getBlockState(pos);
+                    Block block = state.getBlock();
+                    if (block instanceof IBeamAffectEffect) {
+                        ((IBeamAffectEffect) block).onBeamStopAffect(this, pos, state);
+                    }
+                });
             }
             double length = end.subtract(position()).length();
             double growthRate = getGrowthRate(getModules());
