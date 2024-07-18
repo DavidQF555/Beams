@@ -52,7 +52,7 @@ jobs:
           path: ${{needs.path.outputs.file_path}}
           key: ${{github.sha}}
       - name: Upload to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{needs.path.outputs.file_path}}
 
