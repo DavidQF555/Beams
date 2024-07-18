@@ -39,16 +39,12 @@ public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem 
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
         if (!entity.level().isClientSide()) {
             ResourceKey<EntityType<?>> type = BuiltInRegistries.ENTITY_TYPE.getResourceKey(entity.getType()).orElse(null);
-            if (type != null && !getMarkedTypes(stack).contains(type)) {
-                if (player.isShiftKeyDown()) {
-                    removeMarkedType(stack, type);
-                } else {
-                    addMarkedType(stack, type);
-                }
-                return InteractionResult.SUCCESS;
+            if (type != null) {
+                boolean success = player.isShiftKeyDown() ? removeMarkedType(stack, type) : addMarkedType(stack, type);
+                return success ? InteractionResult.SUCCESS : InteractionResult.FAIL;
             }
         }
-        return InteractionResult.PASS;
+        return super.interactLivingEntity(stack, player, entity, hand);
     }
 
     @Override
@@ -69,20 +65,21 @@ public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem 
         return marked;
     }
 
-    public void addMarkedType(ItemStack stack, ResourceKey<EntityType<?>> type) {
+    public boolean addMarkedType(ItemStack stack, ResourceKey<EntityType<?>> type) {
         Set<ResourceKey<EntityType<?>>> marked = stack.get(MARKED);
         if (marked == null) {
             marked = new HashSet<>();
             stack.set(MARKED, marked);
         }
-        marked.add(type);
+        return marked.add(type);
     }
 
-    public void removeMarkedType(ItemStack stack, ResourceKey<EntityType<?>> type) {
+    public boolean removeMarkedType(ItemStack stack, ResourceKey<EntityType<?>> type) {
         Set<ResourceKey<EntityType<?>>> marked = stack.get(MARKED);
         if (marked != null) {
-            marked.remove(type);
+            return marked.remove(type);
         }
+        return false;
     }
 
 }

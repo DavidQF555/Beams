@@ -52,7 +52,7 @@ public abstract class WhitelistTargetingModuleItem extends TargetingModuleItem {
             setWhitelist(stack, !isWhitelist(stack));
             return InteractionResultHolder.success(stack);
         }
-        return InteractionResultHolder.pass(stack);
+        return super.use(world, player, hand);
     }
 
     @Override

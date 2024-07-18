@@ -36,15 +36,11 @@ public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!entity.level().isClientSide() && entity instanceof Player && !getMarkedPlayers(stack).contains(entity.getUUID())) {
-            if (player.isShiftKeyDown()) {
-                removeMarkedPlayer(stack, entity.getUUID());
-            } else {
-                addMarkedPlayer(stack, entity.getUUID());
-            }
-            return InteractionResult.SUCCESS;
+        if (!entity.level().isClientSide() && entity instanceof Player) {
+            boolean success = player.isShiftKeyDown() ? removeMarkedPlayer(stack, entity.getUUID()) : addMarkedPlayer(stack, entity.getUUID());
+            return success ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         }
-        return InteractionResult.PASS;
+        return super.interactLivingEntity(stack, player, entity, hand);
     }
 
     @Override
@@ -65,20 +61,21 @@ public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
         return marked;
     }
 
-    public void addMarkedPlayer(ItemStack stack, UUID player) {
+    public boolean addMarkedPlayer(ItemStack stack, UUID player) {
         Set<UUID> marked = stack.get(MARKED);
         if (marked == null) {
             marked = new HashSet<>();
             stack.set(MARKED, marked);
         }
-        marked.add(player);
+        return marked.add(player);
     }
 
-    public void removeMarkedPlayer(ItemStack stack, UUID player) {
+    public boolean removeMarkedPlayer(ItemStack stack, UUID player) {
         Set<UUID> marked = stack.get(MARKED);
         if (marked != null) {
-            marked.remove(player);
+            return marked.remove(player);
         }
+        return false;
     }
 
 }
