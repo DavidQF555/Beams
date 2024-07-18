@@ -25,8 +25,7 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
     public void render(T entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
         Vector3d dif = entityIn.getEnd().subtract(entityIn.position());
         double length = dif.length();
-        Vector3f vertex = new Vector3f(0, 0, (float) length);
-        float yaw = (float) (Math.PI / 2 - MathHelper.atan2(-dif.z(), dif.x()));//pi/2
+        float yaw = (float) (Math.PI / 2 - MathHelper.atan2(-dif.z(), dif.x()));
         float pitch = (float) Math.asin(MathHelper.clamp(dif.y() / length, -1, 1));//
         matrixStackIn.pushPose();
         matrixStackIn.mulPose(Vector3f.YN.rotation(yaw));
@@ -39,52 +38,72 @@ public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
         float green = ColorHelper.PackedColor.green(color) / 255f;
         float blue = ColorHelper.PackedColor.blue(color) / 255f;
         int layers = entityIn.getLayers();
-        double startWidthRadius = entityIn.getStartWidth() / 2;
-        double startHeightRadius = entityIn.getStartHeight() / 2;
-        double endWidthRadius = entityIn.getEndWidth() / 2;
-        double endHeightRadius = entityIn.getEndHeight() / 2;
+        float startWidthRadius = (float) (entityIn.getStartWidth() / 2);
+        float startHeightRadius = (float) (entityIn.getStartHeight() / 2);
+        float endWidthRadius = (float) (entityIn.getEndWidth() / 2);
+        float endHeightRadius = (float) (entityIn.getEndHeight() / 2);
         for (int i = 1; i <= layers; i++) {
-            float sWidthRadius = (float) (startWidthRadius * i / layers);
-            float sHeightRadius = (float) (startHeightRadius * i / layers);
-            float eWidthRadius = (float) (endWidthRadius * i / layers);
-            float eHeightRadius = (float) (endHeightRadius * i / layers);
+            float sWidthRadius = startWidthRadius * i / layers;
+            float sHeightRadius = startHeightRadius * i / layers;
+            float eWidthRadius = endWidthRadius * i / layers;
+            float eHeightRadius = endHeightRadius * i / layers;
 
             builder.vertex(matrix4f, -sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, -sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
 
             builder.vertex(matrix4f, sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
 
             builder.vertex(matrix4f, sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, -sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, -sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() + eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, 0 + eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
 
             builder.vertex(matrix4f, -sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, -sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, -sWidthRadius, -sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() - eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
-            builder.vertex(matrix4f, -vertex.x() - eWidthRadius, -vertex.y() + eHeightRadius, -vertex.z()).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, -eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+            builder.vertex(matrix4f, -eWidthRadius, 0 + eHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
             builder.vertex(matrix4f, -sWidthRadius, sHeightRadius, 0).color(red, green, blue, alpha).endVertex();
         }
+        builder.vertex(matrix4f, -startWidthRadius, -startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, -startWidthRadius, startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, startWidthRadius, startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, startWidthRadius, -startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+
+        builder.vertex(matrix4f, startWidthRadius, -startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, startWidthRadius, startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, -startWidthRadius, startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, -startWidthRadius, -startHeightRadius, 0).color(red, green, blue, alpha).endVertex();
+
+        builder.vertex(matrix4f, -endWidthRadius, -endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, -endWidthRadius, endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, endWidthRadius, endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, endWidthRadius, -endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+
+        builder.vertex(matrix4f, endWidthRadius, -endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, endWidthRadius, endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, -endWidthRadius, endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+        builder.vertex(matrix4f, -endWidthRadius, -endHeightRadius, (float) -length).color(red, green, blue, alpha).endVertex();
+
         matrixStackIn.popPose();
     }
 
