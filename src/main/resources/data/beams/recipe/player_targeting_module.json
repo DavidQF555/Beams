@@ -5,19 +5,22 @@
       "item": "beams:blank_module"
     },
     {
-      "item": "rotten_flesh"
+      "tag": "beds"
     },
     {
-      "item": "string"
+      "tag": "swords"
     },
     {
-      "item": "bone"
+      "tag": "arrows"
     },
     {
-      "tag": "wool"
+      "tag": "c:tools/bow"
+    },
+    {
+      "tag": "doors"
     }
   ],
   "result": {
-    "item": "beams:entity_type_targeting_module"
+    "id": "beams:player_targeting_module"
   }
 }

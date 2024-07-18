@@ -5,10 +5,10 @@
       "item": "beams:blank_module"
     },
     {
-      "item": "iron_sword"
+      "tag": "swords"
     }
   ],
   "result": {
-    "item": "beams:damage_module"
+    "id": "beams:damage_module"
   }
 }

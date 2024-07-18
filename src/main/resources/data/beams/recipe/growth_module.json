@@ -10,13 +10,13 @@
       "item": "beams:blank_module"
     },
     "I": {
-      "item": "iron_ingot"
+      "tag": "c:ingots/iron"
     },
     "G": {
-      "item": "gold_ingot"
+      "tag": "c:ingots/gold"
     }
   },
   "result": {
-    "item": "beams:growth_module"
+    "id": "beams:growth_module"
   }
 }

@@ -7,14 +7,13 @@
   ],
   "key": {
     "G": {
-      "item": "gold_ingot"
+      "tag": "c:ingots/gold"
     },
     "I": {
-      "item": "iron_ingot"
+      "tag": "c:ingots/iron"
     }
   },
   "result": {
-    "item": "beams:mirror",
-    "count": 1
+    "id": "beams:mirror"
   }
 }

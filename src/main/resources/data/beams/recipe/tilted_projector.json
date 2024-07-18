@@ -10,7 +10,7 @@
     }
   },
   "result": {
-    "item": "beams:tilted_projector",
+    "id": "beams:tilted_projector",
     "count": 3
   }
 }

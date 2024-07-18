@@ -7,16 +7,16 @@
   ],
   "key": {
     "G": {
-      "item": "gold_ingot"
+      "tag": "c:ingots/gold"
     },
     "I": {
-      "item": "iron_ingot"
+      "tag": "c:ingots/iron"
     },
     "R": {
-      "item": "redstone"
+      "tag": "c:dusts/redstone"
     }
   },
   "result": {
-    "item": "beams:blank_module"
+    "id": "beams:blank_module"
   }
 }

@@ -10,10 +10,10 @@
       "item": "beams:blank_module"
     },
     "R": {
-      "item": "redstone"
+      "tag": "c:dusts/redstone"
     }
   },
   "result": {
-    "item": "beams:shrink_module"
+    "id": "beams:shrink_module"
   }
 }

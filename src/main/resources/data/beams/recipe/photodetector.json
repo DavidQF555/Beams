@@ -7,17 +7,16 @@
   ],
   "key": {
     "C": {
-      "item": "cobblestone"
+      "tag": "stone_crafting_materials"
     },
     "L": {
       "item": "redstone_lamp"
     },
     "R": {
-      "item": "redstone"
+      "tag": "c:dusts/redstone"
     }
   },
   "result": {
-    "item": "beams:photodetector",
-    "count": 1
+    "id": "beams:photodetector"
   }
 }

@@ -7,7 +7,7 @@
   ],
   "key": {
     "R": {
-      "item": "redstone"
+      "tag": "c:dusts/redstone"
     },
     "#": {
       "tag": "stone_crafting_materials"
@@ -16,10 +16,10 @@
       "item": "redstone_lamp"
     },
     "G": {
-      "item": "glass_pane"
+      "tag": "c:glass_panes/colorless"
     }
   },
   "result": {
-    "item": "beams:projector"
+    "id": "beams:projector"
   }
 }

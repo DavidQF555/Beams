@@ -7,16 +7,16 @@
   ],
   "key": {
     "G": {
-      "item": "glass"
+      "tag": "c:glass_blocks/colorless"
     },
     "P": {
       "item": "beams:projector"
     },
     "I": {
-      "item": "iron_ingot"
+      "tag": "c:ingots/iron"
     }
   },
   "result": {
-    "item": "beams:omnidirectional_projector"
+    "id": "beams:omnidirectional_projector"
   }
 }

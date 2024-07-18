@@ -7,16 +7,16 @@
   ],
   "key": {
     "G": {
-      "item": "glass"
+      "tag": "c:glass_blocks/colorless"
     },
     "M": {
       "item": "beams:mirror"
     },
     "I": {
-      "item": "gold_ingot"
+      "tag": "c:ingots/gold"
     }
   },
   "result": {
-    "item": "beams:omnidirectional_mirror"
+    "id": "beams:omnidirectional_mirror"
   }
 }

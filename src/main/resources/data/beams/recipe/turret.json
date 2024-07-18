@@ -7,7 +7,7 @@
   ],
   "key": {
     "G": {
-      "item": "glass"
+      "tag": "c:glass_blocks/colorless"
     },
     "P": {
       "item": "beams:omnidirectional_projector"
@@ -17,6 +17,6 @@
     }
   },
   "result": {
-    "item": "beams:turret"
+    "id": "beams:turret"
   }
 }

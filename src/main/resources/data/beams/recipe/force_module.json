@@ -5,10 +5,13 @@
       "item": "beams:blank_module"
     },
     {
-      "item": "iron_pickaxe"
+      "item": "piston"
+    },
+    {
+      "item": "piston"
     }
   ],
   "result": {
-    "item": "beams:mining_module"
+    "id": "beams:force_module"
   }
 }

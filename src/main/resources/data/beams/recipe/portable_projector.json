@@ -13,13 +13,13 @@
       "tag": "buttons"
     },
     "R": {
-      "item": "redstone"
+      "tag": "c:dusts/redstone"
     },
     "I": {
-      "item": "iron_ingot"
+      "tag": "c:ingots/iron"
     }
   },
   "result": {
-    "item": "beams:portable_projector"
+    "id": "beams:portable_projector"
   }
 }

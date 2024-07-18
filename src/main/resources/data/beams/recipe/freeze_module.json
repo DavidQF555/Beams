@@ -30,6 +30,6 @@
     }
   ],
   "result": {
-    "item": "beams:freeze_module"
+    "id": "beams:freeze_module"
   }
 }
