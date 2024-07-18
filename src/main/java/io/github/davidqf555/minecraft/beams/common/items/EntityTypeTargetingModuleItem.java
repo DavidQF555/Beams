@@ -43,14 +43,10 @@ public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem 
     @Override
     public ActionResultType interactLivingEntity(ItemStack stack, PlayerEntity player, LivingEntity entity, Hand hand) {
         if (!entity.level.isClientSide()) {
-            if (player.isShiftKeyDown()) {
-                removeMarkedType(stack, entity.getType());
-            } else {
-                addMarkedType(stack, entity.getType());
-            }
-            return ActionResultType.SUCCESS;
+            boolean success = player.isShiftKeyDown() ? removeMarkedType(stack, entity.getType()) : addMarkedType(stack, entity.getType());
+            return success ? ActionResultType.SUCCESS : ActionResultType.FAIL;
         }
-        return ActionResultType.PASS;
+        return super.interactLivingEntity(stack, player, entity, hand);
     }
 
     @Override
@@ -75,24 +71,29 @@ public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem 
         return types;
     }
 
-    public void addMarkedType(ItemStack stack, EntityType<?> type) {
+    public boolean addMarkedType(ItemStack stack, EntityType<?> type) {
         CompoundNBT tag = stack.getOrCreateTagElement(Beams.ID);
         ListNBT list;
         if (tag.contains("Types", Constants.NBT.TAG_LIST)) {
             list = tag.getList("Types", Constants.NBT.TAG_STRING);
+            if (list.stream().map(INBT::getAsString).anyMatch(type.getRegistryName().toString()::equals)) {
+                return false;
+            }
         } else {
             list = new ListNBT();
             tag.put("Types", list);
         }
         list.add(StringNBT.valueOf(type.getRegistryName().toString()));
+        return true;
     }
 
-    public void removeMarkedType(ItemStack stack, EntityType<?> type) {
+    public boolean removeMarkedType(ItemStack stack, EntityType<?> type) {
         CompoundNBT tag = stack.getOrCreateTagElement(Beams.ID);
         if (tag.contains("Types", Constants.NBT.TAG_LIST)) {
             ListNBT list = tag.getList("Types", Constants.NBT.TAG_STRING);
-            list.removeIf(nbt -> nbt.getAsString().equals(type.getRegistryName().toString()));
+            return list.removeIf(nbt -> nbt.getAsString().equals(type.getRegistryName().toString()));
         }
+        return false;
     }
 
 }

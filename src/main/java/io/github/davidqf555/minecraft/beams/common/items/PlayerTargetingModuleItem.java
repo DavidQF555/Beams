@@ -40,14 +40,10 @@ public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
     @Override
     public ActionResultType interactLivingEntity(ItemStack stack, PlayerEntity player, LivingEntity entity, Hand hand) {
         if (!entity.level.isClientSide() && entity instanceof PlayerEntity) {
-            if (player.isShiftKeyDown()) {
-                removeMarkedPlayer(stack, entity.getUUID());
-            } else {
-                addMarkedPlayer(stack, (PlayerEntity) entity);
-            }
-            return ActionResultType.SUCCESS;
+            boolean success = player.isShiftKeyDown() ? removeMarkedPlayer(stack, entity.getUUID()) : addMarkedPlayer(stack, (PlayerEntity) entity);
+            return success ? ActionResultType.SUCCESS : ActionResultType.FAIL;
         }
-        return ActionResultType.PASS;
+        return super.interactLivingEntity(stack, player, entity, hand);
     }
 
     @Override
@@ -72,11 +68,14 @@ public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
         return players;
     }
 
-    public void addMarkedPlayer(ItemStack stack, PlayerEntity player) {
+    public boolean addMarkedPlayer(ItemStack stack, PlayerEntity player) {
         CompoundNBT tag = stack.getOrCreateTagElement(Beams.ID);
         ListNBT list;
         if (tag.contains("Players", Constants.NBT.TAG_LIST)) {
             list = tag.getList("Players", Constants.NBT.TAG_COMPOUND);
+            if (list.stream().filter(val -> ((CompoundNBT) val).contains("UUID", Constants.NBT.TAG_INT_ARRAY)).map(val -> ((CompoundNBT) val).getUUID("UUID")).anyMatch(player.getUUID()::equals)) {
+                return false;
+            }
         } else {
             list = new ListNBT();
             tag.put("Players", list);
@@ -85,14 +84,16 @@ public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
         val.putUUID("UUID", player.getUUID());
         val.putString("Name", ITextComponent.Serializer.toJson(player.getDisplayName()));
         list.add(val);
+        return true;
     }
 
-    public void removeMarkedPlayer(ItemStack stack, UUID player) {
+    public boolean removeMarkedPlayer(ItemStack stack, UUID player) {
         CompoundNBT tag = stack.getOrCreateTagElement(Beams.ID);
         if (tag.contains("Players", Constants.NBT.TAG_LIST)) {
             ListNBT list = tag.getList("Players", Constants.NBT.TAG_COMPOUND);
-            list.removeIf(nbt -> ((CompoundNBT) nbt).contains("UUID", Constants.NBT.TAG_INT_ARRAY) && ((CompoundNBT) nbt).getUUID("UUID").equals(player));
+            return list.removeIf(nbt -> ((CompoundNBT) nbt).contains("UUID", Constants.NBT.TAG_INT_ARRAY) && ((CompoundNBT) nbt).getUUID("UUID").equals(player));
         }
+        return false;
     }
 
 }
