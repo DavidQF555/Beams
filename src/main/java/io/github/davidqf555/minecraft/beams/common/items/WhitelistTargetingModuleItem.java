@@ -48,12 +48,12 @@ public abstract class WhitelistTargetingModuleItem extends TargetingModuleItem {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
         if (!world.isClientSide()) {
+            ItemStack stack = player.getItemInHand(hand);
             setWhitelist(stack, !isWhitelist(stack));
             return InteractionResultHolder.success(stack);
         }
-        return InteractionResultHolder.pass(stack);
+        return super.use(world, player, hand);
     }
 
     public void setWhitelist(ItemStack stack, boolean whitelist) {
