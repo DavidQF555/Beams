@@ -7,7 +7,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -22,8 +21,8 @@ import java.util.function.Predicate;
 
 public abstract class WhitelistTargetingModuleItem extends TargetingModuleItem {
 
-    private static final Component BLACKLIST = new TranslatableComponent("item." + Beams.ID + ".whitelist_targeting_module.blacklist").withStyle(ChatFormatting.GREEN);
-    private static final Component WHITELIST = new TranslatableComponent("item." + Beams.ID + ".whitelist_targeting_module.whitelist").withStyle(ChatFormatting.RED);
+    private static final Component BLACKLIST = Component.translatable("item." + Beams.ID + ".whitelist_targeting_module.blacklist").withStyle(ChatFormatting.GREEN);
+    private static final Component WHITELIST = Component.translatable("item." + Beams.ID + ".whitelist_targeting_module.whitelist").withStyle(ChatFormatting.RED);
 
     public WhitelistTargetingModuleItem(Properties properties) {
         super(properties);
