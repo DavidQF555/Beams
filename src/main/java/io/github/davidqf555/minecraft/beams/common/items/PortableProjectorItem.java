@@ -11,8 +11,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
@@ -20,9 +20,8 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Predicate;
 
-public class PortableProjectorItem extends ProjectileWeaponItem {
+public class PortableProjectorItem extends Item {
 
     private final static Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".portable_projector.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
 
@@ -49,7 +48,7 @@ public class PortableProjectorItem extends ProjectileWeaponItem {
     }
 
     protected double getRange(int time) {
-        return time < 20 ? 0 : getDefaultProjectileRange() * Math.min(1, time / 200.0);
+        return time < 20 ? 0 : ServerConfigs.INSTANCE.portableProjectorMaxRange.get() * Math.min(1, time / 200.0);
     }
 
     @Override
@@ -74,16 +73,6 @@ public class PortableProjectorItem extends ProjectileWeaponItem {
             player.startUsingItem(hand);
         }
         return InteractionResultHolder.consume(stack);
-    }
-
-    @Override
-    public Predicate<ItemStack> getAllSupportedProjectiles() {
-        return stack -> false;
-    }
-
-    @Override
-    public int getDefaultProjectileRange() {
-        return ServerConfigs.INSTANCE.portableProjectorMaxRange.get();
     }
 
     @Nullable
