@@ -3,7 +3,6 @@
     "beams:projector",
     "beams:tilted_projector",
     "beams:mirror",
-    "beams:photodetector",
-    "beams:turret"
+    "beams:photodetector"
   ]
 }
