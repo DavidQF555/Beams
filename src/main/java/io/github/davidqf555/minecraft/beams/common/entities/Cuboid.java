@@ -4,6 +4,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -14,23 +15,49 @@ import java.util.function.Consumer;
  */
 public class Cuboid {
 
-    private final Vector3d[][] vertices;
-    /**
-     * 3x2, with 3 groupings of non-adjacent planes
-     */
-    private final ConvexQuadrilateral3D[][] sides;
+    private final Vector3d[] vertices;
+    private final ConvexQuadrilateral3D[] sides;
     private ConvexPolygon2D[] slices;
     private AxisAlignedBB bounds;
 
-    public Cuboid(Vector3d[][] vertices) {
+    public Cuboid(Vector3d[] vertices, ConvexQuadrilateral3D[] sides) {
         this.vertices = vertices;
-        sides = new ConvexQuadrilateral3D[3][2];
-        sides[0][0] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0][0], vertices[0][2]}, {vertices[0][1], vertices[0][3]}});
-        sides[0][1] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[1][0], vertices[1][2]}, {vertices[1][1], vertices[1][3]}});
-        sides[1][0] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0][0], vertices[1][3]}, {vertices[1][0], vertices[0][3]}});
-        sides[1][1] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0][1], vertices[1][2]}, {vertices[1][1], vertices[0][2]}});
-        sides[2][0] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0][0], vertices[1][1]}, {vertices[1][0], vertices[0][1]}});
-        sides[2][1] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0][2], vertices[1][3]}, {vertices[1][2], vertices[0][3]}});
+        this.sides = sides;
+    }
+
+    public static Cuboid fromBeam(BeamEntity beam) {
+        Vector3d start = beam.position();
+        Vector3d end = beam.getEnd();
+        Vector3d center = end.subtract(start).normalize();
+        Vector3d horizontal = center.cross(new Vector3d(Vector3f.YP)).normalize();
+        if (horizontal.lengthSqr() == 0) {
+            horizontal = new Vector3d(Vector3f.ZP);
+        }
+        Vector3d vertical = horizontal.cross(center);
+
+        Vector3d[] vertices = new Vector3d[8];
+        double startWidth = beam.getStartWidth();
+        double startHeight = beam.getStartHeight();
+        double endWidth = beam.getEndWidth();
+        double endHeight = beam.getEndHeight();
+        vertices[0] = start.add(horizontal.scale(startWidth / 2)).add(vertical.scale(startHeight / 2));
+        vertices[1] = start.add(horizontal.scale(startWidth / 2)).subtract(vertical.scale(startHeight / 2));
+        vertices[2] = start.subtract(horizontal.scale(startWidth / 2)).subtract(vertical.scale(startHeight / 2));
+        vertices[3] = start.subtract(horizontal.scale(startWidth / 2)).add(vertical.scale(startHeight / 2));
+        vertices[4] = end.add(horizontal.scale(endWidth / 2)).add(vertical.scale(endHeight / 2));
+        vertices[5] = end.add(horizontal.scale(endWidth / 2)).subtract(vertical.scale(endHeight / 2));
+        vertices[6] = end.subtract(horizontal.scale(endWidth / 2)).subtract(vertical.scale(endHeight / 2));
+        vertices[7] = end.subtract(horizontal.scale(endWidth / 2)).add(vertical.scale(endHeight / 2));
+
+        ConvexQuadrilateral3D[] sides = new ConvexQuadrilateral3D[6];
+        sides[0] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0], vertices[2]}, {vertices[1], vertices[3]}}, center.reverse());
+        sides[1] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[4], vertices[6]}, {vertices[5], vertices[7]}}, center);
+        sides[2] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[0], vertices[7]}, {vertices[3], vertices[4]}}, vertices[4].subtract(vertices[0]).cross(horizontal.reverse()).normalize());
+        sides[3] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[2], vertices[5]}, {vertices[1], vertices[6]}}, vertices[6].subtract(vertices[2]).cross(horizontal).normalize());
+        sides[4] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[2], vertices[7]}, {vertices[3], vertices[6]}}, vertices[6].subtract(vertices[2]).cross(vertical.reverse()).normalize());
+        sides[5] = new ConvexQuadrilateral3D(new Vector3d[][]{{vertices[4], vertices[1]}, {vertices[0], vertices[5]}}, vertices[4].subtract(vertices[0]).cross(vertical).normalize());
+
+        return new Cuboid(vertices, sides);
     }
 
     public void doBlockEffect(Consumer<BlockPos> effect) {
@@ -38,6 +65,7 @@ public class Cuboid {
         ConvexPolygon2D[] slices = getSlices();
         BlockPos.Mutable pos = new BlockPos.Mutable();
         for (int i = 0; i < slices.length; i++) {
+            // should never be null, for redundancy
             if (slices[i] != null) {
                 pos.setY(startY + i);
                 slices[i].doEffect((x, z) -> {
@@ -49,8 +77,42 @@ public class Cuboid {
         }
     }
 
-    // TODO
     public boolean isColliding(AxisAlignedBB bounds) {
+        for (Vector3d vertex : new Vector3d[]{
+                new Vector3d(bounds.minX, bounds.minY, bounds.minZ),
+                new Vector3d(bounds.minX, bounds.minY, bounds.maxZ),
+                new Vector3d(bounds.minX, bounds.maxY, bounds.minZ),
+                new Vector3d(bounds.minX, bounds.maxY, bounds.maxZ),
+                new Vector3d(bounds.maxX, bounds.minY, bounds.minZ),
+                new Vector3d(bounds.maxX, bounds.minY, bounds.maxZ),
+                new Vector3d(bounds.maxX, bounds.maxY, bounds.minZ),
+                new Vector3d(bounds.maxX, bounds.maxY, bounds.maxZ),
+        }) {
+            if (isColliding(vertex)) {
+                return true;
+            }
+        }
+        // check if edges of cuboid intersect planes of AABB, equivalent to checking for partial enclosing
+        for (ConvexQuadrilateral3D side : sides) {
+            for (Vector3d start : side.vertices[0]) {
+                for (Vector3d end : side.vertices[1]) {
+                    if (bounds.clip(start, end).isPresent()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // assumes normals pointed outward
+    public boolean isColliding(Vector3d pos) {
+        for (ConvexQuadrilateral3D side : sides) {
+            Vector3d dir = side.vertices[0][0].subtract(pos).normalize();
+            if (dir.dot(side.normal) < 0) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -62,30 +124,24 @@ public class Cuboid {
             double maxY = -Double.MAX_VALUE;
             double minZ = Double.MAX_VALUE;
             double maxZ = -Double.MAX_VALUE;
-            for (ConvexQuadrilateral3D[] arr : sides) {
-                for (ConvexQuadrilateral3D plane : arr) {
-                    for (Vector3d[] vertices : plane.vertices) {
-                        for (Vector3d vertex : vertices) {
-                            if (vertex.x() > maxX) {
-                                maxX = vertex.x();
-                            }
-                            if (vertex.x() < minX) {
-                                minX = vertex.x();
-                            }
-                            if (vertex.y() > maxY) {
-                                maxY = vertex.y();
-                            }
-                            if (vertex.y() < minY) {
-                                minY = vertex.y();
-                            }
-                            if (vertex.z() > maxZ) {
-                                maxZ = vertex.z();
-                            }
-                            if (vertex.z() < minZ) {
-                                minZ = vertex.z();
-                            }
-                        }
-                    }
+            for (Vector3d vertex : vertices) {
+                if (vertex.x() > maxX) {
+                    maxX = vertex.x();
+                }
+                if (vertex.x() < minX) {
+                    minX = vertex.x();
+                }
+                if (vertex.y() > maxY) {
+                    maxY = vertex.y();
+                }
+                if (vertex.y() < minY) {
+                    minY = vertex.y();
+                }
+                if (vertex.z() > maxZ) {
+                    maxZ = vertex.z();
+                }
+                if (vertex.z() < minZ) {
+                    minZ = vertex.z();
                 }
             }
             bounds = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
@@ -103,7 +159,7 @@ public class Cuboid {
     private ConvexPolygon2D[] calculateSlices() {
         AxisAlignedBB bounds = getBounds();
         ConvexPolygon2D[] slices = new ConvexPolygon2D[MathHelper.floor(bounds.maxY) - MathHelper.floor(bounds.minY) + 1];
-        double[] heights = Arrays.stream(vertices).flatMap(Arrays::stream).mapToDouble(Vector3d::y).sorted().distinct().toArray();
+        double[] heights = Arrays.stream(vertices).mapToDouble(Vector3d::y).sorted().distinct().toArray();
         int index = 0;
         for (int i = 0; i < slices.length; i++) {
             // will be sorted, but can have duplicates
@@ -112,36 +168,38 @@ public class Cuboid {
             if (low >= bounds.minY) {
                 crit.add((double) low);
             }
-            while (index < heights.length && heights[index] < low + 1) {
+            int high = low + 1;
+            while (index < heights.length && heights[index] < high) {
                 crit.add(heights[index]);
                 index++;
             }
-            int high = low + 1;
             if (high <= bounds.maxY) {
                 crit.add((double) high);
             }
             List<Point2D> points = new ArrayList<>();
             for (double val : crit) {
-                for (ConvexQuadrilateral3D[] sides : this.sides) {
-                    for (ConvexQuadrilateral3D side : sides) {
-                        if (side.within(val)) {
-                            points.addAll(side.edgeIntersection(val));
-                        }
+                for (ConvexQuadrilateral3D side : sides) {
+                    if (side.within(val)) {
+                        points.addAll(side.edgeIntersection(val));
                     }
                 }
             }
-            // points should never be empty
-            slices[i] = calculateConvexHull(points);
+            // points should never be empty, for redundancy
+            if (!points.isEmpty()) {
+                slices[i] = calculateConvexHull(points);
+            }
         }
         return slices;
     }
 
+    // points must be mutable and nonempty
     private static ConvexPolygon2D calculateConvexHull(List<Point2D> points) {
         List<Point2D> hull = grahamScan(points);
         hull.remove(hull.size() - 1);
         return new ConvexPolygon2D(hull.toArray(new Point2D[0]));
     }
 
+    // points must be mutable and nonempty
     private static List<Point2D> grahamScan(List<Point2D> points) {
         Point2D p = points.stream().min((p1, p2) -> {
             if (p1.y != p2.y) {
@@ -183,9 +241,11 @@ public class Cuboid {
     public static class ConvexQuadrilateral3D {
 
         private final Vector3d[][] vertices;
+        private final Vector3d normal;
 
-        private ConvexQuadrilateral3D(Vector3d[][] vertices) {
+        public ConvexQuadrilateral3D(Vector3d[][] vertices, Vector3d normal) {
             this.vertices = vertices;
+            this.normal = normal;
         }
 
         private Set<Point2D> edgeIntersection(double y) {

@@ -22,7 +22,6 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
@@ -97,25 +96,6 @@ public class BeamEntity extends Entity {
             factor *= type.getStartSizeFactor(modules.get(type));
         }
         return factor;
-    }
-
-    private static Vector3d[][] getVertices(Vector3d start, Vector3d end, double startWidth, double startHeight, double endWidth, double endHeight) {
-        Vector3d[][] vertices = new Vector3d[2][4];
-        Vector3d center = end.subtract(start);
-        Vector3d perpY = center.cross(new Vector3d(Vector3f.YP)).normalize();
-        if (perpY.lengthSqr() == 0) {
-            perpY = new Vector3d(Vector3f.ZP);
-        }
-        Vector3d perp = center.cross(perpY).normalize();
-        vertices[0][0] = start.add(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
-        vertices[0][1] = start.add(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        vertices[0][2] = start.subtract(perpY.scale(startWidth / 2)).subtract(perp.scale(startHeight / 2));
-        vertices[0][3] = start.subtract(perpY.scale(startWidth / 2)).add(perp.scale(startHeight / 2));
-        vertices[1][0] = end.add(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
-        vertices[1][1] = end.add(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
-        vertices[1][2] = end.subtract(perpY.scale(endWidth / 2)).subtract(perp.scale(endHeight / 2));
-        vertices[1][3] = end.subtract(perpY.scale(endWidth / 2)).add(perp.scale(endHeight / 2));
-        return vertices;
     }
 
     public double getMaxRange() {
@@ -391,7 +371,7 @@ public class BeamEntity extends Entity {
 
     public Cuboid getShape() {
         if (shape == null) {
-            shape = new Cuboid(getVertices(position(), getEnd(), getStartWidth(), getStartHeight(), getEndWidth(), getEndHeight()));
+            shape = Cuboid.fromBeam(this);
         }
         return shape;
     }
