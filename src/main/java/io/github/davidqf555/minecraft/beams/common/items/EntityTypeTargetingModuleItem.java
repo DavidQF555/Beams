@@ -1,8 +1,6 @@
 package io.github.davidqf555.minecraft.beams.common.items;
 
 import io.github.davidqf555.minecraft.beams.Beams;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.EntityTargetingType;
-import io.github.davidqf555.minecraft.beams.common.modules.targeting.TargetingModuleType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -13,7 +11,6 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,13 +24,10 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
-public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
+public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem {
 
-    private final static Component BLACKLIST = new TranslatableComponent("item." + Beams.ID + ".entity_type_targeting_module.blacklist").withStyle(ChatFormatting.GREEN),
-            WHITELIST = new TranslatableComponent("item." + Beams.ID + ".entity_type_targeting_module.whitelist").withStyle(ChatFormatting.RED),
-            INSTRUCTIONS = new TranslatableComponent("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
+    private static final Component INSTRUCTIONS = new TranslatableComponent("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
     private static final String TYPE_NAME = "item." + Beams.ID + ".entity_type_targeting_module.type_name";
 
     public EntityTypeTargetingModuleItem(Properties properties) {
@@ -41,20 +35,13 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
     }
 
     @Override
-    public TargetingModuleType getType(ItemStack stack) {
-        Predicate<Entity> condition;
-        Set<EntityType<?>> targets = getMarkedTypes(stack);
-        if (isWhitelist(stack)) {
-            condition = entity -> targets.contains(entity.getType());
-        } else {
-            condition = entity -> !targets.contains(entity.getType());
-        }
-        return new EntityTargetingType(condition);
+    protected boolean shouldTargetWhitelist(ItemStack stack, Entity entity) {
+        return getMarkedTypes(stack).contains(entity.getType());
     }
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!entity.level.isClientSide() && !getMarkedTypes(stack).contains(entity.getType())) {
+        if (!entity.level.isClientSide()) {
             if (player.isShiftKeyDown()) {
                 removeMarkedType(stack, entity.getType());
             } else {
@@ -66,18 +53,8 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!world.isClientSide()) {
-            setWhitelist(stack, !isWhitelist(stack));
-            return InteractionResultHolder.success(stack);
-        }
-        return InteractionResultHolder.pass(stack);
-    }
-
-    @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> text, TooltipFlag flag) {
-        text.add(isWhitelist(stack) ? WHITELIST : BLACKLIST);
+        super.appendHoverText(stack, world, text, flag);
         for (EntityType<?> type : getMarkedTypes(stack)) {
             text.add(new TranslatableComponent(TYPE_NAME, type.getDescription()).withStyle(ChatFormatting.BLUE));
         }
@@ -115,18 +92,6 @@ public class EntityTypeTargetingModuleItem extends TargetingModuleItem {
             ListTag list = tag.getList("Types", Tag.TAG_STRING);
             list.removeIf(nbt -> nbt.getAsString().equals(type.getRegistryName().toString()));
         }
-    }
-
-    public void setWhitelist(ItemStack stack, boolean whitelist) {
-        stack.getOrCreateTagElement(Beams.ID).putBoolean("Whitelist", whitelist);
-    }
-
-    public boolean isWhitelist(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTagElement(Beams.ID);
-        if (tag.contains("Whitelist", Tag.TAG_BYTE)) {
-            return tag.getBoolean("Whitelist");
-        }
-        return false;
     }
 
 }
