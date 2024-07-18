@@ -14,7 +14,6 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 public class BeamRenderer<T extends BeamEntity> extends EntityRenderer<T> {
 

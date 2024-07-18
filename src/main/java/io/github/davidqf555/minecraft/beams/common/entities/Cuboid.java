@@ -1,6 +1,5 @@
 package io.github.davidqf555.minecraft.beams.common.entities;
 
-import com.mojang.math.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
@@ -29,9 +28,9 @@ public class Cuboid {
         Vec3 start = beam.position();
         Vec3 end = beam.getEnd();
         Vec3 center = end.subtract(start).normalize();
-        Vec3 horizontal = center.cross(new Vec3(Vector3f.YP)).normalize();
+        Vec3 horizontal = center.cross(new Vec3(0, 1, 0)).normalize();
         if (horizontal.lengthSqr() == 0) {
-            horizontal = new Vec3(Vector3f.ZP);
+            horizontal = new Vec3(0, 0, 1);
         }
         Vec3 vertical = horizontal.cross(center);
 
