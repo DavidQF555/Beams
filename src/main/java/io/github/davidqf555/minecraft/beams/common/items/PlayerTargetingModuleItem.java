@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class PlayerTargetingModuleItem extends WhitelistEntityTargetingModuleItem {
+public class PlayerTargetingModuleItem extends WhitelistTargetingModuleItem {
 
     public static final DataComponentType<Set<UUID>> MARKED_DATA = DataComponentType.<Set<UUID>>builder().persistent(UUIDUtil.CODEC.listOf().xmap(Set::copyOf, List::copyOf)).build();
-    private static final String PLAYER_NAME = "item." + Beams.ID + ".player_targeting_module.player_name";
     private static final Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".player_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
+    private static final String PLAYER_NAME = "item." + Beams.ID + ".player_targeting_module.player_name";
 
     public PlayerTargetingModuleItem(Properties properties) {
         super(properties.component(MARKED_DATA, new HashSet<>()));
@@ -36,15 +36,11 @@ public class PlayerTargetingModuleItem extends WhitelistEntityTargetingModuleIte
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!entity.level().isClientSide() && entity instanceof Player && !getMarkedPlayers(stack).contains(entity.getUUID())) {
-            if (player.isShiftKeyDown()) {
-                removeMarkedPlayer(stack, entity.getUUID());
-            } else {
-                addMarkedPlayer(stack, entity.getUUID());
-            }
-            return InteractionResult.SUCCESS;
+        if (!entity.level().isClientSide() && entity instanceof Player) {
+            boolean success = player.isShiftKeyDown() ? removeMarkedPlayer(stack, entity.getUUID()) : addMarkedPlayer(stack, entity.getUUID());
+            return success ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         }
-        return InteractionResult.PASS;
+        return super.interactLivingEntity(stack, player, entity, hand);
     }
 
     @Override
@@ -61,20 +57,21 @@ public class PlayerTargetingModuleItem extends WhitelistEntityTargetingModuleIte
         return marked == null ? Set.of() : marked;
     }
 
-    public void addMarkedPlayer(ItemStack stack, UUID player) {
+    public boolean addMarkedPlayer(ItemStack stack, UUID player) {
         Set<UUID> marked = stack.get(MARKED_DATA);
         if (marked == null) {
             marked = new HashSet<>();
             stack.set(MARKED_DATA, marked);
         }
-        marked.add(player);
+        return marked.add(player);
     }
 
-    public void removeMarkedPlayer(ItemStack stack, UUID player) {
+    public boolean removeMarkedPlayer(ItemStack stack, UUID player) {
         Set<UUID> marked = stack.get(MARKED_DATA);
         if (marked != null) {
-            marked.remove(player);
+            return marked.remove(player);
         }
+        return false;
     }
 
 }

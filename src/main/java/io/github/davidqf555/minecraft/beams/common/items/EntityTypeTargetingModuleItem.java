@@ -18,11 +18,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class EntityTypeTargetingModuleItem extends WhitelistEntityTargetingModuleItem {
+public class EntityTypeTargetingModuleItem extends WhitelistTargetingModuleItem {
 
     public static final DataComponentType<Set<EntityType<?>>> MARKED_DATA = DataComponentType.<Set<EntityType<?>>>builder().persistent(ForgeRegistries.ENTITY_TYPES.getCodec().listOf().xmap(Set::copyOf, List::copyOf)).build();
+    private static final Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
     private static final String TYPE_NAME = "item." + Beams.ID + ".entity_type_targeting_module.type_name";
-    private final Component INSTRUCTIONS = Component.translatable("item." + Beams.ID + ".entity_type_targeting_module.instructions").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_PURPLE);
 
     public EntityTypeTargetingModuleItem(Properties properties) {
         super(properties.component(MARKED_DATA, new HashSet<>()));
@@ -30,19 +30,14 @@ public class EntityTypeTargetingModuleItem extends WhitelistEntityTargetingModul
 
     @Override
     protected boolean shouldTargetWhitelist(ItemStack stack, Entity entity) {
-        Set<EntityType<?>> targets = getMarkedTypes(stack);
-        return targets.contains(entity.getType());
+        return getMarkedTypes(stack).contains(entity.getType());
     }
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!entity.level().isClientSide() && !getMarkedTypes(stack).contains(entity.getType())) {
-            if (player.isShiftKeyDown()) {
-                removeMarkedType(stack, entity.getType());
-            } else {
-                addMarkedType(stack, entity.getType());
-            }
-            return InteractionResult.SUCCESS;
+        if (!entity.level().isClientSide()) {
+            boolean success = player.isShiftKeyDown() ? removeMarkedType(stack, entity.getType()) : addMarkedType(stack, entity.getType());
+            return success ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         }
         return InteractionResult.PASS;
     }
@@ -64,20 +59,21 @@ public class EntityTypeTargetingModuleItem extends WhitelistEntityTargetingModul
         return types;
     }
 
-    public void addMarkedType(ItemStack stack, EntityType<?> type) {
+    public boolean addMarkedType(ItemStack stack, EntityType<?> type) {
         Set<EntityType<?>> types = stack.get(MARKED_DATA);
         if (types == null) {
             types = new HashSet<>();
             stack.set(MARKED_DATA, types);
         }
-        types.add(type);
+        return types.add(type);
     }
 
-    public void removeMarkedType(ItemStack stack, EntityType<?> type) {
+    public boolean removeMarkedType(ItemStack stack, EntityType<?> type) {
         Set<EntityType<?>> types = stack.get(MARKED_DATA);
         if (types != null) {
-            types.remove(type);
+            return types.remove(type);
         }
+        return false;
     }
 
 }

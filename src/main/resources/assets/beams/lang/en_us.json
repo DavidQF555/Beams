@@ -38,14 +38,21 @@
   "item.beams.shrink_module": "Shrink Module",
   "item.beams.tractor_module": "Tractor Module",
   "item.beams.freeze_module": "Freeze Module",
+  "item.beams.whitelist_targeting_module.whitelist": "Whitelist: ",
+  "item.beams.whitelist_targeting_module.blacklist": "Blacklist: ",
   "item.beams.player_targeting_module": "Player Targeting Module",
+  <<<<<<<
+  HEAD
   "item.beams.targeting_module.whitelist": "Whitelist: ",
   "item.beams.targeting_module.blacklist": "Blacklist: ",
+  =======
+  >>>>>>>
+  forge-1.20.4
   "item.beams.player_targeting_module.player_name": " %s",
   "item.beams.player_targeting_module.instructions": "Right-click players to mark them. Shift right-click to remove. Right-click the air to swap between whitelist and blacklist.",
   "item.beams.entity_type_targeting_module": "Entity Type Targeting Module",
   "item.beams.entity_type_targeting_module.type_name": " %s",
-  "item.beams.entity_type_targeting_module.instructions": "Right-click players to mark them. Shift right-click to remove. Right-click the air to swap between whitelist and blacklist.",
+  "item.beams.entity_type_targeting_module.instructions": "Right-click entities to mark their type. Shift right-click to remove. Right-click the air to swap between whitelist and blacklist.",
   "entity.beams.beam": "Beam",
   "container.beams.projector": "Projector",
   "message.beams.pointer_connected": "Connected",
